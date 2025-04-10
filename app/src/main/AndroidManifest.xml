@@ -12,25 +12,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GestorXpress"
         tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.GestorXpress.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <!-- LoginActivity con exportado explícito -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"> <!-- ¡ESTE FALTABA! -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- MainActivity también tiene intent-filter, por lo tanto también exportado -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.GestorXpress.NoActionBar">
-        </activity>
-        <activity android:name=".CompartirActivity" android:exported="false" />
+            android:name=".CompartirActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
