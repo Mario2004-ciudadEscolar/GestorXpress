@@ -25,7 +25,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.appBarMain.toolbar);
+        //setSupportActionBar(binding.appBarMain.toolbar); <-- He cambiado esto
+
+        setSupportActionBar(findViewById(R.id.toolbar)); // <-- Por esto
 
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
@@ -40,9 +42,13 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
 
-        binding.appBarMain.fab.setOnClickListener(view -> {
+        /*binding.appBarMain.fab.setOnClickListener(view -> {
             navController.navigate(R.id.nav_gallery); //  crear tarea
-        });
+        });*/ // <-- He cambiado esto.
+
+        findViewById(R.id.fab).setOnClickListener(view -> {
+            navController.navigate(R.id.nav_gallery); //  crear tarea
+        }); // <-- Por esto
 
         // Acciones personalizadas de menú
         navigationView.setNavigationItemSelectedListener(item -> {
