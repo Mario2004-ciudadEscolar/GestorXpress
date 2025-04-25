@@ -34,7 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
 
     /** URL del servidor que valida el login */
-    private static final String URL_LOGIN = "http://10.0.2.2:8080/develoGestorXpress/login_usuario.php";
+    private static final String URL_LOGIN = "http://10.0.2.2:80/develoGestorXpress/login_usuario.php";
 
 
 

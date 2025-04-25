@@ -27,7 +27,7 @@ public class RegistroActivity extends AppCompatActivity {
     private Button btnRegistrar;
 
     /** URL del servidor que valida el login */
-    private static final String URL_REGISTRO = "http://10.0.2.2:8080/develoGestorXpress/registro_usuario.php";
+    private static final String URL_REGISTRO = "http://10.0.2.2:80/develoGestorXpress/registro_usuario.php";
 
 
     @Override
