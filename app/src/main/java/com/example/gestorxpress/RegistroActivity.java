@@ -14,6 +14,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.gestorxpress.database.DatabaseHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,9 +27,8 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText editNombre, editApellido, editCorreo, editContrasena;
     private Button btnRegistrar;
 
-    /** URL del servidor que valida el login */
-    private static final String URL_REGISTRO = "http://10.0.2.2:8080/develoGestorXpress/registro_usuario.php";
-
+    // Instancia de la base de datos local
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +41,13 @@ public class RegistroActivity extends AppCompatActivity {
         editContrasena = findViewById(R.id.editContrasena);
         btnRegistrar = findViewById(R.id.btnRegistrar);
 
+        // Inicializamos la base de datos
+        dbHelper = new DatabaseHelper(this);
+
         /**
          * Se ejecuta cuando le damos el botón de registrar.
          * - Lo que hace es validar los campos del formulario.
-         * - Y envía los datos al servidor si todo es correcto.
+         * - Y registra el usuario en la base de datos local si todo es correcto.
          */
         btnRegistrar.setOnClickListener(v -> {
             String nombre = editNombre.getText().toString().trim();
@@ -53,7 +56,7 @@ public class RegistroActivity extends AppCompatActivity {
             String contrasena = editContrasena.getText().toString().trim();
 
             /**
-             * Verifica que todos los campos no esten vacios.
+             * Verifica que todos los campos no estén vacíos.
              * Y si alguno está vacío, se muestra un mensaje y se detiene el registro.
              */
             if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(apellido) ||
@@ -62,62 +65,15 @@ public class RegistroActivity extends AppCompatActivity {
                 return;
             }
 
-            /**
-             * Esto lo que hace es crear una solicitud POST con los datos del formulario.
-             * Con lo cual se enviará al servidor para crear un nuevo usuario.
-             *
-             *  Se ejecuta cuando el servidor responde correctamente (HTTP 200).
-             *  Interpreta el JSON devuelto y muestra el mensaje al usuario.
-             */
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL_REGISTRO,
-                    response -> {
-                        try {
-                            JSONObject jsonResponse = new JSONObject(response);
-                            boolean success = jsonResponse.getBoolean("success");
-                            String message = jsonResponse.getString("message");
+            // Intentamos registrar al usuario en la base de datos
+            boolean registroExitoso = dbHelper.registrarUsuario(nombre, apellido, correo, contrasena);
 
-                            Toast.makeText(RegistroActivity.this, message, Toast.LENGTH_LONG).show();
-
-                            /**
-                             * Si el registro fue exitoso, finaliza la actividad
-                             * y vuelve a la pantalla anterior (Login).
-                             */
-                            if (success) {
-                                finish(); // Vuelve atrás (al login) si el registro fue exitoso
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(RegistroActivity.this, "Error al procesar la respuesta", Toast.LENGTH_LONG).show();
-                        }
-                    },
-                    /**
-                     * Se ejecuta cuando ocurre un error de red o de conexión con el servidor.
-                     */
-                    error -> {
-                        Toast.makeText(RegistroActivity.this, "Error de conexión: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                    }) {
-
-                /**
-                 * Aquí define los parámetros que se enviarán al servidor en la solicitud POST.
-                 */
-                @Override
-                protected Map<String, String> getParams() {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("nombre", nombre);
-                    params.put("apellido", apellido);
-                    params.put("correo", correo);
-                    params.put("contrasena", contrasena);
-                    return params;
-                }
-            };
-
-            /**
-             * Crea una nueva cola de peticiones con Volley y agrega la solicitud creada.
-             * Esto permite que la solicitud se envíe al servidor.
-             */
-            RequestQueue queue = Volley.newRequestQueue(RegistroActivity.this);
-            queue.add(stringRequest);
+            if (registroExitoso) {
+                Toast.makeText(RegistroActivity.this, "Registro exitoso", Toast.LENGTH_LONG).show();
+                finish(); // Vuelve atrás (al login) si el registro fue exitoso
+            } else {
+                Toast.makeText(RegistroActivity.this, "Correo ya registrado", Toast.LENGTH_LONG).show();
+            }
         });
     }
 }
