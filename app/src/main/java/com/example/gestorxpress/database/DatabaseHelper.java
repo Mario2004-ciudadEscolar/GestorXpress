@@ -5,17 +5,21 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.example.gestorxpress.ui.Tarea.Tarea;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class DatabaseHelper extends SQLiteOpenHelper
-{
+public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Nombre de como se va llamar nuestra base de datos,
      * que en este caso es gestorxpress (Nombre de nuestra empresa)
@@ -26,11 +30,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Versión de nuestra base de datos, esta versión puede cambiar
      * cuando hacemos una modificación en la bbdd, como puede ser
      * modificación de tabla o inserción de nuevos campos.
-     *
+     * <p>
      * Devemos de tener en cuenta que si cambiamos la versión,
      * la primera clase que se ejecuta tiene que tener el metodo
      * de descargar la bbdd si no la tenemos o abrirla si la tenemos.
-     *
+     * <p>
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
@@ -42,18 +46,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * que como hemos dicho antes, nos viene bien por si realizamos algún cambio en la
      * bbdd en un futuro.
      */
-    public DatabaseHelper(Context context)
-    {
+    public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     /**
-     *
      * @param
      */
     @Override
-    public void onConfigure(SQLiteDatabase db)
-    {
+    public void onConfigure(SQLiteDatabase db) {
         super.onConfigure(db);
         db.setForeignKeyConstraintsEnabled(true); // Activa las claves foráneas
     }
@@ -64,8 +65,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param
      */
     @Override
-    public void onCreate(SQLiteDatabase db)
-    {
+    public void onCreate(SQLiteDatabase db) {
         // Tabla Usuario
         db.execSQL(
                 "CREATE TABLE Usuario (" +
@@ -129,8 +129,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param newVersion
      */
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-    {
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Elimina todo si actualizas (cuidado en producción)
         db.execSQL("DROP TABLE IF EXISTS Actividad_usuario");
         db.execSQL("DROP TABLE IF EXISTS Notificacion");
@@ -150,6 +149,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * externo podra adivinar contraseñas con aplicaciones (No me acuerdo como se llaman)
      * donde pueden sacar la contraseña de nuestros clientes, pues con esto tendremos un
      * poco mas de seguridad a la hora de guardar la contraseña del cliente (usuario).
+     *
      * @param password
      * @return Devolvemos la contraseña HASHEADA
      */
@@ -170,9 +170,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     //----------------------- METODO LOGIN -----------------------//
+
     /**
      * Valida si un usuario existe con ese correo y contraseña
-     * @param correo <-- Que le pasamos por parametro (lo que pone el usuario)
+     *
+     * @param correo      <-- Que le pasamos por parametro (lo que pone el usuario)
      * @param contrasenia <-- Que le pasamos por parametro (lo que pone el usuario)
      * @return Devuelve TRUE si la contraseña y correo existe en nuestra base de datos,
      * que este dado de alta en nuestra aplicación.
@@ -199,9 +201,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
     /**
      * Método para registrar un nuevo usuario en la base de datos
      *
-     * @param nombre <-- Que le pasamos por parametro (lo que pone el usuario)
-     * @param apellido <-- Que le pasamos por parametro (lo que pone el usuario)
-     * @param correo <-- Que le pasamos por parametro (lo que pone el usuario)
+     * @param nombre      <-- Que le pasamos por parametro (lo que pone el usuario)
+     * @param apellido    <-- Que le pasamos por parametro (lo que pone el usuario)
+     * @param correo      <-- Que le pasamos por parametro (lo que pone el usuario)
      * @param contrasenia <-- Que le pasamos por parametro (lo que pone el usuario)
      * @return devuelve un booleano, si ocurrio algun error a la hora de insertar
      * el nuevo usuario.
@@ -246,6 +248,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * estos nos sirve para que cuando creemos un nuevo usuario (que se da de alta a
      * nuestra aplicación, pues que salga en fechaRegistro la fecha actal cuando se
      * registro).
+     *
      * @return devuelve la fecha actual cuando se registro en formato date adecuado a la bbdd.
      */
     // Método para obtener la fecha actual en formato adecuado para la base de datos
@@ -253,6 +256,66 @@ public class DatabaseHelper extends SQLiteOpenHelper
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         return sdf.format(new Date());
     }
+
+    // Método para obtener el ID del usuario basado en el correo
+    public int obtenerIdUsuario(String correo) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int idUsuario = -1;
+
+        Cursor cursor = db.rawQuery("SELECT id FROM Usuario WHERE correo = ?", new String[]{correo});
+        if (cursor.moveToFirst()) {
+            idUsuario = cursor.getInt(0);  // Columna 0 = id
+        }
+        cursor.close();
+        db.close();
+        return idUsuario;
+    }
+
+    public boolean insertarTarea(int usuarioId, String titulo, String descripcion,
+                                 String fechaLimite, String prioridad, String estado) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("usuario_id", usuarioId);
+        values.put("titulo", titulo);
+        values.put("descripcion", descripcion);
+        values.put("fechaLimite", fechaLimite);
+        values.put("prioridad", prioridad);
+        values.put("estado", estado);
+        values.put("fechaCreacion", getCurrentDate());  // Insertamos la fecha de creación
+
+        long resultado = db.insert("Tarea", null, values);
+        if (resultado == -1) {
+            Log.e("DB_ERROR", "Error al insertar tarea: " + values.toString());
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
+        List<Tarea> tareas = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String titulo = cursor.getString(cursor.getColumnIndexOrThrow("titulo"));
+                String descripcion = cursor.getString(cursor.getColumnIndexOrThrow("descripcion"));
+                String prioridad = cursor.getString(cursor.getColumnIndexOrThrow("prioridad"));
+                String estado = cursor.getString(cursor.getColumnIndexOrThrow("estado"));
+                String fechaLimite = cursor.getString(cursor.getColumnIndexOrThrow("fechaLimite"));
+
+                tareas.add(new Tarea(id, idUsuario, titulo, descripcion, prioridad, estado, fechaLimite));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return tareas;
+    }
+
 
 
 

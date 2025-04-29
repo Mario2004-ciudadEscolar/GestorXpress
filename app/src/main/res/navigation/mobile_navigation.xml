@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.example.gestorxpress.ui.gallery.GalleryFragment"
+        android:id="@+id/nav_Crear_Tarea"
+        android:name="com.example.gestorxpress.ui.Tarea.CrearTareaFragment"
         android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_crear__tarea" />
 
     <fragment
         android:id="@+id/nav_slideshow"
