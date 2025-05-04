@@ -1,8 +1,10 @@
 package com.example.gestorxpress;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -10,14 +12,26 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.gestorxpress.database.DatabaseHelper;
-import com.example.gestorxpress.ui.Tarea.CrearTareaFragment;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText editNombre, editPassword;
     private Button btnLogin;
     private TextView signupText;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
          * Inicializa la base de datos (esto crea o abre la base si ya existe)
          */
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        // SQLiteDatabase db = dbHelper.getWritableDatabase(); // No es necesario aquí
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         /**
          * Si el usuario hace click en "No estoy registrado (Esta en ingles)"
@@ -41,12 +55,12 @@ public class LoginActivity extends AppCompatActivity {
          * nuestra aplicación.
          */
         signupText.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, CrearTareaFragment.class);
+            Intent intent = new Intent(LoginActivity.this, RegistroActivity.class);
             startActivity(intent);
         });
 
         /**
-         * Si el usuario pulsa en "Login" validaremos el correo y la contraseña
+         *
          */
         btnLogin.setOnClickListener(v -> {
             String correo = editNombre.getText().toString().trim();
@@ -60,17 +74,17 @@ public class LoginActivity extends AppCompatActivity {
             boolean loginCorrecto = dbHelper.validarUsuario(correo, contrasenia);
 
             if (loginCorrecto) {
-                int idUsuario = dbHelper.obtenerIdUsuario(correo);
-
                 Toast.makeText(LoginActivity.this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.putExtra("correo", correo);
-                intent.putExtra("idUsuario", idUsuario); // quiero obtener el id también
                 startActivity(intent);
                 finish();
             } else {
                 Toast.makeText(LoginActivity.this, "Correo o contraseña incorrectos", Toast.LENGTH_LONG).show();
             }
         });
+
+
+
     }
 }

@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:background="@drawable/loginbk"
-    tools:context=".ui.Tarea.AgregarTareaActivity">
+    tools:context=".RegistroActivity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="600dp"

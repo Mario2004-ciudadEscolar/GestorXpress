@@ -16,7 +16,7 @@
         android:theme="@style/Theme.GestorXpress"
         tools:targetApi="31">
         <activity
-            android:name=".ui.Tarea.AgregarTareaActivity"
+            android:name=".RegistroActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
