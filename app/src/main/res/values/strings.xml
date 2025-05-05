@@ -14,15 +14,15 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string-array name="opciones_prioridad">
-        <item>Alta</item>
-        <item>Media</item>
         <item>Baja</item>
+        <item>Media</item>
+        <item>Alta</item>
     </string-array>
 
     <string-array name="opciones_estado">
         <item>Pendiente</item>
-        <item>En proceso</item>
-        <item>Hecha</item>
+        <item>En progreso</item>
+        <item>Completada</item>
     </string-array>
 
 </resources>

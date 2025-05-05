@@ -19,6 +19,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.example.gestorxpress.database.VerBBDDActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText editNombre, editPassword;
     private Button btnLogin;
-    private TextView signupText;
+    private TextView signupText, verBaseDatos;
 
 
     @Override
@@ -42,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
         editPassword = findViewById(R.id.editPassword);
         btnLogin = findViewById(R.id.btnLogin);
         signupText = findViewById(R.id.signupText);
+        verBaseDatos = findViewById(R.id.verBaseDatos);
 
         /**
          * Inicializa la base de datos (esto crea o abre la base si ya existe)
@@ -56,6 +58,11 @@ public class LoginActivity extends AppCompatActivity {
          */
         signupText.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegistroActivity.class);
+            startActivity(intent);
+        });
+
+        verBaseDatos.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, VerBBDDActivity.class);
             startActivity(intent);
         });
 

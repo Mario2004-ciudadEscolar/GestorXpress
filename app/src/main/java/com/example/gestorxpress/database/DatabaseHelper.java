@@ -38,7 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
 
     /**
@@ -78,7 +78,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "apellido TEXT NOT NULL, " +
                         "correo TEXT NOT NULL UNIQUE, " +
                         "contrasenia TEXT NOT NULL, " +
-                        "fechaRegistro TEXT NOT NULL" +
+                        "fechaRegistro TEXT NOT NULL," +
+                        "logged_in INTEGER DEFAULT 0" +  // Agregado para el logged_in
                         ");"
         );
 
@@ -145,6 +146,107 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     //----------------------- METODOS (SENTENCIA SQL) -----------------------//
 
+    //----------------------- GETTERS -----------------------//
+    public String getUsuarios() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder data = new StringBuilder();
+        Cursor cursor = db.rawQuery("SELECT * FROM Usuario", null);
+
+        if (cursor.getCount() == 0) {
+            Log.d("Database", "No hay usuarios en la base de datos");
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        while (cursor.moveToNext()) {
+            String rawDate = cursor.getString(5);  // Fecha de registro
+            String formattedDate = rawDate;  // Puede requerir un formato adecuado
+
+            try {
+                Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(rawDate);
+                formattedDate = dateFormat.format(date);  // Formatear la fecha
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // Aquí accedemos a la contraseña (que está en el índice 4)
+            //String contrasenia = cursor.getString(4);  // Valor real de la contraseña
+
+            // Construimos la cadena de texto con la contraseña en texto claro
+            data.append("Usuario -> ID: ").append(cursor.getInt(0))
+                    .append(", Nombre: ").append(cursor.getString(1))
+                    .append(", Apellido: ").append(cursor.getString(2))
+                    .append(", Correo: ").append(cursor.getString(3))  // Correo
+                    //.append(", Contraseña: ").append(contrasenia)  // Aquí mostramos la contraseña en texto claro
+                    .append(", Fecha de Registro: ").append(formattedDate)  // Fecha de Registro
+                    .append(", Loggin_id: ").append((cursor.getInt(6)))
+                    .append("\n");
+        }
+        cursor.close();
+        return data.toString();
+    }
+
+
+    public String getTareas() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder data = new StringBuilder();
+        Cursor cursor = db.rawQuery("SELECT * FROM Tarea", null);
+        while (cursor.moveToNext()) {
+            data.append("Tarea -> ID: ").append(cursor.getInt(0))
+                    .append(", UsuarioID: ").append(cursor.getInt(1))
+                    .append(", Título: ").append(cursor.getString(2))
+                    .append(", Estado: ").append(cursor.getString(6))
+                    .append("\n");
+        }
+        cursor.close();
+        return data.toString();
+    }
+
+    public String getNotificaciones() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder data = new StringBuilder();
+        Cursor cursor = db.rawQuery("SELECT * FROM Notificacion", null);
+        while (cursor.moveToNext()) {
+            data.append("Notificación -> ID: ").append(cursor.getInt(0))
+                    .append(", TareaID: ").append(cursor.getInt(1))
+                    .append(", Tipo: ").append(cursor.getString(2))
+                    .append(", Activa: ").append(cursor.getInt(5))
+                    .append("\n");
+        }
+        cursor.close();
+        return data.toString();
+    }
+
+    public String getActividadUsuarios() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder data = new StringBuilder();
+        Cursor cursor = db.rawQuery("SELECT * FROM Actividad_usuario", null);
+        while (cursor.moveToNext()) {
+            data.append("Actividad -> ID: ").append(cursor.getInt(0))
+                    .append(", UsuarioID: ").append(cursor.getInt(1))
+                    .append(", Fecha: ").append(cursor.getString(2))
+                    .append(", TareasCompletadas: ").append(cursor.getInt(3))
+                    .append("\n");
+        }
+        cursor.close();
+        return data.toString();
+    }
+
+    //----------------------- METODO SETTERS -----------------------//
+
+    // Método para establecer el logged_in de un usuario
+    public boolean setUsuarioLogueado(int usuarioId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Actualizamos el valor de logged_in a 1 para el usuario logueado
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("logged_in", 1);
+
+        int rowsUpdated = db.update("Usuario", contentValues, "id = ?", new String[]{String.valueOf(usuarioId)});
+        db.close();
+
+        return rowsUpdated > 0; // Si se actualizó al menos una fila
+    }
 
     //----------------------- METODO CONTRASEÑA HASH -----------------------//
 
@@ -187,15 +289,31 @@ public class DatabaseHelper extends SQLiteOpenHelper
         // Hasheamos la contraseña proporcionada por el usuario
         String contraseniaHasheada = hashPassword(contrasenia);
 
-        // Comprobamos si el usuario exite en la bbdd
+        // Comprobamos si el usuario existe en la base de datos
         Cursor cursor = db.rawQuery(
-                "SELECT * FROM Usuario WHERE correo = ? AND contrasenia = ?",
+                "SELECT id, nombre, apellido, correo, contrasenia, fechaRegistro, logged_in FROM Usuario WHERE correo = ? AND contrasenia = ?",
                 new String[]{correo, contraseniaHasheada}
         );
-        boolean existe = cursor.getCount() > 0;
+
+        if (cursor != null && cursor.moveToFirst()) {
+            // Verificamos si la columna "id" existe en el cursor antes de acceder a ella
+            int idColumnIndex = cursor.getColumnIndex("id");
+
+            if (idColumnIndex != -1) {
+                int usuarioId = cursor.getInt(idColumnIndex);
+                cursor.close();
+
+                // Actualizamos el estado de logged_in del usuario que ha iniciado sesión a 1
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("logged_in", 1);
+                db.update("Usuario", contentValues, "id = ?", new String[]{String.valueOf(usuarioId)});
+
+                return setUsuarioLogueado(usuarioId);  // Llamamos a setUsuarioLogueado para marcar al usuario en la sesión
+            }
+        }
+
         cursor.close();
-        db.close();
-        return existe;
+        return false; // No se encontró el usuario o la contraseña es incorrecta
     }
 
     //----------------------- METODO REGISTRO -----------------------//
@@ -237,6 +355,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         contentValues.put("correo", correo);
         contentValues.put("contrasenia", contraseniaHasheada);
         contentValues.put("fechaRegistro", getCurrentDate());
+        contentValues.put("logged_in", 0); // Inicialmente no está logueado
 
         // Insertamos el usuario y verificamos si la inserción fue exitosa
         long result = db.insert("Usuario", null, contentValues);
@@ -258,30 +377,32 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return sdf.format(new Date());
     }
 
+    //----------------------- METODO INSERTAR TAREA -----------------------//
 
-
-    public boolean insertarTarea(int usuarioId, String titulo, String descripcion,
-                                 String fechaLimite, String prioridad, String estado) {
+    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+
         ContentValues values = new ContentValues();
         values.put("usuario_id", usuarioId);
         values.put("titulo", titulo);
         values.put("descripcion", descripcion);
-        values.put("fechaLimite", fechaLimite);
         values.put("prioridad", prioridad);
         values.put("estado", estado);
-        values.put("fechaCreacion", getCurrentDate());  // Insertamos la fecha de creación
+        values.put("fechaLimite", fechaLimite);
+        values.put("fechaCreacion", fechaCreacion);
 
         long resultado = db.insert("Tarea", null, values);
-        if (resultado == -1) {
-            Log.e("DB_ERROR", "Error al insertar tarea: " + values.toString());
-            return false;
-        } else {
-            return true;
-        }
+        db.close();
+
+        return resultado != -1;
     }
 
 
+
+
+    //----------------------- METODO OBTENER TAREA -----------------------//
     public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
         List<Tarea> tareas = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -304,18 +425,66 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
         return tareas;
     }
-    public int obtenerIdUsuarioPorCorreo(String correo) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        int idUsuario = -1;
 
-        Cursor cursor = db.rawQuery("SELECT id FROM Usuario WHERE correo = ?", new String[]{correo});
-        if (cursor.moveToFirst()) {
-            idUsuario = cursor.getInt(0);  // Columna 0 = id
+    //----------------------- METODO OBTENER ID -----------------------//
+
+    // Método para obtener el id del usuario logueado
+    public int obtenerIdUsuario() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT id FROM Usuario WHERE logged_in = 1", null);
+
+        int idUsuario = -1; // Valor por defecto si no se encuentra un usuario logueado
+
+        if (cursor != null)
+        {
+            if (cursor.moveToFirst())
+            {
+                try
+                {
+                    // Usamos getColumnIndexOrThrow para asegurarnos de que la columna 'id' existe
+                    idUsuario = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                }
+                catch (IllegalArgumentException e)
+                {
+                    Log.e("Database", "Columna 'id' no encontrada en la consulta");
+                    e.printStackTrace();
+                }
+            }
+            else
+            {
+                Log.d("Database", "No se encontró un usuario logueado");
+            }
+            cursor.close();
         }
-        cursor.close();
-        db.close();
+        else
+        {
+            Log.e("Database", "Error al ejecutar la consulta para obtener el usuario logueado");
+        }
+
         return idUsuario;
     }
 
+    public void actualizarEstadoLogin(int idUsuario, boolean isLoggedIn) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("logged_in", isLoggedIn ? 1 : 0);
 
+        // Actualizar el registro del usuario
+        db.update("Usuario", values, "id = ?", new String[]{String.valueOf(idUsuario)});
+    }
+
+
+    // Método para cerrar la sesión del usuario
+    public boolean cerrarSesion() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Ponemos el valor de logged_in a 0 para todos los usuarios
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("logged_in", 0);
+
+        int rowsUpdated = db.update("Usuario", contentValues, "logged_in = 1", null);
+        db.close();
+
+        return rowsUpdated > 0; // Si se actualizó al menos una fila
+    }
 }

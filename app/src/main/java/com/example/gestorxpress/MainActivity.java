@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.example.gestorxpress.database.VerBBDDActivity;
 import com.google.android.material.navigation.NavigationView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -27,18 +28,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Recuperar el correo del intent
-        String correo = getIntent().getStringExtra("correo");
-        Log.d("DEBUG_CORREO", "Correo recibido en MainActivity: " + correo);
+        //String correo = getIntent().getStringExtra("correo");
+        //Log.d("DEBUG_CORREO", "Correo recibido en MainActivity: " + correo);
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        int idUsuario = dbHelper.obtenerIdUsuarioPorCorreo(correo);
-        Log.d("DEBUG_ID", "ID de usuario obtenido: " + idUsuario);
+        //int idUsuario = dbHelper.obtenerIdUsuarioPorCorreo(correo);
+        //Log.d("DEBUG_ID", "ID de usuario obtenido: " + idUsuario);
 
 // Guardar el idUsuario en un Bundle para pasarlo a los fragmentos
-        Bundle bundle = new Bundle();
+        /*Bundle bundle = new Bundle();
         bundle.putInt("idUsuario", idUsuario);
 
 // Establecer el bundle como argumento inicial para los fragmentos que lo necesiten
-        getSupportFragmentManager().setFragmentResult("datosUsuario", bundle);
+        getSupportFragmentManager().setFragmentResult("datosUsuario", bundle);*/
 
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -65,11 +66,11 @@ public class MainActivity extends AppCompatActivity {
             navController.navigate(R.id.nav_gallery); //  crear tarea
         });*/ // <-- He cambiado esto.
 
-        findViewById(R.id.fab).setOnClickListener(view -> {
+        /*findViewById(R.id.fab).setOnClickListener(view -> {
             Bundle args = new Bundle(); // usa un nombre diferente evita errores
             args.putInt("idUsuario", idUsuario);
             navController.navigate(R.id.nav_Crear_Tarea, args);
-        });
+        });*/
 
 
 //v1
@@ -83,14 +84,27 @@ public class MainActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_logout) {
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
+                // Llamamos al método cerrarSesion para cerrar la sesión
+                boolean exito = dbHelper.cerrarSesion();
+
+                // Si la sesión se cerró correctamente, redirigimos al login
+                if (exito) {
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish(); // Finaliza la actividad actual
+                } else {
+                    // Si hubo un error cerrando la sesión, mostramos un mensaje
+                    Log.e("MainActivity", "Error al cerrar sesión.");
+                }
                 return true;
 
             } else if (id == R.id.nav_compartir) {
-                startActivity(new Intent(MainActivity.this, CompartirActivity.class));
+                // Voy a comentar esto para poner el de "Ver la BBDD"
+                //startActivity(new Intent(MainActivity.this, CompartirActivity.class));
+
+                // Lo voy a poner de momento para ver la bbdd, luego se quitara
+                startActivity(new Intent(MainActivity.this, VerBBDDActivity.class));
                 return true;
             }
 
