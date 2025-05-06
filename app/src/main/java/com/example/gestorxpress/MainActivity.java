@@ -27,18 +27,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /**
+         * La parte que esta comentado, son cosas que tenemos que cambiar y mejorar.
+         */
         // Recuperar el correo del intent
         //String correo = getIntent().getStringExtra("correo");
         //Log.d("DEBUG_CORREO", "Correo recibido en MainActivity: " + correo);
+
         DatabaseHelper dbHelper = new DatabaseHelper(this);
+
         //int idUsuario = dbHelper.obtenerIdUsuarioPorCorreo(correo);
         //Log.d("DEBUG_ID", "ID de usuario obtenido: " + idUsuario);
 
-// Guardar el idUsuario en un Bundle para pasarlo a los fragmentos
+        // Guardar el idUsuario en un Bundle para pasarlo a los fragmentos
         /*Bundle bundle = new Bundle();
         bundle.putInt("idUsuario", idUsuario);
 
-// Establecer el bundle como argumento inicial para los fragmentos que lo necesiten
+        // Establecer el bundle como argumento inicial para los fragmentos que lo necesiten
         getSupportFragmentManager().setFragmentResult("datosUsuario", bundle);*/
 
 

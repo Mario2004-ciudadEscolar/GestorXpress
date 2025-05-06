@@ -67,7 +67,17 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         /**
+         * Cuando el usuario le da al boton de login, lo que hace es primero comprobar
+         * si el usuario ha puesto el correo y la contraseña, ya que si algún campo
+         * esta vacio, daria un error, que se mostraria en el terminal
+         * (como punto de mejora, poner un popup donde informe un advertencia o error)
          *
+         * Si eso campos no esta vacio, pasaria a la siguiente parte, que es donde
+         * se llama el metodo validarUsuario, que es un metodo que esta en la clase
+         * DayabaseHelper, y lo que hace es comprobar que ese correo y contraseña exista en nuestra BBDD.
+         *
+         * Si es correcto se inicia la sesión y se abrira la pagina principal con todas las funciones,
+         * si no es correcta nos mostraria un error.
          */
         btnLogin.setOnClickListener(v -> {
             String correo = editNombre.getText().toString().trim();

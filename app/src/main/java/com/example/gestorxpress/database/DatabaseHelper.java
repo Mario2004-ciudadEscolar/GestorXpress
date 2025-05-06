@@ -30,11 +30,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * Versión de nuestra base de datos, esta versión puede cambiar
      * cuando hacemos una modificación en la bbdd, como puede ser
      * modificación de tabla o inserción de nuevos campos.
-     *
+     *.
      * Devemos de tener en cuenta que si cambiamos la versión,
      * la primera clase que se ejecuta tiene que tener el metodo
      * de descargar la bbdd si no la tenemos o abrirla si la tenemos.
-     *
+     *.
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
@@ -147,6 +147,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
     //----------------------- METODOS (SENTENCIA SQL) -----------------------//
 
     //----------------------- GETTERS -----------------------//
+    /**
+     * Recupera todos los registros de la tabla "Usuario" y los devuelve como una cadena formateada.
+     *.
+     * - Muestra ID, nombre, apellido, correo electrónico, fecha de registro y estado de sesión.
+     * - Formatea la fecha de registro de "yyyy-MM-dd" a "dd/MM/yyyy".
+     *
+     * @return Una cadena de texto con la información de todos los usuarios.
+     */
     public String getUsuarios() {
         SQLiteDatabase db = this.getReadableDatabase();
         StringBuilder data = new StringBuilder();
@@ -160,13 +168,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         while (cursor.moveToNext()) {
             String rawDate = cursor.getString(5);  // Fecha de registro
-            String formattedDate = rawDate;  // Puede requerir un formato adecuado
+            String formattedDate;  // Puede requerir un formato adecuado
 
             try {
                 Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(rawDate);
                 formattedDate = dateFormat.format(date);  // Formatear la fecha
             } catch (Exception e) {
                 e.printStackTrace();
+                formattedDate = rawDate;
             }
 
             // Aquí accedemos a la contraseña (que está en el índice 4)
@@ -186,7 +195,15 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return data.toString();
     }
 
-
+    /**
+     * Recupera todos los registros de la tabla "Tarea" y los devuelve como una cadena formateada.
+     *.
+     * - Muestra ID, ID del usuario relacionado, título y estado de cada tarea.
+     * - De momento solo vamos a mostras estos cuatros campos, mas adelante mostraremos lo demas
+     * - para ver como si se inserta correctamente (hacer en un futuro no muy lejano)
+     *
+     * @return Una cadena con la información de todas las tareas.
+     */
     public String getTareas() {
         SQLiteDatabase db = this.getReadableDatabase();
         StringBuilder data = new StringBuilder();
@@ -202,6 +219,14 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return data.toString();
     }
 
+    /**
+     * Recupera todas las notificaciones desde la tabla "Notificacion" y las devuelve como texto.
+     *.
+     * - Incluye ID de la notificación, ID de la tarea asociada, tipo y estado (activa o no).
+     * - Aquí más de lo mismo, solo mostramos algunas informaciones, ya mas adelante mostramos todos
+     *
+     * @return Una cadena con los datos de todas las notificaciones registradas.
+     */
     public String getNotificaciones() {
         SQLiteDatabase db = this.getReadableDatabase();
         StringBuilder data = new StringBuilder();
@@ -217,6 +242,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return data.toString();
     }
 
+    /**
+     * Recupera el historial de actividad de usuarios desde la tabla "Actividad_usuario".
+     *
+     * - Incluye ID, ID del usuario, fecha y cantidad de tareas completadas.
+     *
+     * @return Una cadena con la información de todas las actividades de los usuarios.
+     */
     public String getActividadUsuarios() {
         SQLiteDatabase db = this.getReadableDatabase();
         StringBuilder data = new StringBuilder();
@@ -234,7 +266,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     //----------------------- METODO SETTERS -----------------------//
 
-    // Método para establecer el logged_in de un usuario
+    /**
+     * Establece el estado de sesión activa (logged_in = 1) para el usuario especificado.
+     *
+     * @param usuarioId ID del usuario que ha iniciado sesión.
+     * @return true si se actualizó correctamente; false si no se modificó ninguna fila.
+     */
     public boolean setUsuarioLogueado(int usuarioId) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -379,11 +416,24 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     //----------------------- METODO INSERTAR TAREA -----------------------//
 
+    /**
+     * Crea una nueva tarea en la base de datos asociada a un usuario.
+     *
+     * @param usuarioId   ID del usuario al que se asociará la tarea.
+     * @param titulo      Título de la tarea.
+     * @param descripcion Descripción detallada de la tarea.
+     * @param prioridad   Nivel de prioridad de la tarea (por ejemplo: Alta, Media, Baja).
+     * @param estado      Estado actual de la tarea (por ejemplo: Pendiente, Completada).
+     * @param fechaLimite Fecha límite para completar la tarea (en formato yyyy-MM-dd).
+     * @return true si la tarea fue creada exitosamente; false si ocurrió un error.
+     */
     public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
+        // El ContentValues se utiliza para almacenar pares clave-valor
+        // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
         ContentValues values = new ContentValues();
         values.put("usuario_id", usuarioId);
         values.put("titulo", titulo);
@@ -393,6 +443,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
         values.put("fechaLimite", fechaLimite);
         values.put("fechaCreacion", fechaCreacion);
 
+        // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
+        // se guarda un numero donde se comprueba si se ha creado la tarea o no.
         long resultado = db.insert("Tarea", null, values);
         db.close();
 
@@ -403,6 +455,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
 
     //----------------------- METODO OBTENER TAREA -----------------------//
+    /**
+     * Recupera todas las tareas asociadas a un usuario específico desde la base de datos.
+     *
+     * @param idUsuario ID del usuario cuyas tareas se desean obtener.
+     * @return Una lista de objetos {@link Tarea} que pertenecen al usuario especificado.
+     */
     public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
         List<Tarea> tareas = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -427,8 +485,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     //----------------------- METODO OBTENER ID -----------------------//
-
-    // Método para obtener el id del usuario logueado
+    /**
+     * Obtiene el ID del usuario que actualmente tiene la sesión iniciada.
+     *
+     * @return El ID del usuario logueado; devuelve -1 si no se encuentra un usuario con sesión activa.
+     */
     public int obtenerIdUsuario() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT id FROM Usuario WHERE logged_in = 1", null);
@@ -437,7 +498,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         if (cursor != null)
         {
-            if (cursor.moveToFirst())
+            if (cursor.moveToFirst()) // Aqui comprobamos si el curson encontro la consulta (se mueve a la primera fila), si es asi devuelve un TRUE
             {
                 try
                 {
@@ -464,17 +525,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return idUsuario;
     }
 
-    public void actualizarEstadoLogin(int idUsuario, boolean isLoggedIn) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("logged_in", isLoggedIn ? 1 : 0);
-
-        // Actualizar el registro del usuario
-        db.update("Usuario", values, "id = ?", new String[]{String.valueOf(idUsuario)});
-    }
-
-
-    // Método para cerrar la sesión del usuario
+    /**
+     * Cierra la sesión del usuario actualmente logueado.
+     * Cambia el valor de la columna `logged_in` a 0 para todos los usuarios.
+     *
+     * @return true si se cerró la sesión de al menos un usuario; false en caso contrario.
+     */
     public boolean cerrarSesion() {
         SQLiteDatabase db = this.getWritableDatabase();
 

@@ -54,7 +54,8 @@ import com.example.gestorxpress.database.DatabaseHelper;
             dbHelper = new DatabaseHelper(requireContext());
 
             // Obtener el ID del usuario desde los argumentos
-            idUsuario = dbHelper.obtenerIdUsuario();  // Método en tu DatabaseHelper
+            // Con esto obtenemos el ID del usuario que esta lageado en este momento
+            idUsuario = dbHelper.obtenerIdUsuario();  // Método en nuestro DatabaseHelper
             if (idUsuario == -1)
             {
                 Toast.makeText(getContext(), "Error: Usuario no válido", Toast.LENGTH_SHORT).show();
@@ -89,6 +90,10 @@ import com.example.gestorxpress.database.DatabaseHelper;
             btnGuardar.setOnClickListener(v -> guardarTarea());
         }
 
+        /**
+         * Lo que hace este metodo es obtener el contenido que a escrito el usuario para crear la tarea
+         * y en un metodo que llamamos desde la BBDD, creamos y guardamos la tarea en la BBDD.
+         */
         private void guardarTarea()
         {
             String titulo = editTitulo.getText().toString().trim();
@@ -125,6 +130,11 @@ import com.example.gestorxpress.database.DatabaseHelper;
             }
         }
 
+        /**
+         * Una vez que se a creado y guardado la tarea en la BBDD,
+         * se limpiara todos los campos para crear otra tarea por
+         * si el usuario quiere crear otra tarea más.
+         */
         private void limpiarCampos()
         {
             editTitulo.setText("");
