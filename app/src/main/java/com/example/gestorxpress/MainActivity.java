@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.database.VerBBDDActivity;
+import com.example.gestorxpress.ui.Cuenta.CuentaActivity;
 import com.google.android.material.navigation.NavigationView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -88,28 +89,39 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_logout) {
+            if (id == R.id.nav_logout)
+            {
                 // Llamamos al método cerrarSesion para cerrar la sesión
                 boolean exito = dbHelper.cerrarSesion();
 
                 // Si la sesión se cerró correctamente, redirigimos al login
-                if (exito) {
+                if (exito)
+                {
                     Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish(); // Finaliza la actividad actual
-                } else {
+                }
+                else
+                {
                     // Si hubo un error cerrando la sesión, mostramos un mensaje
                     Log.e("MainActivity", "Error al cerrar sesión.");
                 }
                 return true;
 
-            } else if (id == R.id.nav_compartir) {
+            }
+            else if (id == R.id.nav_compartir)
+            {
                 // Voy a comentar esto para poner el de "Ver la BBDD"
                 //startActivity(new Intent(MainActivity.this, CompartirActivity.class));
 
                 // Lo voy a poner de momento para ver la bbdd, luego se quitara
                 startActivity(new Intent(MainActivity.this, VerBBDDActivity.class));
+                return true;
+            }
+            else if (id == R.id.nav_Cuenta)
+            {
+                startActivity(new Intent(MainActivity.this, CuentaActivity.class));
                 return true;
             }
 
@@ -121,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    public boolean onSupportNavigateUp() {
+    public boolean onSupportNavigateUp()
+    {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();

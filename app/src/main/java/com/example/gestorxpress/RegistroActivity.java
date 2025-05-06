@@ -61,20 +61,31 @@ public class RegistroActivity extends AppCompatActivity {
              * Y si alguno está vacío, se muestra un mensaje y se detiene el registro.
              */
             if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(apellido) ||
-                    TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)) {
+                    TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena))
+            {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Validación de formato de correo
+            if (!dbHelper.esCorreoValido(correo))
+            {
+                Toast.makeText(this, "Correo inválido. Usa gmail, hotmail o yahoo con .com o .es", Toast.LENGTH_LONG).show();
                 return;
             }
 
             // Intentamos registrar al usuario en la base de datos
             boolean registroExitoso = dbHelper.registrarUsuario(nombre, apellido, correo, contrasena);
 
-            if (registroExitoso) {
+            if (registroExitoso)
+            {
                 Toast.makeText(RegistroActivity.this, "Registro exitoso", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(RegistroActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
-            } else {
+            }
+            else
+            {
                 Toast.makeText(RegistroActivity.this, "Correo ya registrado", Toast.LENGTH_LONG).show();
             }
 

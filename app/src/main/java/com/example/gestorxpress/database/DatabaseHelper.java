@@ -366,6 +366,12 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * el nuevo usuario.
      */
     public boolean registrarUsuario(String nombre, String apellido, String correo, String contrasenia) {
+        // Validación de formato de correo
+        if (!esCorreoValido(correo)) {
+            Log.d("Registro", "Correo no válido: " + correo);
+            return false;  // El correo no cumple con el formato
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         /**
@@ -399,6 +405,23 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
 
         return result != -1;  // Si result es -1, significa que la inserción falló
+    }
+
+    /**
+     * Verifica si el correo electrónico proporcionado tiene un formato válido.
+     *.
+     * Este método comprueba que el correo cumpla con el siguiente patrón:
+     *.
+     * Contiene caracteres válidos antes del '@' (letras, números, puntos o guiones).
+     * Incluye un dominio específico: hotmail, gmail o yahoo.
+     * Termina en una extensión válida: .com o .es.
+     *
+     * @param correo El correo electrónico a validar.
+     * @return {@code true} si el correo cumple con el formato requerido, {@code false} en caso contrario.
+     */
+    public boolean esCorreoValido(String correo) {
+        String regex = "^[\\w.-]+@(hotmail|gmail|yahoo)\\.(com|es)$";
+        return correo.matches(regex);
     }
 
     /**
@@ -531,7 +554,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
      *
      * @return true si se cerró la sesión de al menos un usuario; false en caso contrario.
      */
-    public boolean cerrarSesion() {
+    public boolean cerrarSesion()
+    {
         SQLiteDatabase db = this.getWritableDatabase();
 
         // Ponemos el valor de logged_in a 0 para todos los usuarios
@@ -543,4 +567,60 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         return rowsUpdated > 0; // Si se actualizó al menos una fila
     }
+
+
+    /**
+     * Actualiza los datos del usuario en la base de datos.
+     *
+     * @param idUsuario ID del usuario que se va a actualizar.
+     * @param nombre Nuevo nombre del usuario (Lo cual lo vamos a actualizar).
+     * @param apellido Nuevo apellido del usuario (Lo cual lo vamos a actualizar).
+     * @param correo Nuevo correo del usuario (Lo cual lo vamos a actualizar).
+     * @param password Nueva contraseña del usuario (sin hashear, se hashea dentro del método).
+     * @return true si la actualización fue exitosa, false en caso contrario.
+     */
+    public boolean actualizarUsuario(int idUsuario, String nombre, String apellido, String correo, String password)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        // Agregar nuevos valores
+        values.put("nombre", nombre);
+        values.put("apellido", apellido);
+        values.put("correo", correo);
+
+        // Hashear la contraseña antes de guardarla
+        String passwordHasheada = hashPassword(password);
+        if (passwordHasheada != null)
+        {
+            values.put("password", passwordHasheada);
+        }
+        else
+        {
+            Log.e("Database", "Error al hashear la contraseña");
+            return false;
+        }
+
+        // Ejecutar la actualización
+        int filasActualizadas = db.update("Usuario", values, "id = ?", new String[]{String.valueOf(idUsuario)});
+
+        // Verificar si se actualizó al menos una fila
+        return filasActualizadas > 0;
+    }
+
+    /**
+     * Elimina un usuario de la base de datos según su ID.
+     *
+     * @param id El ID del usuario que se desea eliminar.
+     * @return true si se eliminó al menos una fila, false si no se encontró el usuario.
+     */
+    public boolean eliminarUsuarioPorId(int id)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int filasEliminadas = db.delete("Usuario", "id = ?", new String[]{String.valueOf(id)});
+        db.close();
+        return filasEliminadas > 0;
+    }
+
 }

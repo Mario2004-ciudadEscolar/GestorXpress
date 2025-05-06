@@ -16,6 +16,9 @@
         android:theme="@style/Theme.GestorXpress"
         tools:targetApi="31">
         <activity
+            android:name=".ui.Cuenta.CuentaActivity"
+            android:exported="false" />
+        <activity
             android:name=".database.VerBBDDActivity"
             android:exported="false" />
         <activity
@@ -25,7 +28,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.GestorXpress.NoActionBar"></activity> <!-- LoginActivity con exportado explícito -->
+            android:theme="@style/Theme.GestorXpress.NoActionBar" /> <!-- LoginActivity con exportado explícito -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"> <!-- ¡ESTE FALTABA! -->
