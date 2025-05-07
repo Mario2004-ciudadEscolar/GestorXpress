@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
-import com.example.gestorxpress.ui.Tarea.Tarea;
+
 
 public class DatabaseHelper extends SQLiteOpenHelper
 {
@@ -475,38 +475,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
 
-
-
-    //----------------------- METODO OBTENER TAREA -----------------------//
-    /**
-     * Recupera todas las tareas asociadas a un usuario específico desde la base de datos.
-     *
-     * @param idUsuario ID del usuario cuyas tareas se desean obtener.
-     * @return Una lista de objetos {@link Tarea} que pertenecen al usuario especificado.
-     */
-    public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
-        List<Tarea> tareas = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
-
-        if (cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
-                String titulo = cursor.getString(cursor.getColumnIndexOrThrow("titulo"));
-                String descripcion = cursor.getString(cursor.getColumnIndexOrThrow("descripcion"));
-                String prioridad = cursor.getString(cursor.getColumnIndexOrThrow("prioridad"));
-                String estado = cursor.getString(cursor.getColumnIndexOrThrow("estado"));
-                String fechaLimite = cursor.getString(cursor.getColumnIndexOrThrow("fechaLimite"));
-
-                tareas.add(new Tarea(id, idUsuario, titulo, descripcion, prioridad, estado, fechaLimite));
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        db.close();
-        return tareas;
-    }
-
     //----------------------- METODO OBTENER ID -----------------------//
     /**
      * Obtiene el ID del usuario que actualmente tiene la sesión iniciada.
@@ -525,7 +493,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
             {
                 try
                 {
-                    // Usamos getColumnIndexOrThrow para asegurarnos de que la columna 'id' existe
+                    // Aqui obtenemos el valor que esta en el campo ID, ya que queremos el id del usuario que esta logeado en este momento
                     idUsuario = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
                 }
                 catch (IllegalArgumentException e)

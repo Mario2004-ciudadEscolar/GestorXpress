@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.database.VerBBDDActivity;
 import com.example.gestorxpress.ui.Cuenta.CuentaActivity;
+import com.example.gestorxpress.ui.slideshow.SlideshowFragment;
 import com.google.android.material.navigation.NavigationView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -122,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
             else if (id == R.id.nav_Cuenta)
             {
                 startActivity(new Intent(MainActivity.this, CuentaActivity.class));
+                return true;
+            }
+            else if (id == R.id.nav_slideshow)
+            {
+                startActivity(new Intent(MainActivity.this, SlideshowFragment.class));
                 return true;
             }
 
