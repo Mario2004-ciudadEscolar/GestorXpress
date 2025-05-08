@@ -61,17 +61,6 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <EditText
-            android:id="@+id/editHoraInicio"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="Hora de inicio"
-            android:focusable="false"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/editFechaInicio"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <EditText
             android:id="@+id/editFechaFin"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -80,9 +69,10 @@
             android:clickable="true"
             android:inputType="none"
             android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/editHoraInicio"
+            app:layout_constraintTop_toBottomOf="@id/editFechaInicio"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
+
 
 
         <Button

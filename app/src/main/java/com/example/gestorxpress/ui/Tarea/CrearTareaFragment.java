@@ -27,7 +27,7 @@ import java.util.Locale;
 
 public class CrearTareaFragment extends Fragment {
 
-    private EditText editTitulo, editDescripcion, editFechaFin, editFechaInicio, editHoraInicio;
+    private EditText editTitulo, editDescripcion, editFechaFin, editFechaInicio;
     private Spinner spinnerPrioridad, spinnerEstado;
     private Button btnGuardar;
     private DatabaseHelper dbHelper;
@@ -54,7 +54,6 @@ public class CrearTareaFragment extends Fragment {
         editDescripcion = view.findViewById(R.id.editDescripcion);
         editFechaFin = view.findViewById(R.id.editFechaFin);
         editFechaInicio = view.findViewById(R.id.editFechaInicio);
-        editHoraInicio = view.findViewById(R.id.editHoraInicio);
         spinnerPrioridad = view.findViewById(R.id.spinnerPrioridad);
         spinnerEstado = view.findViewById(R.id.spinnerEstado);
         btnGuardar = view.findViewById(R.id.btnGuardar);
@@ -64,18 +63,16 @@ public class CrearTareaFragment extends Fragment {
         fechaFinCalendar = Calendar.getInstance();
 
         // Obtener el ID del usuario desde los argumentos
-        // Con esto obtenemos el ID defechaFinCalendar = Calendar.getInstance();l usuario que esta lageado en este momento
+        // Con esto obtenemos el ID del usuario que esta logueado en este momento
         idUsuario = dbHelper.obtenerIdUsuario();  // Método en nuestro DatabaseHelper
-        if (idUsuario == -1)
-        {
+        if (idUsuario == -1) {
             Toast.makeText(getContext(), "Error: Usuario no válido", Toast.LENGTH_SHORT).show();
             btnGuardar.setEnabled(false); // Desactiva el botón de guardar
             return;
         }
 
         // Si idUsuario es inválido (menos que 0), desactivar el botón de guardar
-        if (idUsuario <= 0)
-        {
+        if (idUsuario <= 0) {
             Toast.makeText(getContext(), "Error: Usuario no válido", Toast.LENGTH_SHORT).show();
             Log.e("CREAR_TAREA", "Usuario inválido, idUsuario = " + idUsuario);
             btnGuardar.setEnabled(false); // Desactiva el botón
@@ -85,7 +82,6 @@ public class CrearTareaFragment extends Fragment {
         Log.d("DEBUG_ID", "idUsuario recibido: " + idUsuario);
 
         // Configurar los Spinners con adaptadores desde strings.xml
-        // Configurar los Spinners
         ArrayAdapter<CharSequence> adapterPrioridad = ArrayAdapter.createFromResource(
                 requireContext(), R.array.opciones_prioridad, android.R.layout.simple_spinner_item);
         adapterPrioridad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -96,71 +92,39 @@ public class CrearTareaFragment extends Fragment {
         adapterEstado.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerEstado.setAdapter(adapterEstado);
 
+        // Fecha y hora de inicio
+        editFechaInicio.setOnClickListener(v -> mostrarSelectorFechaHora(editFechaInicio, fechaHoraInicioCalendar));
 
-        // Calendario para fecha de inicio
-        editFechaInicio.setOnClickListener(v -> {
-            int year = fechaHoraInicioCalendar.get(Calendar.YEAR);
-            int month = fechaHoraInicioCalendar.get(Calendar.MONTH);
-            int day = fechaHoraInicioCalendar.get(Calendar.DAY_OF_MONTH);
-            new DatePickerDialog(requireContext(), (view1, y, m, d) -> {
-                fechaHoraInicioCalendar.set(Calendar.YEAR, y);
-                fechaHoraInicioCalendar.set(Calendar.MONTH, m);
-                fechaHoraInicioCalendar.set(Calendar.DAY_OF_MONTH, d);
-                updateFechaInicio();
-            }, year, month, day).show();
-        });
-
-        // Reloj para hora de inicio
-        editHoraInicio.setOnClickListener(v -> {
-            int hour = fechaHoraInicioCalendar.get(Calendar.HOUR_OF_DAY);
-            int minute = fechaHoraInicioCalendar.get(Calendar.MINUTE);
-            new TimePickerDialog(requireContext(), (view12, h, m) -> {
-                fechaHoraInicioCalendar.set(Calendar.HOUR_OF_DAY, h);
-                fechaHoraInicioCalendar.set(Calendar.MINUTE, m);
-                updateHoraInicio();
-            }, hour, minute, true).show();
-        });
-
-        editFechaFin.setOnClickListener(v -> {
-            int year = fechaFinCalendar.get(Calendar.YEAR);
-            int month = fechaFinCalendar.get(Calendar.MONTH);
-            int day = fechaFinCalendar.get(Calendar.DAY_OF_MONTH);
-            new DatePickerDialog(requireContext(), (view1, y, m, d) -> {
-                fechaFinCalendar.set(Calendar.YEAR, y);
-                fechaFinCalendar.set(Calendar.MONTH, m);
-                fechaFinCalendar.set(Calendar.DAY_OF_MONTH, d);
-                updateFechaFin();
-            }, year, month, day).show();
-        });
+        // Fecha y hora de fin
+        editFechaFin.setOnClickListener(v -> mostrarSelectorFechaHora(editFechaFin, fechaFinCalendar));
 
         // Configurar el listener del botón de guardar
         btnGuardar.setOnClickListener(v -> guardarTarea());
     }
 
     /**
-     * Lo que hace este metodo es obtener el contenido que a escrito el usuario para crear la tarea
-     * y en un metodo que llamamos desde la BBDD, creamos y guardamos la tarea en la BBDD.
+     * Lo que hace este método es obtener el contenido que ha escrito el usuario para crear la tarea
+     * y en un método que llamamos desde la BBDD, creamos y guardamos la tarea en la BBDD.
      */
     private void guardarTarea() {
         String titulo = editTitulo.getText().toString().trim();
         String descripcion = editDescripcion.getText().toString().trim();
         String prioridad = spinnerPrioridad.getSelectedItem().toString();
         String estado = spinnerEstado.getSelectedItem().toString();
-        String fechaFin = editFechaFin.getText().toString().trim();
 
         // Validación de campos vacíos
         if (TextUtils.isEmpty(titulo) || TextUtils.isEmpty(descripcion)
-                || TextUtils.isEmpty(fechaFin) || TextUtils.isEmpty(editFechaInicio.getText())
-                || TextUtils.isEmpty(editHoraInicio.getText())) {
+                || TextUtils.isEmpty(editFechaInicio.getText()) || TextUtils.isEmpty(editFechaFin.getText())) {
             Toast.makeText(getContext(), "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Formatear la fecha y hora de inicio
+        // Formatear las fechas y horas completas
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         String fechaHoraInicio = sdf.format(fechaHoraInicioCalendar.getTime());
+        String fechaHoraFin = sdf.format(fechaFinCalendar.getTime());
 
-        boolean exito = dbHelper.crearTarea(idUsuario, titulo, descripcion, prioridad, estado, fechaFin, fechaHoraInicio);
+        boolean exito = dbHelper.crearTarea(idUsuario, titulo, descripcion, prioridad, estado, fechaHoraFin, fechaHoraInicio);
         if (exito) {
             Toast.makeText(getContext(), "Tarea guardada correctamente", Toast.LENGTH_SHORT).show();
             limpiarCampos();
@@ -170,8 +134,8 @@ public class CrearTareaFragment extends Fragment {
     }
 
     /**
-     * Una vez que se a creado y guardado la tarea en la BBDD,
-     * se limpiara todos los campos para crear otra tarea por
+     * Una vez que se ha creado y guardado la tarea en la BBDD,
+     * se limpiarán todos los campos para crear otra tarea por
      * si el usuario quiere crear otra tarea más.
      */
     private void limpiarCampos() {
@@ -179,24 +143,33 @@ public class CrearTareaFragment extends Fragment {
         editDescripcion.setText("");
         editFechaFin.setText("");
         editFechaInicio.setText("");
-        editHoraInicio.setText("");
         spinnerPrioridad.setSelection(0);
         spinnerEstado.setSelection(0);
     }
 
-    private void updateFechaInicio() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yy", Locale.getDefault());
-        editFechaInicio.setText(dateFormat.format(fechaHoraInicioCalendar.getTime()));
-    }
+    /**
+     * Método para mostrar un selector combinado de fecha y hora.
+     */
+    private void mostrarSelectorFechaHora(EditText campo, Calendar calendario) {
+        int anio = calendario.get(Calendar.YEAR);
+        int mes = calendario.get(Calendar.MONTH);
+        int dia = calendario.get(Calendar.DAY_OF_MONTH);
 
-    private void updateFechaFin() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yy", Locale.getDefault());
-        editFechaFin.setText(dateFormat.format(fechaFinCalendar.getTime()));
-    }
+        new DatePickerDialog(requireContext(), (view, y, m, d) -> {
+            calendario.set(Calendar.YEAR, y);
+            calendario.set(Calendar.MONTH, m);
+            calendario.set(Calendar.DAY_OF_MONTH, d);
 
+            int hora = calendario.get(Calendar.HOUR_OF_DAY);
+            int minuto = calendario.get(Calendar.MINUTE);
 
-    private void updateHoraInicio() {
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        editHoraInicio.setText(timeFormat.format(fechaHoraInicioCalendar.getTime()));
+            new TimePickerDialog(requireContext(), (timeView, h, min) -> {
+                calendario.set(Calendar.HOUR_OF_DAY, h);
+                calendario.set(Calendar.MINUTE, min);
+                SimpleDateFormat formatoCompleto = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
+                campo.setText(formatoCompleto.format(calendario.getTime()));
+            }, hora, minuto, true).show();
+
+        }, anio, mes, dia).show();
     }
 }
