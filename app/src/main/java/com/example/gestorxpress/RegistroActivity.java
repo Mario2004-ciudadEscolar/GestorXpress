@@ -6,26 +6,16 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
+
 import com.example.gestorxpress.database.DatabaseHelper;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class RegistroActivity extends AppCompatActivity {
 
-    private EditText editNombre, editApellido, editCorreo, editContrasena;
+    private EditText editNombre, editApellido, editCorreo, editContrasena, editRepetirContrasena;
     private Button btnRegistrar;
 
     // Instancia de la base de datos local
@@ -41,6 +31,7 @@ public class RegistroActivity extends AppCompatActivity {
         editCorreo = findViewById(R.id.editCorreo);
         editContrasena = findViewById(R.id.editContrasena);
         btnRegistrar = findViewById(R.id.btnRegistrar);
+        editRepetirContrasena = findViewById(R.id.editRepetirContrasena);
 
         // Inicializamos la base de datos
         dbHelper = new DatabaseHelper(this);
@@ -68,9 +59,17 @@ public class RegistroActivity extends AppCompatActivity {
             }
 
             // Validación de formato de correo
-            if (!dbHelper.esCorreoValido(correo))
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches())
             {
-                Toast.makeText(this, "Correo inválido. Usa gmail, hotmail o yahoo con .com o .es", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Correo inválido", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+
+            String repetirContrasena = editRepetirContrasena.getText().toString().trim();
+
+            if (!contrasena.equals(repetirContrasena)) {
+                Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
                 return;
             }
 

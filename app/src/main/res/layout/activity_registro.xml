@@ -80,6 +80,18 @@
                 android:textColor="@color/black"
                 android:inputType="textPassword" />
 
+            <EditText
+                android:id="@+id/editRepetirContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/customer_edittext"
+                android:hint="Repetir contraseña"
+                android:padding="8dp"
+                android:layout_margin="10dp"
+                android:textColor="@color/black"
+                android:inputType="textPassword" />
+
+
             <Button
                 android:id="@+id/btnRegistrar"
                 android:layout_width="match_parent"
