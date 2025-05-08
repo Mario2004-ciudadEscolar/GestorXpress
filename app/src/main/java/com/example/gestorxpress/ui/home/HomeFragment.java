@@ -6,100 +6,79 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
 
-import android.widget.ArrayAdapter;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HomeFragment extends Fragment {
 
+    private TextView textHome;
+    private RecyclerView recyclerView;
 
-        //private TareaView tareaView;
-        private TextView textHome;
-        private ListView listView; // Este será el ListView que tenemos en el XML
-        private int idUsuario; // ID del usuario logueado
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
 
-        @Override
-        public View onCreateView(@NonNull LayoutInflater inflater,
-                                 ViewGroup container, Bundle savedInstanceState) {
-            View root = inflater.inflate(R.layout.fragment_home, container, false);
+        View root = inflater.inflate(R.layout.fragment_home, container, false);
 
-            textHome = root.findViewById(R.id.text_home);
-            listView = root.findViewById(R.id.list_view); // Aquí te referirás al ListView en el XML
+        textHome = root.findViewById(R.id.text_home);
+        recyclerView = root.findViewById(R.id.recycler_view_tareas);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-            cargarTareasDelUsuarioLogueado();
+        cargarTareasDelUsuarioLogueado();
 
-            return root;
+        return root;
+    }
 
-        }
-
-    /**
-     * Con este metodo lo que estamos haciendo es cargar y mostrar las tareas del usuario
-     * que esta loggeado en este momento, ya que antes de cargar las tareas comprobamos
-     * quien esta loggeado ahora en la aplicación.
-     *
-     * Una vez que tengasmos el id del que esta logeado, vamos a obtener las tareas que tiene
-     * y mostrarlo en el HOME.
-     */
-    private void cargarTareasDelUsuarioLogueado()
-    {
+    private void cargarTareasDelUsuarioLogueado() {
         new Thread(() -> {
-
-            // Creamos la isntacia a la clase DatabaseHelper, que es donde esta toda la bbdd y los metodos a utilizar
             DatabaseHelper dbHelper = new DatabaseHelper(requireContext());
-
-            // Obtenemos la bbdd en modo lectura, osea que estamos leyendo de nuestra bbdd.
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-            // Aquí es donde obtenemos el id del usuario
             int idUsuario = dbHelper.obtenerIdUsuario();
+            List<Map<String, String>> listaTareas = new ArrayList<>();
 
-            // Lista de Tareas para guardar y mostrar todas las tareas
-            List<String> tareas = new ArrayList<>();
+            if (idUsuario != -1) {
+                Cursor cursor = db.rawQuery("SELECT titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
 
-            // Comprobamos si el id obtenido no es -1 <-- Que no exista
-            if (idUsuario != -1)
-            {
-                // Aquí realizamos la sentencia para obtener los datos de tareas de dicho usuario logeado
-                Cursor cursor = db.rawQuery("SELECT titulo, estado, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
-               // Aqui movemos el cursor a la primera fila, para leer el primero de la bbdd (De tareas)
-                if (cursor.moveToFirst())
-                {
-                    // Obtenemos los datos de las tareas y lo guardamos en una colección
-                    do
-                    {
-                        String titulo = cursor.getString(0);
-                        String estado = cursor.getString(1);
-                        String fechaLimite = cursor.getString(2);
-
-                        tareas.add(titulo + " - " + estado + " (vence: " + fechaLimite + ")");
+                if (cursor.moveToFirst()) {
+                    do {
+                        Map<String, String> tarea = new HashMap<>();
+                        tarea.put("titulo", cursor.getString(0));
+                        tarea.put("descripcion", cursor.getString(1));
+                        tarea.put("prioridad", cursor.getString(2));
+                        tarea.put("estado", cursor.getString(3));
+                        tarea.put("fechaHoraInicio", cursor.getString(4));
+                        tarea.put("fechaLimite", cursor.getString(5));
+                        listaTareas.add(tarea);
                     } while (cursor.moveToNext());
                 }
-                cursor.close(); // Cerramos la sentencia como asi decirlo.
+
+                cursor.close();
             }
 
-            db.close(); // Cerramos la bbdd
+            db.close();
 
             requireActivity().runOnUiThread(() -> {
-                if (idUsuario == -1 || tareas.isEmpty())
-                {
+                if (idUsuario == -1 || listaTareas.isEmpty()) {
                     textHome.setText("No hay tareas creadas.");
-                    listView.setVisibility(View.GONE);
-                }
-                else
-                {
+                    textHome.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
                     textHome.setVisibility(View.GONE);
-                    listView.setVisibility(View.VISIBLE);
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, tareas);
-                    listView.setAdapter(adapter);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    recyclerView.setAdapter(new TareaAdapter(requireContext(), listaTareas));
                 }
             });
         }).start();
