@@ -51,7 +51,7 @@ public class HomeFragment extends Fragment {
 
             if (idUsuario != -1) {
                 Cursor cursor = db.rawQuery("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
-                
+
 
                 if (cursor.moveToFirst()) {
                     do {

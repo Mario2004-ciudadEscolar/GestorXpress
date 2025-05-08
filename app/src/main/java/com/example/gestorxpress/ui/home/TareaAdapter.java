@@ -1,5 +1,7 @@
 package com.example.gestorxpress.ui.home;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,7 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHolder> {
@@ -36,7 +42,6 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
     public void onBindViewHolder(@NonNull TareaViewHolder holder, int position) {
         Map<String, String> tarea = listaTareas.get(position);
 
-        // Mostrar valores
         holder.textTitulo.setText(tarea.get("titulo"));
         holder.textDescripcion.setText("Descripción: " + tarea.get("descripcion"));
         holder.textPrioridad.setText("Prioridad: " + tarea.get("prioridad"));
@@ -44,13 +49,11 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.textFechaInicio.setText("Inicio: " + tarea.get("fechaHoraInicio"));
         holder.textFechaLimite.setText("Límite: " + tarea.get("fechaLimite"));
 
-        // Rellenar campos de edición
         holder.editTitulo.setText(tarea.get("titulo"));
         holder.editDescripcion.setText(tarea.get("descripcion"));
         holder.editFechaInicio.setText(tarea.get("fechaHoraInicio"));
         holder.editFechaLimite.setText(tarea.get("fechaLimite"));
 
-        // Adaptadores para los spinners
         ArrayAdapter<CharSequence> adapterPrioridad = ArrayAdapter.createFromResource(context, R.array.opciones_prioridad, android.R.layout.simple_spinner_item);
         adapterPrioridad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         holder.spinnerPrioridad.setAdapter(adapterPrioridad);
@@ -61,22 +64,17 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.spinnerEstado.setAdapter(adapterEstado);
         holder.spinnerEstado.setSelection(adapterEstado.getPosition(tarea.get("estado")));
 
-        // Expandir/cerrar detalles
         holder.itemView.setOnClickListener(v -> {
             boolean visible = holder.layoutDetalles.getVisibility() == View.VISIBLE;
             holder.layoutDetalles.setVisibility(visible ? View.GONE : View.VISIBLE);
         });
 
-        // Eliminar tarea
         holder.btnEliminar.setOnClickListener(v -> {
             String idTarea = tarea.get("id");
-            Log.d("TAREA_ID_DEBUG", "ID tarea a eliminar: " + idTarea);  // ← Añade esta línea
             if (idTarea != null) {
                 try {
                     int idInt = Integer.parseInt(idTarea);
-                    boolean eliminada = dbHelper.eliminarTarea(idInt);
-                    Log.d("TAREA_ELIMINAR", "¿Eliminada?: " + eliminada);  // ← Añade esta línea
-                    if (eliminada) {
+                    if (dbHelper.eliminarTarea(idInt)) {
                         listaTareas.remove(position);
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, listaTareas.size());
@@ -86,21 +84,14 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                     }
                 } catch (NumberFormatException e) {
                     Toast.makeText(context, "ID de tarea inválido", Toast.LENGTH_SHORT).show();
-                    Log.e("TAREA_ERROR", "ID inválido: " + idTarea, e);
                 }
             } else {
                 Toast.makeText(context, "ID de tarea nulo", Toast.LENGTH_SHORT).show();
-                Log.e("TAREA_ERROR", "ID de tarea es null");
             }
         });
 
+        holder.btnEditar.setOnClickListener(v -> alternarModoEdicion(holder, true));
 
-        // Activar modo edición
-        holder.btnEditar.setOnClickListener(v -> {
-            alternarEdicion(holder, true);
-        });
-
-        // Guardar cambios
         holder.btnGuardar.setOnClickListener(v -> {
             String idTarea = tarea.get("id");
             String nuevoTitulo = holder.editTitulo.getText().toString();
@@ -112,7 +103,6 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
 
             if (dbHelper.editarTarea(Integer.parseInt(idTarea), nuevoTitulo, nuevaDescripcion,
                     nuevaPrioridad, nuevoEstado, nuevaFechaLimite, nuevaFechaInicio)) {
-
                 tarea.put("titulo", nuevoTitulo);
                 tarea.put("descripcion", nuevaDescripcion);
                 tarea.put("prioridad", nuevaPrioridad);
@@ -126,8 +116,31 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                 Toast.makeText(context, "Error al actualizar tarea", Toast.LENGTH_SHORT).show();
             }
 
-            alternarEdicion(holder, false);
+            alternarModoEdicion(holder, false);
         });
+
+        // Dialogs para seleccionar fecha y hora
+        Calendar calendario = Calendar.getInstance();
+        SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
+
+        View.OnClickListener selectorFechaHora = v -> {
+            EditText editText = (EditText) v;
+            new DatePickerDialog(context, (view, año, mes, dia) -> {
+                calendario.set(Calendar.YEAR, año);
+                calendario.set(Calendar.MONTH, mes);
+                calendario.set(Calendar.DAY_OF_MONTH, dia);
+
+                new TimePickerDialog(context, (view2, hora, minuto) -> {
+                    calendario.set(Calendar.HOUR_OF_DAY, hora);
+                    calendario.set(Calendar.MINUTE, minuto);
+                    editText.setText(formato.format(calendario.getTime()));
+                }, calendario.get(Calendar.HOUR_OF_DAY), calendario.get(Calendar.MINUTE), true).show();
+
+            }, calendario.get(Calendar.YEAR), calendario.get(Calendar.MONTH), calendario.get(Calendar.DAY_OF_MONTH)).show();
+        };
+
+        holder.editFechaInicio.setOnClickListener(selectorFechaHora);
+        holder.editFechaLimite.setOnClickListener(selectorFechaHora);
     }
 
     @Override
@@ -135,7 +148,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         return listaTareas.size();
     }
 
-    private void alternarEdicion(TareaViewHolder holder, boolean enEdicion) {
+    private void alternarModoEdicion(TareaViewHolder holder, boolean enEdicion) {
         int visEdicion = enEdicion ? View.VISIBLE : View.GONE;
         int visTexto = enEdicion ? View.GONE : View.VISIBLE;
 
