@@ -38,7 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
 
     /**
@@ -94,6 +94,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "prioridad TEXT, " +            // Enum simulado con TEXT
                         "estado TEXT, " +               // Enum simulado con TEXT
                         "fechaCreacion TEXT NOT NULL, " +
+                        "fechaHoraInicio TEXT, "+ //Este se ha agregado
                         "FOREIGN KEY(usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE" +
                         ");"
         );
@@ -450,11 +451,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param fechaLimite Fecha límite para completar la tarea (en formato yyyy-MM-dd).
      * @return true si la tarea fue creada exitosamente; false si ocurrió un error.
      */
-    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite) {
+
+    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaHoraInicio) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-
         // El ContentValues se utiliza para almacenar pares clave-valor
         // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
         ContentValues values = new ContentValues();
@@ -465,6 +466,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         values.put("estado", estado);
         values.put("fechaLimite", fechaLimite);
         values.put("fechaCreacion", fechaCreacion);
+        values.put("fechaHoraInicio", fechaHoraInicio); // NUEVO campo
 
         // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
         // se guarda un numero donde se comprueba si se ha creado la tarea o no.
@@ -473,6 +475,30 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         return resultado != -1;
     }
+// El que tenias
+//    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//
+//        String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+//
+//        // El ContentValues se utiliza para almacenar pares clave-valor
+//        // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
+//        ContentValues values = new ContentValues();
+//        values.put("usuario_id", usuarioId);
+//        values.put("titulo", titulo);
+//        values.put("descripcion", descripcion);
+//        values.put("prioridad", prioridad);
+//        values.put("estado", estado);
+//        values.put("fechaLimite", fechaLimite);
+//        values.put("fechaCreacion", fechaCreacion);
+//
+//        // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
+//        // se guarda un numero donde se comprueba si se ha creado la tarea o no.
+//        long resultado = db.insert("Tarea", null, values);
+//        db.close();
+//
+//        return resultado != -1;
+//    }
 
 
     //----------------------- METODO OBTENER ID -----------------------//
