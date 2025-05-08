@@ -61,7 +61,7 @@ public class RegistroActivity extends AppCompatActivity {
             // Validación de formato de correo
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches())
             {
-                Toast.makeText(this, "Correo inválido", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Formato de correo invalido [usuario@dominio.com] ", Toast.LENGTH_LONG).show();
                 return;
             }
 
