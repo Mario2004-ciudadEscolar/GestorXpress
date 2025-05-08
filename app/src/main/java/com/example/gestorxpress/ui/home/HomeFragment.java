@@ -50,17 +50,28 @@ public class HomeFragment extends Fragment {
             List<Map<String, String>> listaTareas = new ArrayList<>();
 
             if (idUsuario != -1) {
-                Cursor cursor = db.rawQuery("SELECT titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
+                Cursor cursor = db.rawQuery("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
+
+                // V1 Cursor cursor = db.rawQuery("SELECT titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
 
                 if (cursor.moveToFirst()) {
                     do {
                         Map<String, String> tarea = new HashMap<>();
-                        tarea.put("titulo", cursor.getString(0));
-                        tarea.put("descripcion", cursor.getString(1));
-                        tarea.put("prioridad", cursor.getString(2));
-                        tarea.put("estado", cursor.getString(3));
-                        tarea.put("fechaHoraInicio", cursor.getString(4));
-                        tarea.put("fechaLimite", cursor.getString(5));
+                        tarea.put("id", cursor.getString(0));
+                        tarea.put("titulo", cursor.getString(1));
+                        tarea.put("descripcion", cursor.getString(2));
+                        tarea.put("prioridad", cursor.getString(3));
+                        tarea.put("estado", cursor.getString(4));
+                        tarea.put("fechaHoraInicio", cursor.getString(5));
+                        tarea.put("fechaLimite", cursor.getString(6));
+
+//     V1                   Map<String, String> tarea = new HashMap<>();
+//                        tarea.put("titulo", cursor.getString(0));
+//                        tarea.put("descripcion", cursor.getString(1));
+//                        tarea.put("prioridad", cursor.getString(2));
+//                        tarea.put("estado", cursor.getString(3));
+//                        tarea.put("fechaHoraInicio", cursor.getString(4));
+//                        tarea.put("fechaLimite", cursor.getString(5));
                         listaTareas.add(tarea);
                     } while (cursor.moveToNext());
                 }

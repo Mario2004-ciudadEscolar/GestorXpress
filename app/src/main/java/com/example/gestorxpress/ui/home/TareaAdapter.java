@@ -1,6 +1,7 @@
 package com.example.gestorxpress.ui.home;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,15 +70,30 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         // Eliminar tarea
         holder.btnEliminar.setOnClickListener(v -> {
             String idTarea = tarea.get("id");
-            if (idTarea != null && dbHelper.eliminarTarea(Integer.parseInt(idTarea))) {
-                listaTareas.remove(position);
-                notifyItemRemoved(position);
-                notifyItemRangeChanged(position, listaTareas.size());
-                Toast.makeText(context, "Tarea eliminada", Toast.LENGTH_SHORT).show();
+            Log.d("TAREA_ID_DEBUG", "ID tarea a eliminar: " + idTarea);  // ← Añade esta línea
+            if (idTarea != null) {
+                try {
+                    int idInt = Integer.parseInt(idTarea);
+                    boolean eliminada = dbHelper.eliminarTarea(idInt);
+                    Log.d("TAREA_ELIMINAR", "¿Eliminada?: " + eliminada);  // ← Añade esta línea
+                    if (eliminada) {
+                        listaTareas.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, listaTareas.size());
+                        Toast.makeText(context, "Tarea eliminada", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Error al eliminar tarea", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(context, "ID de tarea inválido", Toast.LENGTH_SHORT).show();
+                    Log.e("TAREA_ERROR", "ID inválido: " + idTarea, e);
+                }
             } else {
-                Toast.makeText(context, "Error al eliminar tarea", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "ID de tarea nulo", Toast.LENGTH_SHORT).show();
+                Log.e("TAREA_ERROR", "ID de tarea es null");
             }
         });
+
 
         // Activar modo edición
         holder.btnEditar.setOnClickListener(v -> {

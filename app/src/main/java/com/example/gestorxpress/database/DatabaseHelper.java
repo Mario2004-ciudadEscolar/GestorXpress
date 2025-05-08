@@ -640,6 +640,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         values.put("fechaHoraInicio", nuevaFechaHoraInicio);
 
         int filasAfectadas = db.update("Tarea", values, "id = ?", new String[]{String.valueOf(idTarea)});
+        db.close();
         return filasAfectadas > 0;
     }
 
