@@ -438,43 +438,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return sdf.format(new Date());
     }
 
-    //----------------------- METODO INSERTAR TAREA -----------------------//
 
-    /**
-     * Crea una nueva tarea en la base de datos asociada a un usuario.
-     *
-     * @param usuarioId   ID del usuario al que se asociará la tarea.
-     * @param titulo      Título de la tarea.
-     * @param descripcion Descripción detallada de la tarea.
-     * @param prioridad   Nivel de prioridad de la tarea (por ejemplo: Alta, Media, Baja).
-     * @param estado      Estado actual de la tarea (por ejemplo: Pendiente, Completada).
-     * @param fechaLimite Fecha límite para completar la tarea (en formato yyyy-MM-dd).
-     * @return true si la tarea fue creada exitosamente; false si ocurrió un error.
-     */
-
-    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaHoraInicio) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-        // El ContentValues se utiliza para almacenar pares clave-valor
-        // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
-        ContentValues values = new ContentValues();
-        values.put("usuario_id", usuarioId);
-        values.put("titulo", titulo);
-        values.put("descripcion", descripcion);
-        values.put("prioridad", prioridad);
-        values.put("estado", estado);
-        values.put("fechaLimite", fechaLimite);
-        values.put("fechaCreacion", fechaCreacion);
-        values.put("fechaHoraInicio", fechaHoraInicio); // NUEVO campo
-
-        // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
-        // se guarda un numero donde se comprueba si se ha creado la tarea o no.
-        long resultado = db.insert("Tarea", null, values);
-        db.close();
-
-        return resultado != -1;
-    }
 // El que tenias
 //    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite) {
 //        SQLiteDatabase db = this.getWritableDatabase();
@@ -616,5 +580,68 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
         return filasEliminadas > 0;
     }
+
+    //----------------------- METODO INSERTAR TAREA -----------------------//
+
+    /**
+     * Crea una nueva tarea en la base de datos asociada a un usuario.
+     *
+     * @param usuarioId   ID del usuario al que se asociará la tarea.
+     * @param titulo      Título de la tarea.
+     * @param descripcion Descripción detallada de la tarea.
+     * @param prioridad   Nivel de prioridad de la tarea (por ejemplo: Alta, Media, Baja).
+     * @param estado      Estado actual de la tarea (por ejemplo: Pendiente, Completada).
+     * @param fechaLimite Fecha límite para completar la tarea (en formato yyyy-MM-dd).
+     * @return true si la tarea fue creada exitosamente; false si ocurrió un error.
+     */
+
+    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaHoraInicio) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        // El ContentValues se utiliza para almacenar pares clave-valor
+        // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
+        ContentValues values = new ContentValues();
+        values.put("usuario_id", usuarioId);
+        values.put("titulo", titulo);
+        values.put("descripcion", descripcion);
+        values.put("prioridad", prioridad);
+        values.put("estado", estado);
+        values.put("fechaLimite", fechaLimite);
+        values.put("fechaCreacion", fechaCreacion);
+        values.put("fechaHoraInicio", fechaHoraInicio); // NUEVO campo
+
+        // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
+        // se guarda un numero donde se comprueba si se ha creado la tarea o no.
+        long resultado = db.insert("Tarea", null, values);
+        db.close();
+
+        return resultado != -1;
+    }
+
+    public boolean eliminarTarea(int idTarea) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int filasEliminadas = db.delete("Tarea", "id = ?", new String[]{String.valueOf(idTarea)});
+        db.close(); // <-- recomendable cerrarlo
+        return filasEliminadas > 0;
+    }
+
+
+    public boolean editarTarea(int idTarea, String nuevoTitulo, String nuevaDescripcion,
+                               String nuevaPrioridad, String nuevoEstado,
+                               String nuevaFechaLimite, String nuevaFechaHoraInicio) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("titulo", nuevoTitulo);
+        values.put("descripcion", nuevaDescripcion);
+        values.put("prioridad", nuevaPrioridad);
+        values.put("estado", nuevoEstado);
+        values.put("fechaLimite", nuevaFechaLimite);
+        values.put("fechaHoraInicio", nuevaFechaHoraInicio);
+
+        int filasAfectadas = db.update("Tarea", values, "id = ?", new String[]{String.valueOf(idTarea)});
+        return filasAfectadas > 0;
+    }
+
 
 }

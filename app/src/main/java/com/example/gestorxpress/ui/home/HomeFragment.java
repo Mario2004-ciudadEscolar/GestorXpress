@@ -78,7 +78,7 @@ public class HomeFragment extends Fragment {
                 } else {
                     textHome.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
-                    recyclerView.setAdapter(new TareaAdapter(requireContext(), listaTareas));
+                    recyclerView.setAdapter(new TareaAdapter(requireContext(), listaTareas, dbHelper));
                 }
             });
         }).start();

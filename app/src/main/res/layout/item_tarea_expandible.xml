@@ -31,12 +31,55 @@
             android:visibility="gone"
             android:paddingTop="8dp">
 
+            <!-- Modo vista -->
             <TextView android:id="@+id/text_descripcion" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:id="@+id/text_prioridad" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:id="@+id/text_estado" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:id="@+id/text_fecha_inicio" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:id="@+id/text_fecha_limite" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
+            <!-- Modo edición -->
+            <EditText
+                android:id="@+id/edit_titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:hint="Título" />
+
+            <EditText
+                android:id="@+id/edit_descripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:hint="Descripción" />
+
+            <Spinner
+                android:id="@+id/spinner_prioridad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <Spinner
+                android:id="@+id/spinner_estado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/edit_fecha_inicio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:hint="Fecha/Hora inicio" />
+
+            <EditText
+                android:id="@+id/edit_fecha_limite"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:hint="Fecha límite" />
+
+            <!-- Botones acción -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -60,9 +103,15 @@
                     android:src="@android:drawable/ic_menu_delete"
                     android:tint="@android:color/holo_red_dark"
                     android:contentDescription="Eliminar"/>
-
             </LinearLayout>
-        </LinearLayout>
 
+            <Button
+                android:id="@+id/btn_guardar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guardar"
+                android:visibility="gone"
+                android:layout_gravity="end"/>
+        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
