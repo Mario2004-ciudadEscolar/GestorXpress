@@ -38,7 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
 
     /**
@@ -79,6 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "correo TEXT NOT NULL UNIQUE, " +
                         "contrasenia TEXT NOT NULL, " +
                         "fechaRegistro TEXT NOT NULL," +
+                        "fotoPerfil BLOB NOT NULL,"+ //tipo de dato que sirve para almacenar archivos binarios (IMAGENES AUDIO VIDEOS)
                         "logged_in INTEGER DEFAULT 0" +  // Agregado para el logged_in
                         ");"
         );
@@ -161,40 +162,47 @@ public class DatabaseHelper extends SQLiteOpenHelper
         StringBuilder data = new StringBuilder();
         Cursor cursor = db.rawQuery("SELECT * FROM Usuario", null);
 
-        if (cursor.getCount() == 0) {
-            Log.d("Database", "No hay usuarios en la base de datos");
+        if (cursor == null || cursor.getCount() == 0) {
+            return "No hay usuarios en la base de datos.\n";
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
         while (cursor.moveToNext()) {
-            String rawDate = cursor.getString(5);  // Fecha de registro
-            String formattedDate;  // Puede requerir un formato adecuado
-
             try {
-                Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(rawDate);
-                formattedDate = dateFormat.format(date);  // Formatear la fecha
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                String nombre = cursor.getString(cursor.getColumnIndexOrThrow("nombre"));
+                String apellido = cursor.getString(cursor.getColumnIndexOrThrow("apellido"));
+                String correo = cursor.getString(cursor.getColumnIndexOrThrow("correo"));
+                String fechaRaw = cursor.getString(cursor.getColumnIndexOrThrow("fechaRegistro"));
+                int logged = cursor.getInt(cursor.getColumnIndexOrThrow("logged_in"));
+
+                String fechaFormateada;
+                try {
+                    Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(fechaRaw);
+                    fechaFormateada = dateFormat.format(date);
+                } catch (Exception e) {
+                    fechaFormateada = fechaRaw;
+                }
+
+                data.append("Usuario -> ID: ").append(id)
+                        .append(", Nombre: ").append(nombre)
+                        .append(", Apellido: ").append(apellido)
+                        .append(", Correo: ").append(correo)
+                        .append(", Fecha de Registro: ").append(fechaFormateada)
+                        .append(", Logged_in: ").append(logged)
+                        .append("\n");
+
             } catch (Exception e) {
+                data.append("Error leyendo un usuario. Fila corrupta.\n");
                 e.printStackTrace();
-                formattedDate = rawDate;
             }
-
-            // Aquí accedemos a la contraseña (que está en el índice 4)
-            //String contrasenia = cursor.getString(4);  // Valor real de la contraseña
-
-            // Construimos la cadena de texto con la contraseña en texto claro
-            data.append("Usuario -> ID: ").append(cursor.getInt(0))
-                    .append(", Nombre: ").append(cursor.getString(1))
-                    .append(", Apellido: ").append(cursor.getString(2))
-                    .append(", Correo: ").append(cursor.getString(3))  // Correo
-                    //.append(", Contraseña: ").append(contrasenia)  // Aquí mostramos la contraseña en texto claro
-                    .append(", Fecha de Registro: ").append(formattedDate)  // Fecha de Registro
-                    .append(", Loggin_id: ").append((cursor.getInt(6)))
-                    .append("\n");
         }
+
         cursor.close();
         return data.toString();
     }
+
 
     /**
      * Recupera todos los registros de la tabla "Tarea" y los devuelve como una cadena formateada.
@@ -299,6 +307,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      */
     // Método para hacer el hash de la contraseña usando SHA-256
     public String hashPassword(String password) {
+        if (password == null) return null;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(password.getBytes());
@@ -363,10 +372,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param apellido <-- Que le pasamos por parametro (lo que pone el usuario)
      * @param correo <-- Que le pasamos por parametro (lo que pone el usuario)
      * @param contrasenia <-- Que le pasamos por parametro (lo que pone el usuario)
+     * @param imagen <-- Foto de perfil en formato byte[] (puede venir de la galería o por defecto)
      * @return devuelve un booleano, si ocurrio algun error a la hora de insertar
      * el nuevo usuario.
      */
-    public boolean registrarUsuario(String nombre, String apellido, String correo, String contrasenia) {
+    public boolean registrarUsuario(String nombre, String apellido, String correo, String contrasenia, byte[] imagen) {
         // Validación de formato de correo
         if (!esCorreoValido(correo)) {
             Log.d("Registro", "Correo no válido: " + correo);
@@ -391,7 +401,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         // Hasheamos la contraseña proporcionada por el usuario
         String contraseniaHasheada = hashPassword(contrasenia);
 
-
         // Aqui vamos a preparar los valores a insertar
         ContentValues contentValues = new ContentValues();
         contentValues.put("nombre", nombre);
@@ -400,6 +409,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         contentValues.put("contrasenia", contraseniaHasheada);
         contentValues.put("fechaRegistro", getCurrentDate());
         contentValues.put("logged_in", 0); // Inicialmente no está logueado
+        contentValues.put("fotoPerfil", imagen); // Imagen del usuario en byte[], obligatorio según la estructura de la tabla
 
         // Insertamos el usuario y verificamos si la inserción fue exitosa
         long result = db.insert("Usuario", null, contentValues);
@@ -537,7 +547,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param password Nueva contraseña del usuario (sin hashear, se hashea dentro del método).
      * @return true si la actualización fue exitosa, false en caso contrario.
      */
-    public boolean actualizarUsuario(int idUsuario, String nombre, String apellido, String correo, String password)
+    public boolean actualizarUsuario(int idUsuario, String nombre, String apellido, String correo, String password, byte[] nuevaImagen)
     {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -552,7 +562,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
         String passwordHasheada = hashPassword(password);
         if (passwordHasheada != null)
         {
-            values.put("password", passwordHasheada);
+            values.put("contrasenia", passwordHasheada);
+        }
+        if (nuevaImagen != null) {
+            values.put("fotoPerfil", nuevaImagen);
         }
         else
         {

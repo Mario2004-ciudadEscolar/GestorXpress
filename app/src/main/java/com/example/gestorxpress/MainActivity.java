@@ -15,7 +15,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
-
+import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import com.example.gestorxpress.databinding.ActivityMainBinding;
@@ -98,7 +98,8 @@ public class MainActivity extends AppCompatActivity {
                 // Si la sesión se cerró correctamente, redirigimos al login
                 if (exito)
                 {
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    Intent intent = new Intent(MainActivity.this, SelectorPerfilActivity.class);
+
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish(); // Finaliza la actividad actual
