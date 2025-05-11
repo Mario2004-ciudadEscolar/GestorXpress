@@ -3,6 +3,7 @@ package com.example.gestorxpress.ui.GestionPerfiles;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,6 +12,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
@@ -49,12 +53,15 @@ public class RegistroActivity extends AppCompatActivity {
             new androidx.appcompat.app.AlertDialog.Builder(this)
                     .setTitle("Selecciona imagen de perfil")
                     .setItems(new CharSequence[]{"Elegir de la galería", "Elegir avatar predefinido"}, (dialog, which) -> {
-                        if (which == 0) {
+                        if (which == 0)
+                        {
                             // Galería
                             Intent intent = new Intent(Intent.ACTION_PICK);
                             intent.setType("image/*");
                             startActivityForResult(intent, REQUEST_GALERIA);
-                        } else {
+                        }
+                        else
+                        {
                             // Avatares predefinidos
                             SelectorAvatarDialog dialogo = new SelectorAvatarDialog(imagen -> {
                                 imagenEnBytes = imagen;
@@ -83,13 +90,15 @@ public class RegistroActivity extends AppCompatActivity {
             String apellido = editApellido.getText().toString().trim();
             String correo = editCorreo.getText().toString().trim();
             String contrasena = editContrasena.getText().toString().trim();
+            String contrasena2 = editRepetirContrasena.getText().toString().trim();
 
             /**
              * Verifica que todos los campos no estén vacíos.
              * Y si alguno está vacío, se muestra un mensaje y se detiene el registro.
              */
             if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(apellido) ||
-                    TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena))
+                    TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)
+                    || TextUtils.isEmpty((contrasena2)))
             {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
                 return;
@@ -110,16 +119,30 @@ public class RegistroActivity extends AppCompatActivity {
                 return;
             }
 
-            // Intentamos registrar al usuario en la base de datos
+            // Si no se ha seleccionado imagen, asignar imagen por defecto
             if (imagenEnBytes == null) {
-                // Imagen por defecto si no selecciona una
                 try {
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.baseline_person_24); //esto sirve para comvertir la imagen a bits y guardarlo en la bbdd
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                    imagenEnBytes = stream.toByteArray();
+                    Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.baseline_person_24);
+                    if (drawable != null) {
+                        Bitmap bitmap;
+                        if (drawable instanceof BitmapDrawable) {
+                            bitmap = ((BitmapDrawable) drawable).getBitmap();
+                        } else {
+                            int width = drawable.getIntrinsicWidth() > 0 ? drawable.getIntrinsicWidth() : 100;
+                            int height = drawable.getIntrinsicHeight() > 0 ? drawable.getIntrinsicHeight() : 100;
+                            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                            Canvas canvas = new Canvas(bitmap);
+                            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                            drawable.draw(canvas);
+                        }
 
-
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        imagenEnBytes = stream.toByteArray();
+                    } else {
+                        Toast.makeText(this, "No se pudo cargar la imagen por defecto", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(this, "Error al cargar imagen por defecto", Toast.LENGTH_SHORT).show();
