@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp"
+            android:padding="0dp"
             android:gravity="center_horizontal">
 
             <!-- Imagen de perfil -->
@@ -114,7 +114,10 @@
                 android:layout_height="60dp"
                 android:text="Registrarse"
                 android:textSize="18sp"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
                 android:backgroundTint="@color/purple"
                 android:textColor="@color/white"
                 app:cornerRadius="20dp" />
