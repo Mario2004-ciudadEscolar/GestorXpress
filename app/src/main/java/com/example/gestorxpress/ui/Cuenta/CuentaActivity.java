@@ -195,7 +195,7 @@ public class CuentaActivity extends AppCompatActivity {
 
         // Si el campo sigue con los ****** no cambiamos la contraseña
 // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
-        if (nuevaPassword.equals("********")) {
+        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty()) {
             nuevaPassword = null;
         }
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);  // <-- ahora se pasa el correo también

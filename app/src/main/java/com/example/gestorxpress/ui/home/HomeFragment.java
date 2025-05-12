@@ -3,9 +3,8 @@ package com.example.gestorxpress.ui.home;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,10 +25,18 @@ public class HomeFragment extends Fragment {
     private TextView textHome;
     private RecyclerView recyclerView;
 
+    private String filtroPrioridad = null;
+    private String filtroEstado = null;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true); // Permite mostrar iconos en el toolbar
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         textHome = root.findViewById(R.id.text_home);
@@ -41,6 +48,31 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+//    @Override
+//    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+//        inflater.inflate(R.menu.menu_home, menu);
+//        super.onCreateOptionsMenu(menu, inflater);
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        if (item.getItemId() == R.id.action_filtrar) {
+//            // Mostrar el menú justo debajo del icono
+//            View view = requireActivity().findViewById(R.id.action_filtrar);
+//            if (view == null) {
+//                // fallback a la toolbar entera
+//                view = requireActivity().findViewById(R.id.toolbar);
+//            }
+//            mostrarMenuFiltro(view);
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
+
+
+
+
+
     private void cargarTareasDelUsuarioLogueado() {
         new Thread(() -> {
             DatabaseHelper dbHelper = new DatabaseHelper(requireContext());
@@ -50,8 +82,20 @@ public class HomeFragment extends Fragment {
             List<Map<String, String>> listaTareas = new ArrayList<>();
 
             if (idUsuario != -1) {
-                Cursor cursor = db.rawQuery("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?", new String[]{String.valueOf(idUsuario)});
+                StringBuilder query = new StringBuilder("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?");
+                List<String> args = new ArrayList<>();
+                args.add(String.valueOf(idUsuario));
 
+                if (filtroPrioridad != null) {
+                    query.append(" AND prioridad = ?");
+                    args.add(filtroPrioridad);
+                }
+                if (filtroEstado != null) {
+                    query.append(" AND estado = ?");
+                    args.add(filtroEstado);
+                }
+
+                Cursor cursor = db.rawQuery(query.toString(), args.toArray(new String[0]));
 
                 if (cursor.moveToFirst()) {
                     do {
@@ -63,7 +107,6 @@ public class HomeFragment extends Fragment {
                         tarea.put("estado", cursor.getString(4));
                         tarea.put("fechaHoraInicio", cursor.getString(5));
                         tarea.put("fechaLimite", cursor.getString(6));
-
                         listaTareas.add(tarea);
                     } while (cursor.moveToNext());
                 }
@@ -86,4 +129,35 @@ public class HomeFragment extends Fragment {
             });
         }).start();
     }
+
+    // Muestra el popup de filtro anclado al toolbar
+    public void mostrarMenuFiltro(View anchor) {
+        PopupMenu popup = new PopupMenu(requireContext(), anchor, Gravity.END | Gravity.BOTTOM);
+        popup.getMenu().add("Prioridad: Alta");
+        popup.getMenu().add("Prioridad: Media");
+        popup.getMenu().add("Prioridad: Baja");
+        popup.getMenu().add("Estado: Pendiente");
+        popup.getMenu().add("Estado: Completada");
+        popup.getMenu().add("Quitar filtros");
+
+        popup.setOnMenuItemClickListener(item -> {
+            String titulo = item.getTitle().toString();
+            if (titulo.startsWith("Prioridad")) {
+                filtroPrioridad = titulo.split(": ")[1];
+            } else if (titulo.startsWith("Estado")) {
+                filtroEstado = titulo.split(": ")[1];
+            } else {
+                filtroPrioridad = null;
+                filtroEstado = null;
+            }
+            cargarTareasDelUsuarioLogueado();
+            return true;
+        });
+
+        popup.show();
+    }
+
+
+
+
 }

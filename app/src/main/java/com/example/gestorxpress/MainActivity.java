@@ -7,8 +7,11 @@ import androidx.annotation.NonNull;
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.database.VerBBDDActivity;
 import com.example.gestorxpress.ui.Cuenta.CuentaActivity;
+import com.example.gestorxpress.ui.home.HomeFragment;
 import com.example.gestorxpress.ui.slideshow.SlideshowFragment;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -18,7 +21,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ImageButton;
+
 import com.example.gestorxpress.databinding.ActivityMainBinding;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -136,6 +143,22 @@ public class MainActivity extends AppCompatActivity {
             drawer.closeDrawers();
             return true;
         });
+
+        ImageButton btnFiltro = findViewById(R.id.btn_toolbar_filtro);
+        btnFiltro.setOnClickListener(v -> {
+            Fragment navHostFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
+            if (navHostFragment != null) {
+                List<Fragment> fragments = navHostFragment.getChildFragmentManager().getFragments();
+                if (!fragments.isEmpty() && fragments.get(0) instanceof HomeFragment) {
+                    ((HomeFragment) fragments.get(0)).mostrarMenuFiltro(v);
+                }
+            }
+        });
+
+
+
+
+
     }
 
 

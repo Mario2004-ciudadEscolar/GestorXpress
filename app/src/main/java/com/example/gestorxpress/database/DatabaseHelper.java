@@ -558,24 +558,24 @@ public class DatabaseHelper extends SQLiteOpenHelper
         values.put("apellido", apellido);
         values.put("correo", correo);
 
-        // Hashear la contraseña antes de guardarla
-        String passwordHasheada = hashPassword(password);
-        if (passwordHasheada != null)
+        // Hashear la contraseña antes de guardarla di es contraseña valida
+        if (password != null && !password.trim().isEmpty())
         {
-            values.put("contrasenia", passwordHasheada);
+            String passwordHasheada = hashPassword(password);
+            if (passwordHasheada != null)
+            {
+                values.put("contrasenia", passwordHasheada);
+            }
         }
         if (nuevaImagen != null) {
             values.put("fotoPerfil", nuevaImagen);
         }
-        else
-        {
-            Log.e("Database", "Error al hashear la contraseña");
-            return false;
-        }
+
 
         // Ejecutar la actualización
         int filasActualizadas = db.update("Usuario", values, "id = ?", new String[]{String.valueOf(idUsuario)});
 
+        db.close();
         // Verificar si se actualizó al menos una fila
         return filasActualizadas > 0;
     }
