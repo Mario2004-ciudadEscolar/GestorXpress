@@ -47,22 +47,28 @@ public class RegistroActivity extends AppCompatActivity {
         editContrasena = findViewById(R.id.editContrasena);
         btnRegistrar = findViewById(R.id.btnRegistrar);
         editRepetirContrasena = findViewById(R.id.editRepetirContrasena);
-
         imagenSeleccionada = findViewById(R.id.imagenSeleccionada);
+
+        /**
+         * Muestra un diálogo que permite al usuario seleccionar una imagen de perfil,
+         * ya sea desde la galería del dispositivo o desde un conjunto de avatares predefinidos.
+         *.
+         * Si el usuario elige una imagen, se muestra en el ImageView y se guarda como un arreglo de bytes.
+         */
         imagenSeleccionada.setOnClickListener(v -> {
             new androidx.appcompat.app.AlertDialog.Builder(this)
                     .setTitle("Selecciona imagen de perfil")
                     .setItems(new CharSequence[]{"Elegir de la galería", "Elegir avatar predefinido"}, (dialog, which) -> {
                         if (which == 0)
                         {
-                            // Galería
+                            // Opción: abrir galería de imágenes
                             Intent intent = new Intent(Intent.ACTION_PICK);
                             intent.setType("image/*");
                             startActivityForResult(intent, REQUEST_GALERIA);
                         }
                         else
                         {
-                            // Avatares predefinidos
+                            // Opción: seleccionar avatar predefinido
                             SelectorAvatarDialog dialogo = new SelectorAvatarDialog(imagen -> {
                                 imagenEnBytes = imagen;
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(imagen, 0, imagen.length);
@@ -111,23 +117,42 @@ public class RegistroActivity extends AppCompatActivity {
                 return;
             }
 
-
-            String repetirContrasena = editRepetirContrasena.getText().toString().trim();
-
-            if (!contrasena.equals(repetirContrasena)) {
+            /**
+             * Validamos que las dos contraseñas que introduce el usuario a la hora de darse de alta
+             * coincidan, ya que asi el usuario comprueba y afirma que ha puesto la contraseña que
+             * queria poner.
+             *
+             * Si las dos contraseñas no coinciden, no le dejara registrarse y le mostramos un mensaje informativo
+             * indicandole que las contraseñas introducidas no coinciden.
+             */
+            if (!contrasena.equals(contrasena2)) {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            // Si no se ha seleccionado imagen, asignar imagen por defecto
-            if (imagenEnBytes == null) {
-                try {
+
+            /**
+             * Asigna una imagen de perfil por defecto si el usuario no ha seleccionado ninguna.
+             *
+             * La imagen por defecto se obtiene de los recursos (por ejemplo, un ícono de persona),
+             * se convierte a Bitmap y luego a un arreglo de bytes (`imagenEnBytes`) para poder almacenarla o mostrarla.
+             *
+             * También maneja errores en caso de que la imagen no pueda cargarse correctamente.
+             */
+            if (imagenEnBytes == null)
+            {
+                try
+                {
                     Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.baseline_person_24);
-                    if (drawable != null) {
+                    if (drawable != null)
+                    {
                         Bitmap bitmap;
-                        if (drawable instanceof BitmapDrawable) {
+                        if (drawable instanceof BitmapDrawable)
+                        {
                             bitmap = ((BitmapDrawable) drawable).getBitmap();
-                        } else {
+                        }
+                        else
+                        {
                             int width = drawable.getIntrinsicWidth() > 0 ? drawable.getIntrinsicWidth() : 100;
                             int height = drawable.getIntrinsicHeight() > 0 ? drawable.getIntrinsicHeight() : 100;
                             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -139,20 +164,36 @@ public class RegistroActivity extends AppCompatActivity {
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
                         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                         imagenEnBytes = stream.toByteArray();
-                    } else {
+                    }
+                    else
+                    {
                         Toast.makeText(this, "No se pudo cargar la imagen por defecto", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     e.printStackTrace();
                     Toast.makeText(this, "Error al cargar imagen por defecto", Toast.LENGTH_SHORT).show();
                     return;
                 }
             }
 
+            /**
+             * Una vez hayamos comprobado que toda la información que necesitamos para registrar el usuario
+             * este correcto, procedemos a registrar dicho usuario, llamando un metodo que esta en la clase
+             * donde esta nuestra bbdd.
+             *
+             * Devuelve un boolean para comrpbar si se ha registrado o no.
+             */
             boolean registroExitoso = dbHelper.registrarUsuario(nombre, apellido, correo, contrasena, imagenEnBytes);
 
-
+            /**
+             * Comprobamos si ha tenido exito al registrarse, y si es asi le enviamos a la pagina principal,
+             * que es la familiar y donde puede ver todos los usuario creados, incluyendo la suya.
+             *
+             * Si no ha tenido existo, le mostramos un mensaje informativo indicandole el error.
+             */
             if (registroExitoso)
             {
                 Toast.makeText(RegistroActivity.this, "Registro exitoso", Toast.LENGTH_LONG).show();
@@ -167,6 +208,8 @@ public class RegistroActivity extends AppCompatActivity {
 
         });
     }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -181,13 +224,26 @@ public class RegistroActivity extends AppCompatActivity {
             }
         }
     }
-    private byte[] getBytes(InputStream inputStream) throws IOException {
+
+    /**
+     * Lee todos los datos de un {@link InputStream} y los convierte en un arreglo de bytes.
+     *.
+     * Este método es útil cuando necesitas convertir archivos, imágenes u otros flujos de datos
+     * en memoria para almacenarlos o procesarlos como un arreglo de bytes (`byte[]`).
+     *.
+     * @param inputStream El flujo de entrada desde el cual se leerán los datos.
+     * @return Un arreglo de bytes que contiene todos los datos leídos del InputStream.
+     * @throws IOException Si ocurre un error de lectura durante el proceso.
+     */
+    private byte[] getBytes(InputStream inputStream) throws IOException
+    {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
         int bufferSize = 1024;
         byte[] buffer = new byte[bufferSize];
 
         int len;
-        while ((len = inputStream.read(buffer)) != -1) {
+        while ((len = inputStream.read(buffer)) != -1)
+        {
             byteBuffer.write(buffer, 0, len);
         }
         return byteBuffer.toByteArray();

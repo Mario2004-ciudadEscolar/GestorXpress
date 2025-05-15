@@ -65,8 +65,18 @@ public class CuentaActivity extends AppCompatActivity {
         btnEditarGuardar = findViewById(R.id.btnEditarGuardar);
         btnEliminarCuenta = findViewById(R.id.btnEliminarCuenta);
 
+        /**
+         * Llamamos a un metodo donde vamos a recuperar los datos del usuario que esta logeado en este
+         * momento en nuestra aplicación y cargarlo en la información de "cuenta", ya que ahi puede editar
+         * la cuenta ya sea el correo, nombre, apellido o contraseña,
+         */
         cargarDatosUsuario();
 
+        /**
+         * Lo que hacemos aqui es que cuando el usuario de el boton de editar, ese boton pase
+         * ser a guardar, ya que cambiamos el nombre y el modo de edición que lo logramos
+         * haciendolo con un boolena.
+         */
         btnEditarGuardar.setOnClickListener(v -> {
             if (!enModoEdicion)
             {
@@ -86,6 +96,14 @@ public class CuentaActivity extends AppCompatActivity {
             }
         });
 
+        /**
+         * Si el usuario da el boton de eliminar, le mostramos un mensaje informativo, diciendole
+         * si de verdad quiere borrar su cuenta, ya si el usuario indica que si, eliminamos la cuenta,
+         * lo borramos tambien de nuestra bbdd, que para ello tenemos un metodo en la clase bbdd que
+         * ya hace la función de borrar la cuenta de nuestra bbdd.
+         *
+         * Y por ultimo le enviamos a la pagina principal (donde se inicia o registra).
+         */
         btnEliminarCuenta.setOnClickListener(v -> {
             // Aquí deberías implementar una confirmación antes de eliminar
             boolean eliminado = dbHelper.eliminarUsuarioPorId(usuarioId);
@@ -96,6 +114,16 @@ public class CuentaActivity extends AppCompatActivity {
             }
         });
 
+        /**
+         * Configura un listener para el clic en la imagen de perfil (`imgPerfil`) que permite al usuario
+         * seleccionar una nueva imagen solo si está en modo edición.
+         *.
+         * Al hacer clic, se muestra un diálogo con dos opciones:
+         * 1. Seleccionar una imagen desde la galería.
+         * 2. Elegir un avatar predefinido desde un diálogo personalizado.
+         *.
+         * La imagen seleccionada se convierte a {@code byte[]} y se muestra en el {@code ImageView}.
+         */
         imgPerfil.setOnClickListener(v -> {
             if (!enModoEdicion) return; // Solo si está en modo edición
 
@@ -120,6 +148,12 @@ public class CuentaActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Lo que hacemos en este metodo es cargar la información del usuario y mostrarlo en la pagina,
+     * ya que aqui el usuario puede ver su información personal y lo puede editar o actualizar si asi lo desea
+     * el usuario o tambien puede eliminar su cuenta (pero eso ya se hace con otro metodo que tenemos
+     * definifo).
+     */
     private void cargarDatosUsuario()
     {
         // Si el usuario está logueado (es decir, el ID es válido)
@@ -145,14 +179,15 @@ public class CuentaActivity extends AppCompatActivity {
                     String apellido = cursor.getString(apellidoIndex);
                     String correo = cursor.getString(correoIndex);
 
-                    if (imagenBytes != null) {
+                    if (imagenBytes != null)
+                    {
                         Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
                         imgPerfil.setImageBitmap(bitmap);
                         imagenEnBytes = imagenBytes;
                     }
 
 
-                    // Establecemos los valores en los EditText
+                    // Mostramos la información personal sacada al usuario y lo ponemos en los editTest
                     editCorreo.setText(correo);
                     editNombre.setText(nombre);
                     editApellido.setText(apellido);
@@ -178,6 +213,11 @@ public class CuentaActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Lo que hace este metodo es que cuando el usuario quiere editar su información, es que
+     * habilitamos los editTest para que puede editarlo o actualizar su información.
+     * @param habilitar Para habilitar la información.
+     */
     private void cambiarModoEdicion(boolean habilitar)
     {
         editNombre.setEnabled(habilitar);
@@ -186,6 +226,12 @@ public class CuentaActivity extends AppCompatActivity {
         // Correo puede mantenerse deshabilitado si no se permite cambiar
     }
 
+    /**
+     * Si el usuario realiza algún cambio, lo que hacemos es un UPDATE en la bbdd
+     * que para ello ya tenemos un metodo en nuestra bbdd.
+     * .
+     * NOTA: TENGO QUE DARLE UNA VUELTA ESTE METODO, SE PUEDE HACER MEJOR.
+     */
     private void guardarCambios()
     {
         String nuevoCorreo = editCorreo.getText().toString().trim();  // <- aquí está el correo
@@ -194,29 +240,46 @@ public class CuentaActivity extends AppCompatActivity {
         String nuevaPassword = editPassword.getText().toString().trim();
 
         // Si el campo sigue con los ****** no cambiamos la contraseña
-// que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
+        // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
         if (nuevaPassword.equals("********") || nuevaPassword.isEmpty()) {
             nuevaPassword = null;
         }
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);  // <-- ahora se pasa el correo también
         Toast.makeText(this, "Datos actualizados", Toast.LENGTH_SHORT).show();
     }
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_GALERIA && resultCode == RESULT_OK && data != null) {
-            try {
+        if (requestCode == REQUEST_GALERIA && resultCode == RESULT_OK && data != null)
+        {
+            try
+            {
                 Uri imageUri = data.getData();
                 imgPerfil.setImageURI(imageUri);
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 imagenEnBytes = getBytes(inputStream);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.printStackTrace();
             }
         }
     }
 
-    private byte[] getBytes(InputStream inputStream) throws IOException {
+    /**
+     * Lee todos los datos de un {@link InputStream} y los convierte en un arreglo de bytes.
+     *.
+     * Este método es útil cuando necesitas convertir archivos, imágenes u otros flujos de datos
+     * en memoria para almacenarlos o procesarlos como un arreglo de bytes (`byte[]`).
+     *.
+     * @param inputStream El flujo de entrada desde el cual se leerán los datos.
+     * @return Un arreglo de bytes que contiene todos los datos leídos del InputStream.
+     * @throws IOException Si ocurre un error de lectura durante el proceso.
+     */
+    private byte[] getBytes(InputStream inputStream) throws IOException
+    {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
         int bufferSize = 1024;
         byte[] buffer = new byte[bufferSize];

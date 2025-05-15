@@ -40,6 +40,8 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.botonLogin);
 
         dbHelper = new DatabaseHelper(this);
+
+
         usuarioId = getIntent().getIntExtra("usuarioId", -1);
 
         if (usuarioId == -1) {
@@ -52,6 +54,11 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
         Cursor cursor = dbHelper.getReadableDatabase()
                 .rawQuery("SELECT nombre, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
+        /**
+         * Movemos el cursor al principio de lo que hemos obtenido, de ahi sacamos la información
+         * de lo que estamos buscando, y por último comprobamos que la imagen no sea nula
+         * ya que esa imagen se mostraria en el perfil del usuario.
+         */
         if (cursor.moveToFirst()) {
             String nombre = cursor.getString(0);
             correoUsuario = cursor.getString(1);
@@ -66,6 +73,19 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
         }
         cursor.close();
 
+        /**
+         * Cuando el usuario de al boton de iniciar sesión, recogemos la contraseña que introduce.
+         * .
+         * Primero comprobamos que el campo donde se introduce la contraseña no sea vacia,
+         * Si el campo no es vacio, llamamos un metodo donde hacemos la validación del usuario,
+         * osea que comprobamos que ese usuario este de alta en nuestra aplicación y tambien
+         * comprobams que la contraseña que introduce es la correcta.
+         * .
+         * Si es correcto se logea en nuestra aplicación y se mostrara la pagina principal
+         * donde puede realizar todas las funcionalidades de nuestra aplicación.
+         * .
+         * Si no es correcto la contraseña, se le mostrara una advertencia.
+         */
         loginButton.setOnClickListener(v -> {
             String password = passwordEditText.getText().toString().trim();
             if (TextUtils.isEmpty(password)) {
