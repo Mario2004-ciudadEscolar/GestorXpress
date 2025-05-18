@@ -1,34 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="8dp"
+    android:gravity="center"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/imagenPerfil"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_marginBottom="8dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/borde_redondo"
+        android:padding="4dp" />
+
+    <TextView
+        android:id="@+id/nombrePerfil"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_margin="8dp"
-        android:gravity="center"
-        android:padding="8dp"
-        android:background="@drawable/bg_perfil_item">
-
-        <ImageView
-            android:id="@+id/imagenPerfil"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"
-            android:background="@drawable/borde_redondo"
-            android:padding="4dp" />
-
-        <TextView
-            android:id="@+id/nombrePerfil"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Usuario"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="14sp" />
-    </LinearLayout>
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Usuario"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:gravity="center"/>
+</LinearLayout>

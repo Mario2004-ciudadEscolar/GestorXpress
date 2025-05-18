@@ -273,6 +273,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return data.toString();
     }
 
+
     //----------------------- METODO SETTERS -----------------------//
 
     /**
@@ -656,6 +657,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
         return filasAfectadas > 0;
     }
+
+    //----------------------- METODOS PARA LA TABLA ACTIVIDAD USUARIO -----------------------//
+
 
 
 }

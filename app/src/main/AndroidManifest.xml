@@ -16,6 +16,9 @@
         android:theme="@style/Theme.GestorXpress"
         tools:targetApi="31">
         <activity
+            android:name=".ui.slideshow.Grafica"
+            android:exported="false" />
+        <activity
             android:name=".ui.Cuenta.CuentaActivity"
             android:exported="false" />
         <activity
@@ -38,11 +41,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.GestionPerfiles.LoginSoloContrasenaActivity"
             android:exported="false" />
-
         <activity
             android:name=".LoginActivity"
             android:exported="true" />

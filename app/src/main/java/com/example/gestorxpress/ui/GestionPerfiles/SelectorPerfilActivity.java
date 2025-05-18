@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gestorxpress.R;
@@ -24,34 +25,31 @@ public class SelectorPerfilActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private PerfilAdapterSinClase perfilAdapter;
 
+    /**
+     * Método llamado al crear la actividad.
+     * Infla la vista, configura el RecyclerView, carga los perfiles desde la base de datos
+     * y configura la acción de clic para seleccionar perfil o añadir uno nuevo.
+     *
+     * @param savedInstanceState Bundle con estado previo de la actividad.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selector_perfil);
 
+        // Obtiene referencia al RecyclerView y establece layout horizontal
         recyclerView = findViewById(R.id.recyclerViewPerfiles);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
+        // Instancia el helper para la base de datos
         dbHelper = new DatabaseHelper(this);
-
         List<HashMap<String, Object>> listaPerfiles = new ArrayList<>();
 
-   //     Cursor cursor = dbHelper.getReadableDatabase()
- //               .rawQuery("SELECT id, nombre, fotoPerfil FROM Usuario", null);
-// V1
-//        while (cursor.moveToNext()) {
-//            HashMap<String, Object> map = new HashMap<>();
-//            map.put("id", cursor.getInt(0));
-//            map.put("nombre", cursor.getString(1));
-//            byte[] imagenBytes = cursor.getBlob(2);
-//            Bitmap imagen = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-//            map.put("foto", imagen);
-//            listaPerfiles.add(map);
-//        }
-//        cursor.close();
+        // Consulta la base de datos para obtener id, nombre y foto de todos los usuarios
         Cursor cursor = dbHelper.getReadableDatabase()
                 .rawQuery("SELECT id, nombre, fotoPerfil FROM Usuario", null);
 
+        // Recorre el cursor y convierte los datos en objetos para el adaptador
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 try {
@@ -65,33 +63,28 @@ public class SelectorPerfilActivity extends AppCompatActivity {
                     map.put("nombre", nombre);
                     map.put("foto", imagen);
                     listaPerfiles.add(map);
-
                 } catch (Exception e) {
-                    e.printStackTrace(); // Para depurar si hay alguna inconsistencia
+                    e.printStackTrace();
                 }
             } while (cursor.moveToNext());
         }
+        if (cursor != null) cursor.close();
 
-        cursor.close();
-
-        // Agrega el botón de “+”
-        HashMap<String, Object> agregarNuevo = new HashMap<>();
-        agregarNuevo.put("id", -1);
-        agregarNuevo.put("nombre", "Añadir perfil");
-        agregarNuevo.put("foto", null);
-        listaPerfiles.add(agregarNuevo);
-
+        // Crea el adaptador con la lista de perfiles y define la acción al seleccionar uno
         perfilAdapter = new PerfilAdapterSinClase(listaPerfiles, perfil -> {
             int id = (int) perfil.get("id");
-            if (id == -1) {
-                startActivity(new Intent(this, RegistroActivity.class));
-            } else {
-                Intent intent = new Intent(this, LoginSoloContrasenaActivity.class);
-                intent.putExtra("usuarioId", id);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(this, LoginSoloContrasenaActivity.class);
+            intent.putExtra("usuarioId", id);
+            startActivity(intent);
         });
 
+        // Asocia el adaptador al RecyclerView para mostrar los perfiles
         recyclerView.setAdapter(perfilAdapter);
+
+
+        // Configura el clic en el ícono “añadir perfil” para abrir la actividad de registro
+        findViewById(R.id.iconoAgregar).setOnClickListener(v -> {
+            startActivity(new Intent(this, RegistroActivity.class));
+        });
     }
 }

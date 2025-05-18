@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.database.VerBBDDActivity;
 import com.example.gestorxpress.ui.Cuenta.CuentaActivity;
+import com.example.gestorxpress.ui.Tarea.CrearTareaFragment;
 import com.example.gestorxpress.ui.home.HomeFragment;
 import com.example.gestorxpress.ui.slideshow.SlideshowFragment;
 import com.google.android.material.navigation.NavigationView;
@@ -36,24 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /**
-         * La parte que esta comentado, son cosas que tenemos que cambiar y mejorar.
-         */
-        // Recuperar el correo del intent
-        //String correo = getIntent().getStringExtra("correo");
-        //Log.d("DEBUG_CORREO", "Correo recibido en MainActivity: " + correo);
-
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-
-        //int idUsuario = dbHelper.obtenerIdUsuarioPorCorreo(correo);
-        //Log.d("DEBUG_ID", "ID de usuario obtenido: " + idUsuario);
-
-        // Guardar el idUsuario en un Bundle para pasarlo a los fragmentos
-        /*Bundle bundle = new Bundle();
-        bundle.putInt("idUsuario", idUsuario);
-
-        // Establecer el bundle como argumento inicial para los fragmentos que lo necesiten
-        getSupportFragmentManager().setFragmentResult("datosUsuario", bundle);*/
 
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -76,27 +60,13 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
 
-        /*binding.appBarMain.fab.setOnClickListener(view -> {
-            navController.navigate(R.id.nav_gallery); //  crear tarea
-        });*/ // <-- He cambiado esto.
-
-        /*findViewById(R.id.fab).setOnClickListener(view -> {
-            Bundle args = new Bundle(); // usa un nombre diferente evita errores
-            args.putInt("idUsuario", idUsuario);
-            navController.navigate(R.id.nav_Crear_Tarea, args);
-        });*/
-
-
-//v1
-//        findViewById(R.id.fab).setOnClickListener(view -> {
-//            navController.navigate(R.id.nav_Crear_Tarea);
-//        });
-
-
         // Acciones personalizadas de menú
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
+            /**
+             * Llamada para cerrar sesión
+             */
             if (id == R.id.nav_logout)
             {
                 // Llamamos al método cerrarSesion para cerrar la sesión
@@ -119,6 +89,31 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             }
+            /**
+             * Para visualizar el Home
+             */
+            else if (id == R.id.nav_home)
+            {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new HomeFragment())
+                        .commit();
+                drawer.closeDrawers();
+                return true;
+            }
+            /**
+             * Para visualizar la página donde creas las tareas
+             */
+            else if (id == R.id.nav_Crear_Tarea)
+            {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new CrearTareaFragment())
+                        .addToBackStack(null)  // para poder volver atrás
+                        .commit();
+                drawer.closeDrawers();
+                return true;
+            }
             else if (id == R.id.nav_compartir)
             {
                 // Voy a comentar esto para poner el de "Ver la BBDD"
@@ -126,16 +121,28 @@ public class MainActivity extends AppCompatActivity {
 
                 // Lo voy a poner de momento para ver la bbdd, luego se quitara
                 startActivity(new Intent(MainActivity.this, VerBBDDActivity.class));
+                drawer.closeDrawers();
                 return true;
             }
+            /**
+             * Para visualizar la cuenta del usuario
+             */
             else if (id == R.id.nav_Cuenta)
             {
                 startActivity(new Intent(MainActivity.this, CuentaActivity.class));
+                drawer.closeDrawers();
                 return true;
             }
+            /**
+             * Para visualizar la Grafica
+             */
             else if (id == R.id.nav_slideshow)
             {
-                startActivity(new Intent(MainActivity.this, SlideshowFragment.class));
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, new SlideshowFragment())
+                        .commit();
+                drawer.closeDrawers();
                 return true;
             }
 
@@ -154,10 +161,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-
-
 
     }
 

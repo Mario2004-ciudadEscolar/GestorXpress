@@ -37,16 +37,36 @@ public class PerfilAdapterSinClase extends RecyclerView.Adapter<PerfilAdapterSin
         return new ViewHolder(vista);
     }
 
+    /**
+     * Enlaza los datos del perfil a la vista del ViewHolder para mostrar en la posición especificada.
+     * .
+     * Obtiene el perfil de la lista según la posición y configura la vista del holder dependiendo del contenido:
+     * .
+     *  Si el ID es -1, muestra un ícono de añadir sin texto y sin borde redondo.
+     *  Si el ID es distinto de -1, muestra el nombre, la foto con borde redondo y ajusta la escala de la imagen.
+     * .
+     * Además, configura un listener para manejar el clic sobre el ítem, pasando el perfil correspondiente.
+     *
+     * @param holder   el ViewHolder que contiene las vistas que se van a actualizar
+     * @param position la posición del elemento dentro de la lista de datos
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         HashMap<String, Object> perfil = lista.get(position);
-        String nombre = (String) perfil.get("nombre");
-        holder.nombre.setText(nombre);
+        int id = (int) perfil.get("id");
 
-        if ((int) perfil.get("id") == -1) {
-            holder.imagen.setImageResource(R.drawable.baseline_person_24);
-        } else {
+        if (id == -1)
+        {
+            // Icono de "añadir perfil"
+            holder.nombre.setText("Añadir perfil");
+            holder.imagen.setImageResource(R.drawable.ic_add_circle);
+            holder.imagen.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        }
+        else
+        {
+            holder.nombre.setText((String) perfil.get("nombre"));
             holder.imagen.setImageBitmap((Bitmap) perfil.get("foto"));
+            holder.imagen.setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
 
         holder.itemView.setOnClickListener(v -> listener.onClick(perfil));
