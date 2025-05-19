@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
 
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -98,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                         .beginTransaction()
                         .replace(R.id.fragment_container, new HomeFragment())
                         .commit();
+                getSupportActionBar().setTitle("GestorXpress");
                 drawer.closeDrawers();
                 return true;
             }
@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.fragment_container, new CrearTareaFragment())
                         .addToBackStack(null)  // para poder volver atrás
                         .commit();
+                getSupportActionBar().setTitle("Crear Tarea");
                 drawer.closeDrawers();
                 return true;
             }
@@ -138,12 +139,14 @@ public class MainActivity extends AppCompatActivity {
              */
             else if (id == R.id.nav_slideshow)
             {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, new SlideshowFragment())
-                        .commit();
-                drawer.closeDrawers();
-                return true;
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, new SlideshowFragment())
+                            .commit();
+                getSupportActionBar().setTitle("Gráfica");
+                    drawer.closeDrawers();
+                    return true;
+
             }
 
             NavigationUI.onNavDestinationSelected(item, navController);

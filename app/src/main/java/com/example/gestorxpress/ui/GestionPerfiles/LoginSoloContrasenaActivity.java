@@ -96,6 +96,7 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
             boolean loginCorrecto = dbHelper.validarUsuario(correoUsuario, password);
 
             if (loginCorrecto) {
+                boolean esPadre = dbHelper.esUsuarioPadrePorId(usuarioId);
                 Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);

@@ -23,17 +23,20 @@ import com.example.gestorxpress.database.DatabaseHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class CrearTareaFragment extends Fragment {
 
     private EditText editTitulo, editDescripcion, editFechaFin, editFechaInicio;
-    private Spinner spinnerPrioridad, spinnerEstado;
+    private Spinner spinnerPrioridad, spinnerEstado, spinnerHijos;
     private Button btnGuardar;
     private DatabaseHelper dbHelper;
     private int idUsuario = -1;
 
     private Calendar fechaHoraInicioCalendar, fechaFinCalendar;
+
+    private boolean esPadre = false;
 
     public CrearTareaFragment() {
         // Constructor vacío requerido
@@ -56,6 +59,7 @@ public class CrearTareaFragment extends Fragment {
         editFechaInicio = view.findViewById(R.id.editFechaInicio);
         spinnerPrioridad = view.findViewById(R.id.spinnerPrioridad);
         spinnerEstado = view.findViewById(R.id.spinnerEstado);
+        spinnerHijos = view.findViewById(R.id.spinnerHijos);
         btnGuardar = view.findViewById(R.id.btnGuardar);
 
         dbHelper = new DatabaseHelper(requireContext());
@@ -65,14 +69,17 @@ public class CrearTareaFragment extends Fragment {
         // Obtener el ID del usuario desde los argumentos
         // Con esto obtenemos el ID del usuario que esta logueado en este momento
         idUsuario = dbHelper.obtenerIdUsuario();  // Método en nuestro DatabaseHelper
-        if (idUsuario == -1) {
+
+        if (idUsuario == -1)
+        {
             Toast.makeText(getContext(), "Error: Usuario no válido", Toast.LENGTH_SHORT).show();
             btnGuardar.setEnabled(false); // Desactiva el botón de guardar
             return;
         }
 
         // Si idUsuario es inválido (menos que 0), desactivar el botón de guardar
-        if (idUsuario <= 0) {
+        if (idUsuario <= 0)
+        {
             Toast.makeText(getContext(), "Error: Usuario no válido", Toast.LENGTH_SHORT).show();
             Log.e("CREAR_TAREA", "Usuario inválido, idUsuario = " + idUsuario);
             btnGuardar.setEnabled(false); // Desactiva el botón
@@ -80,6 +87,10 @@ public class CrearTareaFragment extends Fragment {
         }
 
         Log.d("DEBUG_ID", "idUsuario recibido: " + idUsuario);
+
+        // Determinar si el usuario actual es un padre
+        esPadre = dbHelper.esUsuarioPadrePorId(idUsuario);
+        Log.d("CREAR_TAREA", "¿El usuario es padre (administrador)? " + esPadre);
 
         // Configurar los Spinners con adaptadores desde strings.xml
         ArrayAdapter<CharSequence> adapterPrioridad = ArrayAdapter.createFromResource(
@@ -91,6 +102,34 @@ public class CrearTareaFragment extends Fragment {
                 requireContext(), R.array.opciones_estado, android.R.layout.simple_spinner_item);
         adapterEstado.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerEstado.setAdapter(adapterEstado);
+
+        // Configurar Spinner de hijos si es padre
+        if (esPadre)
+        {
+            // El usuario es padre: mostrar spinner con los hijos (usuarios que no son padre)
+            spinnerHijos.setVisibility(View.VISIBLE);
+
+            List<String> nombresHijos = dbHelper.obtenerNombresHijos();
+
+            if (nombresHijos.isEmpty())
+            {
+                nombresHijos.add("Sin hijos disponibles");
+                Toast.makeText(getContext(), "No tienes hijos registrados. No puedes asignar tareas.", Toast.LENGTH_LONG).show();
+                btnGuardar.setEnabled(false);
+            }
+
+            ArrayAdapter<String> hijosAdapter = new ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_spinner_item,
+                    nombresHijos
+            );
+            hijosAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerHijos.setAdapter(hijosAdapter);
+        }
+        else
+        {
+            spinnerHijos.setVisibility(View.GONE);
+        }
 
         // Fecha y hora de inicio
         editFechaInicio.setOnClickListener(v -> mostrarSelectorFechaHora(editFechaInicio, fechaHoraInicioCalendar));
@@ -124,11 +163,38 @@ public class CrearTareaFragment extends Fragment {
         String fechaHoraInicio = sdf.format(fechaHoraInicioCalendar.getTime());
         String fechaHoraFin = sdf.format(fechaFinCalendar.getTime());
 
-        boolean exito = dbHelper.crearTarea(idUsuario, titulo, descripcion, prioridad, estado, fechaHoraFin, fechaHoraInicio);
-        if (exito) {
+        boolean exito;
+
+        if (esPadre)
+        {
+            String nombreHijoSeleccionado = spinnerHijos.getSelectedItem().toString();
+            if (nombreHijoSeleccionado.equals("Sin hijos disponibles"))
+            {
+                Toast.makeText(getContext(), "No puedes asignar tareas si no tienes hijos registrados", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int idHijo = dbHelper.obtenerIdUsuarioPorNombre(nombreHijoSeleccionado);
+            if (idHijo == -1)
+            {
+                Toast.makeText(getContext(), "Error al obtener el ID del hijo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            exito = dbHelper.crearTareaUsuarioAsignado(idHijo, titulo, descripcion, prioridad, estado, fechaHoraFin, fechaHoraInicio);
+        }
+        else
+        {
+            exito = dbHelper.crearTarea(idUsuario, titulo, descripcion, prioridad, estado, fechaHoraFin, fechaHoraInicio);
+        }
+
+        if (exito)
+        {
             Toast.makeText(getContext(), "Tarea guardada correctamente", Toast.LENGTH_SHORT).show();
             limpiarCampos();
-        } else {
+        }
+        else
+        {
             Toast.makeText(getContext(), "Error al guardar la tarea", Toast.LENGTH_SHORT).show();
         }
     }

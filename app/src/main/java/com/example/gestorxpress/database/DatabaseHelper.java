@@ -38,7 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
 
     /**
@@ -80,7 +80,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "contrasenia TEXT NOT NULL, " +
                         "fechaRegistro TEXT NOT NULL," +
                         "fotoPerfil BLOB NOT NULL,"+ //tipo de dato que sirve para almacenar archivos binarios (IMAGENES AUDIO VIDEOS)
-                        "logged_in INTEGER DEFAULT 0" +  // Agregado para el logged_in
+                        "logged_in INTEGER DEFAULT 0," +  // Agregado para el logged_in
+                        "esPadre INTEGER DEFAULT 0" +
                         ");"
         );
 
@@ -176,6 +177,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 String correo = cursor.getString(cursor.getColumnIndexOrThrow("correo"));
                 String fechaRaw = cursor.getString(cursor.getColumnIndexOrThrow("fechaRegistro"));
                 int logged = cursor.getInt(cursor.getColumnIndexOrThrow("logged_in"));
+                int esPadre = cursor.getInt(cursor.getColumnIndexOrThrow("esPadre"));
 
                 String fechaFormateada;
                 try {
@@ -191,6 +193,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         .append(", Correo: ").append(correo)
                         .append(", Fecha de Registro: ").append(fechaFormateada)
                         .append(", Logged_in: ").append(logged)
+                        .append(", esPadre: ").append(esPadre)
                         .append("\n");
 
             } catch (Exception e) {
@@ -294,6 +297,57 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         return rowsUpdated > 0; // Si se actualizó al menos una fila
     }
+
+    //----------------------- METODO COMPROBACIÓN SI ES PADRE -----------------------//
+
+    /**
+     * Este metodo comrpueba si el usuario que esta en este momento logeado en nuestra aplicación
+     * si es el padre (administrador) ya que con esto tendria unas opciones especiales que solo
+     * puede ver el padre (administrador)
+     * @return Devolvemos TRUE/FALSE si es el padre o no.
+     */
+    public boolean esUsuarioLogueadoPadre() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT esPadre FROM Usuario WHERE logged_in = 1",
+                null
+        );
+
+        boolean esPadre = false;
+        if (cursor.moveToFirst()) {
+            esPadre = cursor.getInt(0) == 1;  // Si esPadre = 1, entonces es padre
+        }
+
+        cursor.close();
+        db.close();
+        return esPadre;
+    }
+
+    /**
+     *
+     * @param usuarioId
+     * @return
+     */
+    public boolean esUsuarioPadrePorId(int usuarioId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT esPadre FROM Usuario WHERE id = ?",
+                new String[]{String.valueOf(usuarioId)}
+        );
+
+        boolean esPadre = false;
+        if (cursor.moveToFirst())
+        {
+            esPadre = cursor.getInt(0) == 1;
+        }
+
+        cursor.close();
+        db.close();
+        return esPadre;
+    }
+
 
     //----------------------- METODO CONTRASEÑA HASH -----------------------//
 
@@ -399,6 +453,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
         cursor.close(); // Cerramos la sentencia de comprobación.
 
+        // ¿Es el primer usuario?
+        int esPadre = 0;
+        Cursor cursorCount = db.rawQuery("SELECT COUNT(*) FROM Usuario", null);
+        if (cursorCount.moveToFirst()) {
+            int count = cursorCount.getInt(0);
+            esPadre = (count == 0) ? 1 : 0; // Si no hay usuarios, es el padre
+        }
+        cursorCount.close();
+
+
         // Hasheamos la contraseña proporcionada por el usuario
         String contraseniaHasheada = hashPassword(contrasenia);
 
@@ -411,6 +475,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         contentValues.put("fechaRegistro", getCurrentDate());
         contentValues.put("logged_in", 0); // Inicialmente no está logueado
         contentValues.put("fotoPerfil", imagen); // Imagen del usuario en byte[], obligatorio según la estructura de la tabla
+        contentValues.put("esPadre", esPadre); // Aquí se define si es padre
 
         // Insertamos el usuario y verificamos si la inserción fue exitosa
         long result = db.insert("Usuario", null, contentValues);
@@ -448,33 +513,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         return sdf.format(new Date());
     }
-
-
-// El que tenias
-//    public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite) {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//
-//        String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-//
-//        // El ContentValues se utiliza para almacenar pares clave-valor
-//        // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
-//        ContentValues values = new ContentValues();
-//        values.put("usuario_id", usuarioId);
-//        values.put("titulo", titulo);
-//        values.put("descripcion", descripcion);
-//        values.put("prioridad", prioridad);
-//        values.put("estado", estado);
-//        values.put("fechaLimite", fechaLimite);
-//        values.put("fechaCreacion", fechaCreacion);
-//
-//        // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
-//        // se guarda un numero donde se comprueba si se ha creado la tarea o no.
-//        long resultado = db.insert("Tarea", null, values);
-//        db.close();
-//
-//        return resultado != -1;
-//    }
-
 
     //----------------------- METODO OBTENER ID -----------------------//
     /**
@@ -633,6 +671,32 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return resultado != -1;
     }
 
+    /**
+     *
+     * @param usuarioAsignadoId
+     * @param titulo
+     * @param descripcion
+     * @param prioridad
+     * @param estado
+     * @param fechaLimite
+     * @param fechaCreacion
+     * @return
+     */
+    public boolean crearTareaUsuarioAsignado(int usuarioAsignadoId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaCreacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("usuario_id", usuarioAsignadoId);
+        values.put("titulo", titulo);
+        values.put("descripcion", descripcion);
+        values.put("prioridad", prioridad);
+        values.put("estado", estado);
+        values.put("fechaLimite", fechaLimite);
+        values.put("fechaCreacion", fechaCreacion);
+
+        long resultado = db.insert("Tarea", null, values);
+        return resultado != -1;
+    }
+
     public boolean eliminarTarea(int idTarea) {
         SQLiteDatabase db = this.getWritableDatabase();
         int filasEliminadas = db.delete("Tarea", "id = ?", new String[]{String.valueOf(idTarea)});
@@ -660,6 +724,41 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     //----------------------- METODOS PARA LA TABLA ACTIVIDAD USUARIO -----------------------//
 
+
+    //----------------------- METODOS PARA EL PADRE (ADMINISTRADOR) -----------------------//
+    public List<String> obtenerNombresHijos() {
+        List<String> nombres = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Obtener todos los usuarios que NO son padre (esPadre = 0)
+        Cursor cursor = db.rawQuery("SELECT nombre FROM Usuario WHERE esPadre = 0", null);
+        while (cursor.moveToNext()) {
+            nombres.add(cursor.getString(0));
+        }
+        cursor.close();
+        return nombres;
+    }
+
+    public int obtenerIdUsuarioPorNombre(String nombre) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT id FROM Usuario WHERE nombre = ?", new String[]{nombre});
+        if (cursor.moveToFirst()) {
+            int id = cursor.getInt(0);
+            cursor.close();
+            return id;
+        }
+        cursor.close();
+        return -1;
+    }
+
+    //----------------------- METODOS A USAR A FUTURO -----------------------//
+    public void resetearUsuariosLogueados() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("logged_in", 0);
+        db.update("Usuario", contentValues, null, null);
+        db.close();
+    }
 
 
 }
