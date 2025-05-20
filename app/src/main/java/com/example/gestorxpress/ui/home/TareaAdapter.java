@@ -24,11 +24,13 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
     private final Context context;
     private final List<Map<String, String>> listaTareas;
     private final DatabaseHelper dbHelper;
+    private boolean esPadre = false;
 
-    public TareaAdapter(Context context, List<Map<String, String>> listaTareas, DatabaseHelper dbHelper) {
+    public TareaAdapter(Context context, List<Map<String, String>> listaTareas, DatabaseHelper dbHelper, boolean esPadre) {
         this.context = context;
         this.listaTareas = listaTareas;
         this.dbHelper = dbHelper;
+        this.esPadre = esPadre;
     }
 
     @NonNull
@@ -48,6 +50,21 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.textEstado.setText("Estado: " + tarea.get("estado"));
         holder.textFechaInicio.setText("Inicio: " + tarea.get("fechaHoraInicio"));
         holder.textFechaLimite.setText("Límite: " + tarea.get("fechaLimite"));
+
+        // Hacemos una comprobación, donde si es padre (administrador) vera el nombre del hijo
+        // Que tiene esa tarea.
+        if (esPadre)
+        {
+            int idUsuarioTarea = Integer.parseInt(tarea.get("usuario_id"));
+            String nombreUsuario = dbHelper.obtenerNombreUsuarioPorId(idUsuarioTarea);
+            holder.textNombreUsuario.setText(nombreUsuario);
+            holder.textNombreUsuario.setVisibility(View.VISIBLE);
+        }
+        // Si no, no mostramos el nombre del hijo, ya que el hijo solo vera sus propias tareas.
+        else
+        {
+            holder.textNombreUsuario.setVisibility(View.GONE);
+        }
 
         holder.editTitulo.setText(tarea.get("titulo"));
         holder.editDescripcion.setText(tarea.get("descripcion"));
@@ -69,27 +86,49 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
             holder.layoutDetalles.setVisibility(visible ? View.GONE : View.VISIBLE);
         });
 
+        // Si el usuario le da el boton eliminar, elimina la tarea
         holder.btnEliminar.setOnClickListener(v -> {
-            String idTarea = tarea.get("id");
+            String idTarea = tarea.get("id"); // Obtenemos el id de la tarea que vamos a eliminar
+
+            //Comprobamos que esa tarea no sea nula
             if (idTarea != null) {
-                try {
-                    int idInt = Integer.parseInt(idTarea);
-                    if (dbHelper.eliminarTarea(idInt)) {
+                // Lo usamos para controlar posibles errores que nos da al eliminar o obtener el id de la tarea a borrar
+                try
+                {
+                    int idInt = Integer.parseInt(idTarea); // Guardamos el id de la tarea a borrar.
+
+                    if (dbHelper.eliminarTarea(idInt)) // Llamamos el metodo donde borramos la tarea, y obtenemos un boolean según si se borro o no.
+                    {
                         listaTareas.remove(position);
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, listaTareas.size());
                         Toast.makeText(context, "Tarea eliminada", Toast.LENGTH_SHORT).show();
-                    } else {
+                    }
+                    else // Por si surgui un error.
+                    {
                         Toast.makeText(context, "Error al eliminar tarea", Toast.LENGTH_SHORT).show();
                     }
-                } catch (NumberFormatException e) {
+                }
+                catch (NumberFormatException e)
+                {
                     Toast.makeText(context, "ID de tarea inválido", Toast.LENGTH_SHORT).show();
                 }
-            } else {
+            }
+            else
+            {
                 Toast.makeText(context, "ID de tarea nulo", Toast.LENGTH_SHORT).show();
             }
         });
 
+        /**
+         * Al darle el boton de editar, se activira el modo edición.
+         * Tambien se activara un boton que es el guardar.
+         * Dentro de ahi podremos editar lo que quiera el usuario.
+         * .
+         * Cuando le demos al boton de guardar, llamaremos un metodo donde hara un UPDATE sobre la
+         * tarea modificada, tambien haremos un put para que el usuario vea en la aplicación
+         * lo que ha modificado.
+         */
         holder.btnEditar.setOnClickListener(v -> alternarModoEdicion(holder, true));
 
         holder.btnGuardar.setOnClickListener(v -> {
@@ -102,7 +141,8 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
             String nuevaFechaLimite = holder.editFechaLimite.getText().toString();
 
             if (dbHelper.editarTarea(Integer.parseInt(idTarea), nuevoTitulo, nuevaDescripcion,
-                    nuevaPrioridad, nuevoEstado, nuevaFechaLimite, nuevaFechaInicio)) {
+                    nuevaPrioridad, nuevoEstado, nuevaFechaLimite, nuevaFechaInicio))
+            {
                 tarea.put("titulo", nuevoTitulo);
                 tarea.put("descripcion", nuevaDescripcion);
                 tarea.put("prioridad", nuevaPrioridad);
@@ -112,13 +152,19 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                 notifyItemChanged(position);
 
                 Toast.makeText(context, "Tarea actualizada", Toast.LENGTH_SHORT).show();
-            } else {
+            }
+            else
+            {
                 Toast.makeText(context, "Error al actualizar tarea", Toast.LENGTH_SHORT).show();
             }
 
             alternarModoEdicion(holder, false);
         });
 
+        /**
+         * Aqui hacemos un control de calendario, donde el usuario puede seleccionar la fecha y hora.
+         * Que esta muy bien visualmente.
+         */
         // Dialogs para seleccionar fecha y hora
         Calendar calendario = Calendar.getInstance();
         SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
@@ -148,7 +194,13 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         return listaTareas.size();
     }
 
-    private void alternarModoEdicion(TareaViewHolder holder, boolean enEdicion) {
+    /**
+     * Metodo donde alternamos el modo edición, ya que se activa los texto de la tarea a modificar.
+     * @param holder
+     * @param enEdicion TRUE/FALSE segun si va a editar o no la tarea.
+     */
+    private void alternarModoEdicion(TareaViewHolder holder, boolean enEdicion)
+    {
         int visEdicion = enEdicion ? View.VISIBLE : View.GONE;
         int visTexto = enEdicion ? View.GONE : View.VISIBLE;
 
@@ -170,17 +222,24 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.btnEditar.setVisibility(visTexto);
     }
 
-    static class TareaViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * Clase donde obtenemos los textModel para visualizar las tareas que recuperamos.
+     */
+    static class TareaViewHolder extends RecyclerView.ViewHolder
+    {
         TextView textTitulo, textDescripcion, textPrioridad, textEstado, textFechaInicio, textFechaLimite;
+        TextView textNombreUsuario;
         EditText editTitulo, editDescripcion, editFechaInicio, editFechaLimite;
         Spinner spinnerPrioridad, spinnerEstado;
         ImageButton btnEditar, btnEliminar;
         Button btnGuardar;
         View layoutDetalles;
 
-        public TareaViewHolder(@NonNull View itemView) {
+        public TareaViewHolder(@NonNull View itemView)
+        {
             super(itemView);
             textTitulo = itemView.findViewById(R.id.text_titulo);
+            textNombreUsuario = itemView.findViewById(R.id.text_nombre_usuario);
             textDescripcion = itemView.findViewById(R.id.text_descripcion);
             textPrioridad = itemView.findViewById(R.id.text_prioridad);
             textEstado = itemView.findViewById(R.id.text_estado);

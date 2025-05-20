@@ -65,7 +65,8 @@ public class HomeFragment extends Fragment {
      */
     private void cargarTareasDelUsuarioLogueado()
     {
-        new Thread(() -> {
+        new Thread(() ->
+        {
             int idUsuario = dbHelper.obtenerIdUsuario();
             boolean esPadre = dbHelper.esUsuarioPadrePorId(idUsuario);
             List<Map<String, String>> listaTareas = new ArrayList<>();
@@ -75,19 +76,38 @@ public class HomeFragment extends Fragment {
                 SQLiteDatabase db = dbHelper.getReadableDatabase();
                 Cursor cursor;
 
-                if (esPadre)
-                {
-                    // Padre: ver tareas de todos los usuarios que no son padres
-                    String query = "SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite " +
-                            "FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0)";
-                    cursor = db.rawQuery(query, null);
+                // Construimos la consulta con filtros opcionales
+                StringBuilder queryBuilder = new StringBuilder();
+                List<String> argsList = new ArrayList<>();
+
+                if (esPadre) {
+
+                    // Padre: visualiza las tareas de usuarios que no son padres
+                    queryBuilder.append("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite, usuario_id ")
+                            .append("FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0)");
                 }
                 else
                 {
-                    // Hijo: ver solo sus tareas
-                    String query = "SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?";
-                    cursor = db.rawQuery(query, new String[]{String.valueOf(idUsuario)});
+                    // Hijo: visualiza solo sus tareas
+                    queryBuilder.append("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite, usuario_id ")
+                            .append("FROM Tarea WHERE usuario_id = ?");
+                    argsList.add(String.valueOf(idUsuario));
                 }
+
+                // Aplicar filtros si existen
+                if (filtroPrioridad != null)
+                {
+                    queryBuilder.append(" AND prioridad = ?");
+                    argsList.add(filtroPrioridad);
+                }
+                if (filtroEstado != null)
+                {
+                    queryBuilder.append(" AND estado = ?");
+                    argsList.add(filtroEstado);
+                }
+
+                String[] args = argsList.toArray(new String[0]);
+                cursor = db.rawQuery(queryBuilder.toString(), args);
 
                 if (cursor.moveToFirst())
                 {
@@ -100,12 +120,13 @@ public class HomeFragment extends Fragment {
                         tarea.put("estado", cursor.getString(4));
                         tarea.put("fechaHoraInicio", cursor.getString(5));
                         tarea.put("fechaLimite", cursor.getString(6));
+                        tarea.put("usuario_id", cursor.getString(7));
                         listaTareas.add(tarea);
                     } while (cursor.moveToNext());
                 }
 
                 cursor.close();
-                // No cerrar dbHelper ni db aquí
+
             }
 
             requireActivity().runOnUiThread(() -> {
@@ -116,7 +137,7 @@ public class HomeFragment extends Fragment {
                 } else {
                     textHome.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
-                    recyclerView.setAdapter(new TareaAdapter(requireContext(), listaTareas, dbHelper));
+                    recyclerView.setAdapter(new TareaAdapter(requireContext(), listaTareas, dbHelper, esPadre));
                 }
             });
         }).start();

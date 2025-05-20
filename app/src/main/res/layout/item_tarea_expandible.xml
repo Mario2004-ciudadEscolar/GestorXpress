@@ -31,6 +31,16 @@
             android:visibility="gone"
             android:paddingTop="8dp">
 
+            <!-- Nombre usuario visible solo para padres -->
+            <TextView
+                android:id="@+id/text_nombre_usuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp" />
+
             <!-- Modo vista -->
             <TextView android:id="@+id/text_descripcion" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:id="@+id/text_prioridad" android:layout_width="match_parent" android:layout_height="wrap_content"/>

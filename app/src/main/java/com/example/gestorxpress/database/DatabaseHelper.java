@@ -327,9 +327,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
-     *
-     * @param usuarioId
-     * @return
+     * Metodo que comprueba si el id del usuario es el padre (administrador)
+     * @param usuarioId del usuario.
+     * @return Boolean TRUE/FALSE si el id que le pasamos es el padre o no.
      */
     public boolean esUsuarioPadrePorId(int usuarioId) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -349,32 +349,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
         return esPadre;
     }
-
-    /**
-     *
-     * @param idUsuario
-     * @return
-     */
-    public int obtenerIdPadreDeUsuario(int idUsuario) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        int idPadre = -1;
-
-        Cursor cursor = db.rawQuery("SELECT esPadre FROM Usuario WHERE id = ?", new String[]{String.valueOf(idUsuario)});
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                try {
-                    idPadre = cursor.getInt(cursor.getColumnIndexOrThrow("esPadre"));
-                } catch (IllegalArgumentException e) {
-                    Log.e("Database", "Columna 'esPadre' no encontrada en la consulta");
-                    e.printStackTrace();
-                }
-            }
-            cursor.close();
-        }
-
-        return idPadre; // Si es -1, significa que no tiene padre
-    }
-
 
     //----------------------- METODO CONTRASEÑA HASH -----------------------//
 
@@ -812,6 +786,23 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
         cursor.close();
         return -1;
+    }
+
+    /**
+     * Metodo que uso para obtener el nombre del usuario por su id, el id lo saco de la tabla
+     * tareas en otro metodo.
+     * @param idUsuario de la tabla tarea
+     * @return nombre del usuario obtenido por su id.
+     */
+    public String obtenerNombreUsuarioPorId(int idUsuario) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT nombre FROM Usuario WHERE id = ?", new String[]{String.valueOf(idUsuario)});
+        String nombre = "";
+        if (cursor.moveToFirst()) {
+            nombre = cursor.getString(0);
+        }
+        cursor.close();
+        return nombre;
     }
 
     //----------------------- METODOS A USAR A FUTURO -----------------------//

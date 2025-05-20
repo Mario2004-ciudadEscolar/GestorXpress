@@ -1,75 +1,97 @@
 package com.example.gestorxpress.ui.slideshow;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Grafica extends View
-{
+public class Grafica extends View {
 
-    private int tareasRealizadas = 0;
-    private int porcentaje = 0;
+    /**
+     * Explicación de porque uso CANVA y PAINT.
+     * .
+     * Uso PAINT y CANVA porque no me dejaba implementar una dependecia que ya me dibujaba
+     * los graficos, entonces decidimos utilizamos utilizar otra solución donde nosotros mismo
+     * dibujamos la grafica segun los datos que queremos.
+     * .
+     * .
+     * Uso de PAINT:
+     * Paint se usa para definir cómo se dibujan los elementos: color,
+     * estilo de trazo, tamaño de texto, etc.
+     * .
+     * .
+     * Uso de CANVAS:
+     * Canvas es el objeto que representa el lienzo sobre el cual dibujas.
+     * Lo utilizas en el método onDraw(Canvas canvas):
+     */
 
-    private Paint paintBarRealizadas;
-    private Paint paintBarPendientes;
+    private Map<String, Integer> datos = new LinkedHashMap<>();
+    private float animacionProgreso = 0f;
+
+    private Paint paintBar;
     private Paint paintText;
     private Paint paintAxis;
+    private Paint paintLineaPromedio;
 
-    public Grafica(Context context)
-    {
+    public Grafica(Context context) {
         super(context);
         init();
     }
 
-    public Grafica(Context context, @Nullable AttributeSet attrs)
-    {
+    public Grafica(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public Grafica(Context context, @Nullable AttributeSet attrs, int defStyleAttr)
-    {
+    public Grafica(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
-    private void init()
-    {
-        paintBarRealizadas = new Paint();
-        paintBarRealizadas.setColor(Color.parseColor("#3F51B5")); // Azul vivo
-        paintBarRealizadas.setStyle(Paint.Style.FILL);
-
-        paintBarPendientes = new Paint();
-        paintBarPendientes.setColor(Color.parseColor("#B0BEC5")); // Gris claro
-        paintBarPendientes.setStyle(Paint.Style.FILL);
+    private void init() {
+        paintBar = new Paint();
+        paintBar.setColor(Color.parseColor("#3F51B5"));
+        paintBar.setStyle(Paint.Style.FILL);
 
         paintText = new Paint();
         paintText.setColor(Color.BLACK);
-        paintText.setTextSize(60f);
+        paintText.setTextSize(40f);
         paintText.setTextAlign(Paint.Align.CENTER);
 
         paintAxis = new Paint();
         paintAxis.setColor(Color.DKGRAY);
         paintAxis.setStrokeWidth(4f);
+
+        paintLineaPromedio = new Paint();
+        paintLineaPromedio.setColor(Color.RED);
+        paintLineaPromedio.setStrokeWidth(3f);
+        paintLineaPromedio.setStyle(Paint.Style.STROKE);
+        paintLineaPromedio.setPathEffect(null);
     }
 
-    public void setDatos(Map<String, Integer> datos)
-    {
-        // Ejemplo simple: imprimir datos recibidos
-        for (Map.Entry<String, Integer> entry : datos.entrySet()) {
-            Log.d("Grafica", "Fecha: " + entry.getKey() + " | Total: " + entry.getValue());
-        }
+    public void setDatos(Map<String, Integer> datos) {
+        this.datos = datos;
+        iniciarAnimacion();
+    }
 
-        // Aquí deberías hacer el redibujo de la gráfica usando estos datos
-        invalidate(); // Si es una vista personalizada
+    private void iniciarAnimacion() {
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(800);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(animation -> {
+            animacionProgreso = (float) animation.getAnimatedValue();
+            invalidate();
+        });
+        animator.start();
     }
 
     @Override
@@ -79,58 +101,69 @@ public class Grafica extends View
         int width = getWidth();
         int height = getHeight();
 
-        int paddingLeft = 150;
-        int paddingRight = 150;
+        int paddingLeft = 100;
+        int paddingRight = 100;
         int paddingTop = 100;
         int paddingBottom = 200;
 
-        int chartWidth = width - paddingLeft - paddingRight;
         int chartHeight = height - paddingTop - paddingBottom;
 
-        // Dibujar eje horizontal
+        // Dibujar ejes
         canvas.drawLine(paddingLeft, height - paddingBottom, width - paddingRight, height - paddingBottom, paintAxis);
-        // Dibujar eje vertical
         canvas.drawLine(paddingLeft, paddingTop, paddingLeft, height - paddingBottom, paintAxis);
 
-        // Definimos max valor para escala (puede ser tareasRealizadas o porcentaje, aquí usamos 100 para %)
-        int maxValue = 100;
+        int numBarras = datos.size();
+        if (numBarras == 0) return;
 
-        // Ancho barras
-        int barWidth = 150;
+        int maxValue = 0;
+        int total = 0;
+        for (int valor : datos.values()) {
+            if (valor > maxValue) maxValue = valor;
+            total += valor;
+        }
+        maxValue = Math.max(maxValue, 1); // Evitar división por cero
+        float promedio = (float) total / numBarras;
 
-        // Espacio entre barras
-        int spaceBetweenBars = 150;
+        int availableWidth = width - paddingLeft - paddingRight;
+        int barWidth = Math.min(100, availableWidth / (numBarras * 2));
+        int spaceBetween = (availableWidth - (barWidth * numBarras)) / (numBarras + 1);
 
-        // Coordenadas para barra "Tareas Realizadas"
-        float tareasHeight = ((float) tareasRealizadas / maxValue) * chartHeight;
-        tareasHeight = Math.min(tareasHeight, chartHeight); // Para no sobrepasar
+        int index = 0;
+        for (Map.Entry<String, Integer> entry : datos.entrySet()) {
+            String fecha = entry.getKey();
+            int valor = entry.getValue();
 
-        float tareasLeft = paddingLeft + spaceBetweenBars;
-        float tareasTop = height - paddingBottom - tareasHeight;
-        float tareasRight = tareasLeft + barWidth;
-        float tareasBottom = height - paddingBottom;
+            float barHeight = ((float) valor / maxValue) * chartHeight * animacionProgreso;
+            float left = paddingLeft + spaceBetween * (index + 1) + barWidth * index;
+            float top = height - paddingBottom - barHeight;
+            float right = left + barWidth;
+            float bottom = height - paddingBottom;
 
-        // Coordenadas para barra "Porcentaje"
-        float porcentajeHeight = ((float) porcentaje / maxValue) * chartHeight;
-        porcentajeHeight = Math.min(porcentajeHeight, chartHeight);
+            // Dibujar barra
+            canvas.drawRect(left, top, right, bottom, paintBar);
 
-        float porcentajeLeft = tareasRight + spaceBetweenBars;
-        float porcentajeTop = height - paddingBottom - porcentajeHeight;
-        float porcentajeRight = porcentajeLeft + barWidth;
-        float porcentajeBottom = height - paddingBottom;
+            // Valor encima de la barra
+            canvas.drawText(String.valueOf(valor), left + barWidth / 2f, top - 10, paintText);
 
-        // Dibujar barras
-        canvas.drawRect(tareasLeft, tareasTop, tareasRight, tareasBottom, paintBarRealizadas);
-        canvas.drawRect(porcentajeLeft, porcentajeTop, porcentajeRight, porcentajeBottom, paintBarPendientes);
+            // Fecha debajo de la barra (abreviada)
+            canvas.drawText(abreviarFecha(fecha), left + barWidth / 2f, height - paddingBottom + 50, paintText);
 
-        // Dibujar valores encima de las barras
-        canvas.drawText(String.valueOf(tareasRealizadas), tareasLeft + barWidth / 2f, tareasTop - 20, paintText);
-        canvas.drawText(porcentaje + "%", porcentajeLeft + barWidth / 2f, porcentajeTop - 20, paintText);
+            index++;
+        }
 
-        // Dibujar etiquetas debajo de las barras
-        paintText.setTextSize(50f);
-        canvas.drawText("Tareas", tareasLeft + barWidth / 2f, height - paddingBottom + 60, paintText);
-        canvas.drawText("Porcentaje", porcentajeLeft + barWidth / 2f, height - paddingBottom + 60, paintText);
+        // Dibujar línea horizontal de promedio
+        float promedioY = height - paddingBottom - ((promedio / maxValue) * chartHeight * animacionProgreso);
+        canvas.drawLine(paddingLeft, promedioY, width - paddingRight, promedioY, paintLineaPromedio);
+        canvas.drawText("Promedio: " + String.format("%.1f", promedio), width - paddingRight, promedioY - 10, paintText);
     }
 
+    // Formato de fecha "YYYY-MM-DD" → "DD/MM"
+    private String abreviarFecha(String fecha) {
+        try {
+            String[] partes = fecha.split("-");
+            return partes[2] + "/" + partes[1];
+        } catch (Exception e) {
+            return fecha;
+        }
+    }
 }
