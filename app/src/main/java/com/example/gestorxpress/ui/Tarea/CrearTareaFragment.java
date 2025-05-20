@@ -2,7 +2,9 @@ package com.example.gestorxpress.ui.Tarea;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.AlarmClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -191,6 +193,8 @@ public class CrearTareaFragment extends Fragment {
         if (exito)
         {
             Toast.makeText(getContext(), "Tarea guardada correctamente", Toast.LENGTH_SHORT).show();
+            programarAlarmaEnReloj(fechaHoraInicioCalendar, "Inicio: " + titulo);
+            programarAlarmaEnReloj(fechaFinCalendar, "Fin: " + titulo);
             limpiarCampos();
         }
         else
@@ -238,4 +242,23 @@ public class CrearTareaFragment extends Fragment {
 
         }, anio, mes, dia).show();
     }
+
+    private void programarAlarmaEnReloj(Calendar fecha, String mensaje) {
+        int hora = fecha.get(Calendar.HOUR_OF_DAY);
+        int minuto = fecha.get(Calendar.MINUTE);
+
+        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
+        intent.putExtra(AlarmClock.EXTRA_HOUR, hora);
+        intent.putExtra(AlarmClock.EXTRA_MINUTES, minuto);
+        intent.putExtra(AlarmClock.EXTRA_MESSAGE, mensaje);
+        intent.putExtra(AlarmClock.EXTRA_SKIP_UI, true); // para que no abra el reloj
+
+        // Solo continúa si hay app de reloj que acepte la intent
+        if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Toast.makeText(requireContext(), "No se encontró una app de Reloj compatible", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

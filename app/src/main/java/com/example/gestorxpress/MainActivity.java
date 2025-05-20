@@ -26,7 +26,11 @@ import android.widget.ImageButton;
 
 import com.example.gestorxpress.databinding.ActivityMainBinding;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        revisarTareasYProgramarAlarmas();
 
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
@@ -175,4 +181,47 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
+    // cuando se cree mirara en la bbdd si hay que poner alguna alarma por que solo deja 24 horas antes
+    private void programarAlarmaEnReloj(Calendar fecha, String mensaje) {
+        int hora = fecha.get(Calendar.HOUR_OF_DAY);
+        int minuto = fecha.get(Calendar.MINUTE);
+
+        Intent intent = new Intent(android.provider.AlarmClock.ACTION_SET_ALARM);
+        intent.putExtra(android.provider.AlarmClock.EXTRA_HOUR, hora);
+        intent.putExtra(android.provider.AlarmClock.EXTRA_MINUTES, minuto);
+        intent.putExtra(android.provider.AlarmClock.EXTRA_MESSAGE, mensaje);
+        intent.putExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, true);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+    private void revisarTareasYProgramarAlarmas() {
+        new Thread(() -> {
+            DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+            int usuarioId = dbHelper.obtenerIdUsuario();
+
+            if (usuarioId != -1) {
+                List<Map<String, String>> tareas = dbHelper.getTareasFuturas(usuarioId);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+                for (Map<String, String> tarea : tareas) {
+                    try {
+                        Calendar calInicio = Calendar.getInstance();
+                        calInicio.setTime(sdf.parse(tarea.get("inicio")));
+
+                        Calendar calFin = Calendar.getInstance();
+                        calFin.setTime(sdf.parse(tarea.get("fin")));
+
+                        programarAlarmaEnReloj(calInicio, "Inicio: " + tarea.get("titulo"));
+                        programarAlarmaEnReloj(calFin, "Fin: " + tarea.get("titulo"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
 }

@@ -814,5 +814,50 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
     }
 
+    /**
+     *
+     * @param usuarioId
+     * @return
+     */
+    public List<Map<String, String>> getTareasFuturas(int usuarioId) {
+        List<Map<String, String>> tareas = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        long ahora = System.currentTimeMillis();
+        long en24Horas = ahora + (24 * 60 * 60 * 1000); // ahora + 24 horas
+
+        Cursor cursor = db.rawQuery(
+                "SELECT titulo, descripcion, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?",
+                new String[]{String.valueOf(usuarioId)}
+        );
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+        while (cursor.moveToNext()) {
+            try {
+                String titulo = cursor.getString(0);
+                String descripcion = cursor.getString(1);
+                String inicio = cursor.getString(2);
+                String fin = cursor.getString(3);
+
+                long inicioMs = sdf.parse(inicio).getTime();
+                long finMs = sdf.parse(fin).getTime();
+
+                if ((inicioMs > ahora && inicioMs < en24Horas) || (finMs > ahora && finMs < en24Horas)) {
+                    Map<String, String> tarea = new HashMap<>();
+                    tarea.put("titulo", titulo);
+                    tarea.put("descripcion", descripcion);
+                    tarea.put("inicio", inicio);
+                    tarea.put("fin", fin);
+                    tareas.add(tarea);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        cursor.close();
+        return tareas;
+    }
 
 }
