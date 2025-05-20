@@ -10,12 +10,14 @@ import androidx.annotation.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class DatabaseHelper extends SQLiteOpenHelper
@@ -348,6 +350,31 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return esPadre;
     }
 
+    /**
+     *
+     * @param idUsuario
+     * @return
+     */
+    public int obtenerIdPadreDeUsuario(int idUsuario) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int idPadre = -1;
+
+        Cursor cursor = db.rawQuery("SELECT esPadre FROM Usuario WHERE id = ?", new String[]{String.valueOf(idUsuario)});
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                try {
+                    idPadre = cursor.getInt(cursor.getColumnIndexOrThrow("esPadre"));
+                } catch (IllegalArgumentException e) {
+                    Log.e("Database", "Columna 'esPadre' no encontrada en la consulta");
+                    e.printStackTrace();
+                }
+            }
+            cursor.close();
+        }
+
+        return idPadre; // Si es -1, significa que no tiene padre
+    }
+
 
     //----------------------- METODO CONTRASEÑA HASH -----------------------//
 
@@ -415,6 +442,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
 
         cursor.close();
+        db.close();
         return false; // No se encontró el usuario o la contraseña es incorrecta
     }
 
@@ -497,8 +525,9 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @return {@code true} si el correo cumple con el formato requerido, {@code false} en caso contrario.
      */
     public boolean esCorreoValido(String correo) {
-        String regex = "^[\\w.-]+@(hotmail|gmail|yahoo)\\.(com|es)$";
-        return correo.matches(regex);
+       /* String regex = "^[\\w.-]+@(hotmail|gmail|yahoo)\\.(com|es)$";
+        return correo.matches(regex);*/
+        return correo != null && correo.matches("^[A-Za-z0-9._%+-]+@(gmail|hotmail|yahoo)\\.(com|es)$");
     }
 
     /**
@@ -697,6 +726,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return resultado != -1;
     }
 
+    /**
+     * Al llamar este metodo, lo que hacemos es borrar dicha tarea seleccionada
+     * @param idTarea de la tarea a borrar en la bbdd.
+     * @return boolean TRUE/FALSE si se ha borrado o no.
+     */
     public boolean eliminarTarea(int idTarea) {
         SQLiteDatabase db = this.getWritableDatabase();
         int filasEliminadas = db.delete("Tarea", "id = ?", new String[]{String.valueOf(idTarea)});
@@ -704,7 +738,18 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return filasEliminadas > 0;
     }
 
-
+    /**
+     * Al llamar este metodo lo que hacemos e modificar la tarea que selecciono el usuario
+     * Obtenemos los siguientes parametros posibles a modificar.
+     * @param idTarea Que puede ser modificado.
+     * @param nuevoTitulo Que puede ser modificado.
+     * @param nuevaDescripcion Que puede ser modificado.
+     * @param nuevaPrioridad Que puede ser modificado.
+     * @param nuevoEstado Que puede ser modificado.
+     * @param nuevaFechaLimite Que puede ser modificado.
+     * @param nuevaFechaHoraInicio Que puede ser modificado.
+     * @return Bolleano TRUE/FALSE para comprobar si se ha modificado la tarea o no.
+     */
     public boolean editarTarea(int idTarea, String nuevoTitulo, String nuevaDescripcion,
                                String nuevaPrioridad, String nuevoEstado,
                                String nuevaFechaLimite, String nuevaFechaHoraInicio) {
@@ -722,10 +767,18 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return filasAfectadas > 0;
     }
 
+
     //----------------------- METODOS PARA LA TABLA ACTIVIDAD USUARIO -----------------------//
 
 
     //----------------------- METODOS PARA EL PADRE (ADMINISTRADOR) -----------------------//
+
+    /**
+     * Este metodo lo usamos para obtener los nombres de los susario que no son padre (administrador) en este caso,
+     * ya que al obtener el nombre lo ponemos en un "Spinner" para seleccionar el nombre del hijo al que le vamos a
+     * crearle una tarea.
+     * @return Lista de todos los usuarios que no son padres, vamos que son los hijos.
+     */
     public List<String> obtenerNombresHijos() {
         List<String> nombres = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -739,6 +792,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return nombres;
     }
 
+    /**
+     * Metodo que usamos para obtener el id por el nombre, ya que una vez que el padre seleccione el nombre
+     * del hijo cual le va añadir una tarea, pues necesitamos obtener el id para crearle la tarea y hacer
+     * la conexión con la tabla usaurio.
+     * .
+     * ¡¡IMPORTANTE!! Esto lo tendriamos que cambiar por un usuario podria tener el mismo nombre que otro usuario.
+     * .
+     * @param nombre del usuario seleccionado.
+     * @return id del usuario.
+     */
     public int obtenerIdUsuarioPorNombre(String nombre) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT id FROM Usuario WHERE nombre = ?", new String[]{nombre});

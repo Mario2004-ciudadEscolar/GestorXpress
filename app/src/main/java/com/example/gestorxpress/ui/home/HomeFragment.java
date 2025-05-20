@@ -28,9 +28,12 @@ public class HomeFragment extends Fragment {
     private String filtroPrioridad = null;
     private String filtroEstado = null;
 
+    private DatabaseHelper dbHelper;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbHelper = new DatabaseHelper(requireContext()); // Crea una sola instancia
         setHasOptionsMenu(true); // Permite mostrar iconos en el toolbar
     }
 
@@ -48,56 +51,46 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
-//    @Override
-//    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-//        inflater.inflate(R.menu.menu_home, menu);
-//        super.onCreateOptionsMenu(menu, inflater);
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        if (item.getItemId() == R.id.action_filtrar) {
-//            // Mostrar el menú justo debajo del icono
-//            View view = requireActivity().findViewById(R.id.action_filtrar);
-//            if (view == null) {
-//                // fallback a la toolbar entera
-//                view = requireActivity().findViewById(R.id.toolbar);
-//            }
-//            mostrarMenuFiltro(view);
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-
-
-
-
-
-    private void cargarTareasDelUsuarioLogueado() {
+    /**
+     * Con este metodo obtenemos las tareas del usuario que esta logeado en este momento
+     * .
+     * 1. Obtenemos el id del usuario logeado en nuestra aplicación en este momento.
+     * 2. Comprobamos si el id obtenido es el padre (administrador).
+     * 3. Comprobamos si obtenimos el id del usuario.
+     * 4. Luego de haber obtenido la validación de que si es padre o no, se realizara dos
+     *    sentencias según si es padre (administrador) o hijo (otro usuario).
+     * 5. Dentro de esas sentencias obtenemos las tareas, el padre obtiene el suyo y el delos hijos,
+     *    en cambio los hijos obtiene sus propias tareas.
+     * 6. Los datos obtenido lo guardamos en una colección para mostrarlo finalmente en el HOME.
+     */
+    private void cargarTareasDelUsuarioLogueado()
+    {
         new Thread(() -> {
-            DatabaseHelper dbHelper = new DatabaseHelper(requireContext());
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-
             int idUsuario = dbHelper.obtenerIdUsuario();
+            boolean esPadre = dbHelper.esUsuarioPadrePorId(idUsuario);
             List<Map<String, String>> listaTareas = new ArrayList<>();
 
-            if (idUsuario != -1) {
-                StringBuilder query = new StringBuilder("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?");
-                List<String> args = new ArrayList<>();
-                args.add(String.valueOf(idUsuario));
+            if (idUsuario != -1)
+            {
+                SQLiteDatabase db = dbHelper.getReadableDatabase();
+                Cursor cursor;
 
-                if (filtroPrioridad != null) {
-                    query.append(" AND prioridad = ?");
-                    args.add(filtroPrioridad);
+                if (esPadre)
+                {
+                    // Padre: ver tareas de todos los usuarios que no son padres
+                    String query = "SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite " +
+                            "FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0)";
+                    cursor = db.rawQuery(query, null);
                 }
-                if (filtroEstado != null) {
-                    query.append(" AND estado = ?");
-                    args.add(filtroEstado);
+                else
+                {
+                    // Hijo: ver solo sus tareas
+                    String query = "SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?";
+                    cursor = db.rawQuery(query, new String[]{String.valueOf(idUsuario)});
                 }
 
-                Cursor cursor = db.rawQuery(query.toString(), args.toArray(new String[0]));
-
-                if (cursor.moveToFirst()) {
+                if (cursor.moveToFirst())
+                {
                     do {
                         Map<String, String> tarea = new HashMap<>();
                         tarea.put("id", cursor.getString(0));
@@ -112,13 +105,12 @@ public class HomeFragment extends Fragment {
                 }
 
                 cursor.close();
+                // No cerrar dbHelper ni db aquí
             }
 
-            db.close();
-
             requireActivity().runOnUiThread(() -> {
-                if (idUsuario == -1 || listaTareas.isEmpty()) {
-                    textHome.setText("No hay tareas creadas.");
+                if (listaTareas.isEmpty()) {
+                    textHome.setText("No hay tareas disponibles.");
                     textHome.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
                 } else {
@@ -129,6 +121,20 @@ public class HomeFragment extends Fragment {
             });
         }).start();
     }
+
+    /**
+     * Metodo que llamamos para cerrar la bbdd
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (dbHelper != null) {
+            dbHelper.close(); // Cerrar dbHelper sólo aquí
+            dbHelper = null;
+        }
+    }
+
+
 
     // Muestra el popup de filtro anclado al toolbar
     public void mostrarMenuFiltro(View anchor) {
