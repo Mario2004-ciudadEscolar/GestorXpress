@@ -31,9 +31,7 @@
             android:background="@drawable/avatar1"
             android:clickable="true"
             android:focusable="true"
-            android:contentDescription="Foto de perfil"
-            />
-
+            android:contentDescription="Foto de perfil" />
 
         <EditText
             android:id="@+id/editCorreo"

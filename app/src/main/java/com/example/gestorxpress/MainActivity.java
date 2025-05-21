@@ -2,14 +2,10 @@ package com.example.gestorxpress;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.database.VerBBDDActivity;
-import com.example.gestorxpress.ui.Cuenta.CuentaActivity;
-import com.example.gestorxpress.ui.Tarea.CrearTareaFragment;
 import com.example.gestorxpress.ui.home.HomeFragment;
-import com.example.gestorxpress.ui.slideshow.SlideshowFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.fragment.app.Fragment;
@@ -21,7 +17,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 import android.util.Log;
-import android.view.MenuItem;
 import android.widget.ImageButton;
 
 import com.example.gestorxpress.databinding.ActivityMainBinding;
@@ -48,15 +43,13 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        //setSupportActionBar(binding.appBarMain.toolbar); <-- He cambiado esto
-
-        setSupportActionBar(findViewById(R.id.toolbar)); // <-- Por esto
+        setSupportActionBar(findViewById(R.id.toolbar));
 
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
 
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_Crear_Tarea, R.id.nav_slideshow)
+                R.id.nav_home, R.id.nav_Crear_Tarea, R.id.nav_slideshow, R.id.nav_Cuenta)
                 .setOpenableLayout(drawer)
                 .build();
 
@@ -107,12 +100,13 @@ public class MainActivity extends AppCompatActivity {
             /**
              * Para visualizar la cuenta del usuario
              */
-            else if (id == R.id.nav_Cuenta)
+           /* else if (id == R.id.nav_Cuenta)
             {
                 startActivity(new Intent(MainActivity.this, CuentaActivity.class));
                 drawer.closeDrawers();
                 return true;
-            }
+            }*/
+
             NavigationUI.onNavDestinationSelected(item, navController);
             drawer.closeDrawers();
             return true;

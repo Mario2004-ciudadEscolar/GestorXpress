@@ -8,18 +8,23 @@
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.gestorxpress.ui.home.HomeFragment"
-        android:label="@string/menu_home"
+        android:label="GestorXpress"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_Crear_Tarea"
         android:name="com.example.gestorxpress.ui.Tarea.CrearTareaFragment"
-        android:label="@string/menu_gallery"
+        android:label="Crear Tarea"
         tools:layout="@layout/fragment_crear__tarea" />
 
     <fragment
         android:id="@+id/nav_slideshow"
         android:name="com.example.gestorxpress.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
+        android:label="Estadísticas"
         tools:layout="@layout/fragment_slideshow" />
+    <fragment
+        android:id="@+id/nav_Cuenta"
+        android:name="com.example.gestorxpress.ui.Cuenta.CuentaFragment"
+        android:label="Cuenta"
+        tools:layout="@layout/fragment_cuenta" />
 </navigation>

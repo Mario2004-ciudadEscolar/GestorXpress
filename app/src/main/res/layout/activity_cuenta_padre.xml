@@ -1,16 +1,18 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#161631">
+    tools:context=".ui.Cuenta.CuentaPadreActivity">
 
     <TextView
         android:id="@+id/titulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bienvenido a GestorXpress"
-        android:textColor="#FFFFFF"
+        android:text="Gestión de usuarios"
+        android:textColor="#17202a "
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -22,7 +24,7 @@
         android:id="@+id/subtitulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Selecciona un perfil"
+        android:text="Seleccione el perfil"
         android:textColor="#AAAAAA"
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/titulo"
@@ -52,22 +54,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp"
         android:layout_marginBottom="32dp">
-
-        <ImageView
-            android:id="@+id/iconoAgregar"
-            android:layout_width="82dp"
-            android:layout_height="82dp"
-            android:src="@drawable/ic_add_circle"
-            android:background="@drawable/fondo_redondo_icono"
-            android:scaleType="center"
-            android:padding="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Añadir perfil"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:layout_marginTop="8dp"/>
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
