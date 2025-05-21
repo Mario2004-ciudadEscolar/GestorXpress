@@ -39,14 +39,6 @@
     <!-- Contenido principal -->
     <include layout="@layout/content_main" />
 
-    <!-- Contenedor para los fragments -->
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:background="@android:color/white" />
-
     <!-- Botón flotante -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

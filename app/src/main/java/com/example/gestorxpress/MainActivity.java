@@ -94,33 +94,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             }
-            /**
-             * Para visualizar el Home
-             */
-            else if (id == R.id.nav_home)
-            {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, new HomeFragment())
-                        .commit();
-                getSupportActionBar().setTitle("GestorXpress");
-                drawer.closeDrawers();
-                return true;
-            }
-            /**
-             * Para visualizar la página donde creas las tareas
-             */
-            else if (id == R.id.nav_Crear_Tarea)
-            {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, new CrearTareaFragment())
-                        .addToBackStack(null)  // para poder volver atrás
-                        .commit();
-                getSupportActionBar().setTitle("Crear Tarea");
-                drawer.closeDrawers();
-                return true;
-            }
             else if (id == R.id.nav_compartir)
             {
                 // Voy a comentar esto para poner el de "Ver la BBDD"
@@ -140,21 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 drawer.closeDrawers();
                 return true;
             }
-            /**
-             * Para visualizar la Grafica
-             */
-            else if (id == R.id.nav_slideshow)
-            {
-                    getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.fragment_container, new SlideshowFragment())
-                            .commit();
-                getSupportActionBar().setTitle("Gráfica");
-                    drawer.closeDrawers();
-                    return true;
-
-            }
-
             NavigationUI.onNavDestinationSelected(item, navController);
             drawer.closeDrawers();
             return true;

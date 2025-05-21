@@ -2,18 +2,18 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_margin="8dp"
+    android:layout_margin="6dp"
     android:gravity="center"
-    android:padding="8dp">
+    android:padding="4dp">
 
     <ImageView
         android:id="@+id/imagenPerfil"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="4dp"
         android:scaleType="centerCrop"
         android:background="@drawable/borde_redondo"
-        android:padding="4dp" />
+        android:padding="1dp" />
 
     <TextView
         android:id="@+id/nombrePerfil"
@@ -22,6 +22,8 @@
         android:text="Usuario"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:textSize="14sp"
-        android:gravity="center"/>
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center" />
 </LinearLayout>
