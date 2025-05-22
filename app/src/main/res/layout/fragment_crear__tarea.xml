@@ -9,26 +9,13 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-<!--        <EditText-->
-<!--            android:id="@+id/editTitulo"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:hint="Título"-->
-<!--            android:inputType="textCapWords"-->
-<!--            app:layout_constraintTop_toTopOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintEnd_toEndOf="parent" />-->
         <EditText
             android:id="@+id/editTitulo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Introduce un título claro"
-            android:inputType="textCapSentences"
-            android:backgroundTint="@color/black"
-            android:padding="12dp"
-            android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            android:layout_marginTop="12dp"
+            android:hint="Título"
+            android:inputType="textCapWords"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -43,15 +30,7 @@
             app:layout_constraintTop_toBottomOf="@id/editTitulo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:title="Gestión de usuarios"
-            app:navigationIcon="@drawable/arrow_back"
-            app:layout_constraintTop_toTopOf="parent" />
+
         <Spinner
             android:id="@+id/spinnerPrioridad"
             android:layout_width="0dp"
