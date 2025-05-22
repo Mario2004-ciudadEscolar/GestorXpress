@@ -1,4 +1,4 @@
-package com.example.gestorxpress.ui.Cuenta;
+package com.example.gestorxpress.ui.Cuenta.Hijo;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorAvatarDialog;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 
@@ -35,7 +36,7 @@ public class CuentaFragment extends Fragment {
     private ImageView imgPerfil;
     private byte[] imagenEnBytes;
     private EditText editCorreo, editPassword, editNombre, editApellido;
-    private Button btnEditarGuardar, btnEliminarCuenta;
+    private Button btnEditarGuardar;
     private boolean enModoEdicion = false;
     private DatabaseHelper dbHelper;
     private int usuarioId;
@@ -88,7 +89,7 @@ public class CuentaFragment extends Fragment {
         editNombre = view.findViewById(R.id.editNombre);
         editApellido = view.findViewById(R.id.editApellido);
         btnEditarGuardar = view.findViewById(R.id.btnEditarGuardar);
-        btnEliminarCuenta = view.findViewById(R.id.btnEliminarCuenta);
+
 
         /**
          * Llamamos a un metodo donde vamos a recuperar los datos del usuario que esta logeado en este
@@ -118,26 +119,6 @@ public class CuentaFragment extends Fragment {
                 enModoEdicion = false;
                 cambiarModoEdicion(false);
                 btnEditarGuardar.setText("Editar");
-            }
-        });
-
-        /**
-         * Si el usuario da el boton de eliminar, le mostramos un mensaje informativo, diciendole
-         * si de verdad quiere borrar su cuenta, ya si el usuario indica que si, eliminamos la cuenta,
-         * lo borramos tambien de nuestra bbdd, que para ello tenemos un metodo en la clase bbdd que
-         * ya hace la función de borrar la cuenta de nuestra bbdd.
-         *
-         * Y por ultimo le enviamos a la pagina principal (donde se inicia o registra).
-         */
-        btnEliminarCuenta.setOnClickListener(v ->
-        {
-            boolean eliminado = dbHelper.eliminarUsuarioPorId(usuarioId);
-
-            if (eliminado)
-            {
-                Toast.makeText(requireContext(), "Cuenta eliminada", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(requireContext(), SelectorPerfilActivity.class));
-                requireActivity().finish();
             }
         });
 

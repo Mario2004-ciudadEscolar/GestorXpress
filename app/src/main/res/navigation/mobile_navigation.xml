@@ -24,7 +24,7 @@
         tools:layout="@layout/fragment_slideshow" />
     <fragment
         android:id="@+id/nav_Cuenta"
-        android:name="com.example.gestorxpress.ui.Cuenta.CuentaFragment"
+        android:name="com.example.gestorxpress.ui.Cuenta.Hijo.CuentaFragment"
         android:label="Cuenta"
         tools:layout="@layout/fragment_cuenta" />
 </navigation>

@@ -406,6 +406,11 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 int usuarioId = cursor.getInt(idColumnIndex);
                 cursor.close();
 
+                // Ponemos a 0 el estado de todos los usuarios (desloguear)
+                ContentValues resetValues = new ContentValues();
+                resetValues.put("logged_in", 0);
+                db.update("Usuario", resetValues, null, null); // ← afecta a todos los registros
+
                 // Actualizamos el estado de logged_in del usuario que ha iniciado sesión a 1
                 ContentValues contentValues = new ContentValues();
                 contentValues.put("logged_in", 1);
