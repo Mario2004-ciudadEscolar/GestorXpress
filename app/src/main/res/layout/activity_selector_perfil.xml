@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:text="Bienvenido a GestorXpress"
         android:textColor="#FFFFFF"
-        android:textSize="18sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="32dp"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:text="Selecciona un perfil"
         android:textColor="#AAAAAA"
-        android:textSize="14sp"
+        android:textSize="20sp"
         app:layout_constraintTop_toBottomOf="@id/titulo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Usuario"
-        android:textColor="#FFFFFF"
+        android:textColor="#a569bd"
         android:textStyle="bold"
         android:textSize="11sp"
         android:maxLines="1"
