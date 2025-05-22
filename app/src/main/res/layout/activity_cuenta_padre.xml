@@ -14,7 +14,7 @@
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Gestión de usuarios"
-        app:navigationIcon="@drawable/ic_filter_custom"
+        app:navigationIcon="@drawable/arrow_back"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView

@@ -28,9 +28,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="0dp"
                 android:scaleType="center"
-                android:src="@drawable/ic_filter_custom"
-                android:tint="@android:color/white"
-                android:contentDescription="Filtrar tareas"/>
+                android:src="@drawable/ic_filter_custom" />
         </androidx.appcompat.widget.Toolbar>
 
 
