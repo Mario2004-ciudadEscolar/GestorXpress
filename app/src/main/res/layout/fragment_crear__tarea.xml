@@ -9,13 +9,26 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+<!--        <EditText-->
+<!--            android:id="@+id/editTitulo"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Título"-->
+<!--            android:inputType="textCapWords"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent" />-->
         <EditText
             android:id="@+id/editTitulo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Título"
-            android:inputType="textCapWords"
-            app:layout_constraintTop_toTopOf="parent"
+            android:hint="Introduce un título claro"
+            android:inputType="textCapSentences"
+            android:backgroundTint="@color/black"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            android:layout_marginTop="12dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

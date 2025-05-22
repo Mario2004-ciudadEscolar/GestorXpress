@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.AlarmClock;
+import android.provider.CalendarContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -195,6 +196,7 @@ public class CrearTareaFragment extends Fragment {
             Toast.makeText(getContext(), "Tarea guardada correctamente", Toast.LENGTH_SHORT).show();
             programarAlarmaEnReloj(fechaHoraInicioCalendar, "Inicio: " + titulo);
             programarAlarmaEnReloj(fechaFinCalendar, "Fin: " + titulo);
+            insertarEventoEnCalendario(titulo, descripcion, fechaHoraInicioCalendar.getTimeInMillis(), fechaFinCalendar.getTimeInMillis());
             limpiarCampos();
         }
         else
@@ -260,5 +262,18 @@ public class CrearTareaFragment extends Fragment {
             Toast.makeText(requireContext(), "No se encontró una app de Reloj compatible", Toast.LENGTH_SHORT).show();
         }
     }
+    /**
+     * Inserta un evento en el calendario con la información de la tarea.
+     */
+    private void insertarEventoEnCalendario(String titulo, String descripcion, long inicioMillis, long finMillis) {
+        Intent intent = new Intent(Intent.ACTION_INSERT)
+                .setData(CalendarContract.Events.CONTENT_URI)
+                .putExtra(CalendarContract.Events.TITLE, titulo)
+                .putExtra(CalendarContract.Events.DESCRIPTION, descripcion)
+                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, inicioMillis)
+                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, finMillis)
+                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
 
+        startActivity(intent);
+    }
 }
