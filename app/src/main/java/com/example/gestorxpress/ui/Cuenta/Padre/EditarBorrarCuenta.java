@@ -162,33 +162,44 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
-        if (cursor != null && cursor.moveToFirst()) {
-            int nombreIndex = cursor.getColumnIndex("nombre");
-            int apellidoIndex = cursor.getColumnIndex("apellido");
-            int correoIndex = cursor.getColumnIndex("correo");
-            int fotoIndex = cursor.getColumnIndex("fotoPerfil");
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int nombreIndex = cursor.getColumnIndex("nombre");
+                int apellidoIndex = cursor.getColumnIndex("apellido");
+                int correoIndex = cursor.getColumnIndex("correo");
+                int fotoIndex = cursor.getColumnIndex("fotoPerfil");
 
-            if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1) {
-                byte[] imagenBytes = cursor.getBlob(fotoIndex);
-                String nombre = cursor.getString(nombreIndex);
-                String apellido = cursor.getString(apellidoIndex);
-                String correo = cursor.getString(correoIndex);
+                if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1) {
+                    String nombre = cursor.getString(nombreIndex);
+                    String apellido = cursor.getString(apellidoIndex);
+                    String correo = cursor.getString(correoIndex);
 
-                if (imagenBytes != null) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-                    imgPerfil.setImageBitmap(bitmap);
-                    imagenEnBytes = imagenBytes;
+                    if (!cursor.isNull(fotoIndex)) {
+                        byte[] imagenBytes = cursor.getBlob(fotoIndex);
+                        if (imagenBytes != null && imagenBytes.length > 0) {
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                            imgPerfil.setImageBitmap(bitmap);
+                            imagenEnBytes = imagenBytes;
+                        }
+                    }
+
+                    editCorreo.setText(correo);
+                    editNombre.setText(nombre);
+                    editApellido.setText(apellido);
+                    editPassword.setText("********");
+                } else {
+                    Toast.makeText(this, "Error en la estructura de los datos del usuario", Toast.LENGTH_SHORT).show();
                 }
-
-                editCorreo.setText(correo);
-                editNombre.setText(nombre);
-                editApellido.setText(apellido);
-                editPassword.setText("********");
+            } else {
+                Toast.makeText(this, "No se encontraron datos para el usuario", Toast.LENGTH_SHORT).show();
             }
 
             cursor.close();
+        } else {
+            Toast.makeText(this, "Error al acceder a los datos", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void cambiarModoEdicion(boolean habilitar) {
         editNombre.setEnabled(habilitar);

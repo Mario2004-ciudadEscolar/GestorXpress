@@ -31,6 +31,7 @@ public class RegistroActivity extends AppCompatActivity {
     private ImageView imagenSeleccionada;
     private byte[] imagenEnBytes;
     private static final int REQUEST_GALERIA = 1;
+    private boolean imagenSeleccionadaPorUsuario = false;
 
 
     // Instancia de la base de datos local
@@ -72,6 +73,8 @@ public class RegistroActivity extends AppCompatActivity {
                             SelectorAvatarDialog dialogo = new SelectorAvatarDialog(imagen -> {
                                 imagenEnBytes = imagen;
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(imagen, 0, imagen.length);
+                                imagenSeleccionadaPorUsuario = true;
+
                                 imagenSeleccionada.setImageBitmap(bitmap);
                             });
                             dialogo.show(getSupportFragmentManager(), "selector_avatar");
@@ -139,7 +142,7 @@ public class RegistroActivity extends AppCompatActivity {
              *
              * También maneja errores en caso de que la imagen no pueda cargarse correctamente.
              */
-            if (imagenEnBytes == null)
+            if (!imagenSeleccionadaPorUsuario)
             {
                 try
                 {
@@ -222,6 +225,7 @@ public class RegistroActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            imagenSeleccionadaPorUsuario = true;
         }
     }
 
