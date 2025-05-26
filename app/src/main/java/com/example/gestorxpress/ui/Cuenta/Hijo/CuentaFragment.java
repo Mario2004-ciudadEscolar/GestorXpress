@@ -189,10 +189,8 @@ public class CuentaFragment extends Fragment {
      */
     private void cargarDatosUsuario()
     {
-        // Si el usuario está logueado (es decir, el ID es válido)
         if (usuarioId != -1)
         {
-            // Obtener los datos del usuario directamente desde la base de datos
             SQLiteDatabase db = dbHelper.getReadableDatabase();
             Cursor cursor = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
@@ -203,36 +201,81 @@ public class CuentaFragment extends Fragment {
                 int correoIndex = cursor.getColumnIndex("correo");
                 int fotoIndex = cursor.getColumnIndex("fotoPerfil");
 
-                if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1)
-                {
-                    // Comprobar si las columnas existen en el cursor
-                    byte[] imagenBytes = cursor.getBlob(fotoIndex); // para el cambio de foto
-                    String nombre = cursor.getString(nombreIndex);
-                    String apellido = cursor.getString(apellidoIndex);
-                    String correo = cursor.getString(correoIndex);
-
-                    if (imagenBytes != null)
-                    {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-                        imgPerfil.setImageBitmap(bitmap);
-                        imagenEnBytes = imagenBytes;
-                    }
-
-                    // Mostramos la información personal sacada al usuario y lo ponemos en los editTest
-                    editCorreo.setText(correo);
-                    editNombre.setText(nombre);
-                    editApellido.setText(apellido);
-                    editPassword.setText("********"); // No mostrar la contraseña real
+                if (nombreIndex == -1 || apellidoIndex == -1 || correoIndex == -1 || fotoIndex == -1) {
+                    Toast.makeText(requireContext(), "Error: columnas no encontradas en la base de datos", Toast.LENGTH_SHORT).show();
+                    cursor.close();
+                    return;
                 }
 
-                cursor.close();
+                byte[] imagenBytes = cursor.getBlob(fotoIndex);
+                String nombre = cursor.getString(nombreIndex);
+                String apellido = cursor.getString(apellidoIndex);
+                String correo = cursor.getString(correoIndex);
+
+                if (imagenBytes != null) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                    imgPerfil.setImageBitmap(bitmap);
+                    imagenEnBytes = imagenBytes;
+                }
+
+                editCorreo.setText(correo);
+                editNombre.setText(nombre);
+                editApellido.setText(apellido);
+                editPassword.setText("********");
             }
-            else
-            {
-                Log.d("Database", "No se encontraron datos para el usuario con ID: " + usuarioId);
-            }
+
+            if (cursor != null) cursor.close();
         }
     }
+
+//    private void cargarDatosUsuario()
+//    {
+//        // Si el usuario está logueado (es decir, el ID es válido)
+//        if (usuarioId != -1)
+//        {
+//            // Obtener los datos del usuario directamente desde la base de datos
+//            SQLiteDatabase db = dbHelper.getReadableDatabase();
+////            Cursor cursor = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+//            Cursor cursor = db.rawQuery("SELECT nombre, apellido, correo, imagen FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+//
+//            if (cursor != null && cursor.moveToFirst())
+//            {
+//                int nombreIndex = cursor.getColumnIndex("nombre");
+//                int apellidoIndex = cursor.getColumnIndex("apellido");
+//                int correoIndex = cursor.getColumnIndex("correo");
+////                int fotoIndex = cursor.getColumnIndex("fotoPerfil");
+//                int fotoIndex = cursor.getColumnIndex("imagen");
+//
+//                if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1)
+//                {
+//                    // Comprobar si las columnas existen en el cursor
+//                    byte[] imagenBytes = cursor.getBlob(fotoIndex); // para el cambio de foto
+//                    String nombre = cursor.getString(nombreIndex);
+//                    String apellido = cursor.getString(apellidoIndex);
+//                    String correo = cursor.getString(correoIndex);
+//
+//                    if (imagenBytes != null)
+//                    {
+//                        Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+//                        imgPerfil.setImageBitmap(bitmap);
+//                        imagenEnBytes = imagenBytes;
+//                    }
+//
+//                    // Mostramos la información personal sacada al usuario y lo ponemos en los editTest
+//                    editCorreo.setText(correo);
+//                    editNombre.setText(nombre);
+//                    editApellido.setText(apellido);
+//                    editPassword.setText("********"); // No mostrar la contraseña real
+//                }
+//
+//                cursor.close();
+//            }
+//            else
+//            {
+//                Log.d("Database", "No se encontraron datos para el usuario con ID: " + usuarioId);
+//            }
+//        }
+//    }
 
     /**
      * Lo que hace este metodo es que cuando el usuario quiere editar su información, es que
@@ -252,23 +295,56 @@ public class CuentaFragment extends Fragment {
      * .
      * NOTA: TENGO QUE DARLE UNA VUELTA ESTE METODO, SE PUEDE HACER MEJOR.
      */
-    private void guardarCambios()
-    {
+    private void guardarCambios() {
         String nuevoCorreo = editCorreo.getText().toString().trim();
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
         String nuevaPassword = editPassword.getText().toString().trim();
 
-        // Si el campo sigue con los ****** no cambiamos la contraseña
-        // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
-        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
-        {
+        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty()) {
             nuevaPassword = null;
+        }
+
+        if (imagenEnBytes == null) {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery("SELECT imagen FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+            if (cursor.moveToFirst()) {
+                int imgIndex = cursor.getColumnIndex("imagen");
+                if (imgIndex != -1) {
+                    imagenEnBytes = cursor.getBlob(imgIndex);
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+
+        if (imagenEnBytes == null || imagenEnBytes.length == 0) {
+            Toast.makeText(requireContext(), "Error con la imagen de perfil. Por favor selecciona una válida.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
         Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
     }
+
+
+//    private void guardarCambios()
+//    {
+//        String nuevoCorreo = editCorreo.getText().toString().trim();
+//        String nuevoNombre = editNombre.getText().toString().trim();
+//        String nuevoApellido = editApellido.getText().toString().trim();
+//        String nuevaPassword = editPassword.getText().toString().trim();
+//
+//        // Si el campo sigue con los ****** no cambiamos la contraseña
+//        // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
+//        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
+//        {
+//            nuevaPassword = null;
+//        }
+//
+//        dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
+//        Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
+//    }
 
 
     /**

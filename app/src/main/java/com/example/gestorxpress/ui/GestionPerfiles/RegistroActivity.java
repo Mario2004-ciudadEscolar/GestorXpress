@@ -143,6 +143,7 @@ public class RegistroActivity extends AppCompatActivity {
              * También maneja errores en caso de que la imagen no pueda cargarse correctamente.
              */
             if (!imagenSeleccionadaPorUsuario)
+
             {
                 try
                 {

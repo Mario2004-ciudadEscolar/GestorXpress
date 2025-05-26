@@ -864,5 +864,27 @@ public class DatabaseHelper extends SQLiteOpenHelper
         cursor.close();
         return tareas;
     }
+    // Borra todos los datos de todas las tablas (sin eliminar las tablas)
+    // por si se queda algn perfil corrupto borrarlo, en el onCreate del main debajo del bd metes esto     dbHelper.borrarTodo();
+    //        Toast.makeText(this, "Base de datos limpiada", Toast.LENGTH_SHORT).show(); y ya esta
+    public void borrarTodo() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete("Usuario", null, null);
+            // Añade más tablas si tienes otras, como por ejemplo:
+            // db.delete("Tarea", null, null);
+            // db.delete("Suscripcion", null, null);
+
+            // Reinicia el contador de ID autoincremental (opcional)
+            db.execSQL("DELETE FROM sqlite_sequence");
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+        }
+    }
 
 }

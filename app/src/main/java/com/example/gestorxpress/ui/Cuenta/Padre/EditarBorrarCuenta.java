@@ -217,9 +217,29 @@ public class EditarBorrarCuenta extends AppCompatActivity {
             nuevaPassword = null;
         }
 
+        if (imagenEnBytes == null) {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+            if (cursor.moveToFirst()) {
+                int imgIndex = cursor.getColumnIndex("fotoPerfil");
+                if (imgIndex != -1) {
+                    imagenEnBytes = cursor.getBlob(imgIndex);
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+
+        if (imagenEnBytes == null || imagenEnBytes.length == 0) {
+            Toast.makeText(this, "Error: imagen no válida. Selecciona una imagen de perfil.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
-        Toast.makeText(this, "Datos actualizados", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show();
     }
+
+
 
     private byte[] getBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
