@@ -49,13 +49,6 @@ public class VerBBDDActivity extends AppCompatActivity {
             allData.append("--- Notificaciones ---\n").append(notificacionesData).append("\n\n");
         }
 
-        String actividadData = dbHelper.getActividadUsuarios();
-        if (actividadData.isEmpty()) {
-            Log.d("Database", "No hay datos de actividad de usuarios para mostrar");
-        } else {
-            allData.append("--- Actividades ---\n").append(actividadData).append("\n\n");
-        }
-
         // Mostrando los datos en el TextView
         textViewBBDD.setText(allData.toString());
     }

@@ -40,7 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
 
     /**
@@ -95,6 +95,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "titulo TEXT NOT NULL, " +
                         "descripcion TEXT, " +
                         "fechaLimite TEXT, " +
+                        "fechaTareaFinalizada TEXT, "+
                         "prioridad TEXT, " +            // Enum simulado con TEXT
                         "estado TEXT, " +               // Enum simulado con TEXT
                         "fechaCreacion TEXT NOT NULL, " +
@@ -102,6 +103,16 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "FOREIGN KEY(usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE" +
                         ");"
         );
+
+        // Trigger para actualizar fechaTareaFinalizada cuando una tarea se completa
+        db.execSQL("CREATE TRIGGER IF NOT EXISTS actualizar_fecha_finalizacion " +
+                "AFTER UPDATE ON Tarea " +
+                "FOR EACH ROW " +
+                "WHEN NEW.estado = 'Completada' AND OLD.estado != 'Completada' " +
+                "BEGIN " +
+                "UPDATE Tarea SET fechaTareaFinalizada = DATETIME('now') WHERE id = NEW.id; " +
+                "END;");
+
 
         // Tabla Notificacion
         db.execSQL(
@@ -116,17 +127,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         ");"
         );
 
-        // Tabla ActividadUsuario
-        db.execSQL(
-                "CREATE TABLE Actividad_usuario (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "usuario_id INTEGER NOT NULL, " +
-                        "fecha TEXT NOT NULL, " +
-                        "tareasCompletadas INTEGER DEFAULT 0, " +
-                        "promedioCompletadas INTEGER DEFAULT 0, " +
-                        "FOREIGN KEY(usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE" +
-                        ");"
-        );
     }
 
     /**
@@ -256,28 +256,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return data.toString();
     }
 
-    /**
-     * Recupera el historial de actividad de usuarios desde la tabla "Actividad_usuario".
-     *
-     * - Incluye ID, ID del usuario, fecha y cantidad de tareas completadas.
-     *
-     * @return Una cadena con la información de todas las actividades de los usuarios.
-     */
-    public String getActividadUsuarios() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        StringBuilder data = new StringBuilder();
-        Cursor cursor = db.rawQuery("SELECT * FROM Actividad_usuario", null);
-        while (cursor.moveToNext()) {
-            data.append("Actividad -> ID: ").append(cursor.getInt(0))
-                    .append(", UsuarioID: ").append(cursor.getInt(1))
-                    .append(", Fecha: ").append(cursor.getString(2))
-                    .append(", TareasCompletadas: ").append(cursor.getInt(3))
-                    .append("\n");
-        }
-        cursor.close();
-        return data.toString();
-    }
-
 
     //----------------------- METODO SETTERS -----------------------//
 
@@ -301,30 +279,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     //----------------------- METODO COMPROBACIÓN SI ES PADRE -----------------------//
-
-    /**
-     * Este metodo comrpueba si el usuario que esta en este momento logeado en nuestra aplicación
-     * si es el padre (administrador) ya que con esto tendria unas opciones especiales que solo
-     * puede ver el padre (administrador)
-     * @return Devolvemos TRUE/FALSE si es el padre o no.
-     */
-    public boolean esUsuarioLogueadoPadre() {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery(
-                "SELECT esPadre FROM Usuario WHERE logged_in = 1",
-                null
-        );
-
-        boolean esPadre = false;
-        if (cursor.moveToFirst()) {
-            esPadre = cursor.getInt(0) == 1;  // Si esPadre = 1, entonces es padre
-        }
-
-        cursor.close();
-        db.close();
-        return esPadre;
-    }
 
     /**
      * Metodo que comprueba si el id del usuario es el padre (administrador)
