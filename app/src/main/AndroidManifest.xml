@@ -36,7 +36,7 @@
             android:exported="false"
             android:theme="@style/Theme.GestorXpress" />
         <activity
-            android:name=".ui.slideshow.Grafica"
+            android:name=".ui.slideshow.Graficas.Grafica"
             android:exported="false" />
         <activity
             android:name=".ui.Cuenta.Hijo.CuentaFragment"
