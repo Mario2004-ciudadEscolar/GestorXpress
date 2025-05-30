@@ -8,15 +8,11 @@
         </shape>
     </item>
     
-    <!-- Borde exterior con gradiente -->
+    <!-- Borde exterior -->
     <item>
         <shape android:shape="oval">
-            <stroke android:width="2dp" android:color="#336699"/>
-            <gradient
-                android:type="linear"
-                android:angle="45"
-                android:startColor="#1A237E"
-                android:endColor="#0D47A1"/>
+            <stroke android:width="2dp" android:color="#4DFFFFFF"/>
+            <solid android:color="#00000000"/>
         </shape>
     </item>
 
@@ -26,4 +22,4 @@
             <solid android:color="#1A1A1A"/>
         </shape>
     </item>
-</layer-list>
+</layer-list> 

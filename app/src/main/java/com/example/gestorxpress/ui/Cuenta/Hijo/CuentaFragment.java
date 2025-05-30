@@ -35,7 +35,8 @@ import java.io.InputStream;
  * Autor: Alfonso Chenche y Mario Herrero
  * Versión: 1.0
  */
-public class CuentaFragment extends Fragment {
+public class CuentaFragment extends Fragment
+{
 
     // Atributos
     private ImageView imgPerfil;
@@ -213,10 +214,8 @@ public class CuentaFragment extends Fragment {
      */
     private void cargarDatosUsuario()
     {
-        // Si el usuario está logueado (es decir, el ID es válido)
         if (usuarioId != -1)
         {
-            // Obtener los datos del usuario directamente desde la base de datos
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
             // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
@@ -235,30 +234,30 @@ public class CuentaFragment extends Fragment {
                 // Comprobamos que los datos que hemos obtenidos no sean nulos
                 if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1)
                 {
-                    byte[] imagenBytes = consulta.getBlob(fotoIndex); // para el cambio de foto
-                    String nombre = consulta.getString(nombreIndex);
-                    String apellido = consulta.getString(apellidoIndex);
-                    String correo = consulta.getString(correoIndex);
-
-                    if (imagenBytes != null)
-                    {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-                        imgPerfil.setImageBitmap(bitmap);
-                        imagenEnBytes = imagenBytes;
-                    }
-
-                    // Mostramos la información personal sacada al usuario y lo ponemos en los editText
-                    editCorreo.setText(correo);
-                    editNombre.setText(nombre);
-                    editApellido.setText(apellido);
-                    editPassword.setText("********"); // No mostramos la contraseña real
+                    Toast.makeText(requireContext(), "Error: columnas no encontradas en la base de datos", Toast.LENGTH_SHORT).show();
+                    consulta.close();
+                    return;
                 }
 
-                consulta.close();
-            }
-            else
-            {
-                Log.d("Database", "No se encontraron datos para el usuario con ID: " + usuarioId);
+                byte[] imagenBytes = consulta.getBlob(fotoIndex); // para el cambio de foto
+                String nombre = consulta.getString(nombreIndex);
+                String apellido = consulta.getString(apellidoIndex);
+                String correo = consulta.getString(correoIndex);
+
+                if (imagenBytes != null)
+                {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                    imgPerfil.setImageBitmap(bitmap);
+                    imagenEnBytes = imagenBytes;
+                }
+
+                // Mostramos la información personal sacada al usuario y lo ponemos en los editText
+                editCorreo.setText(correo);
+                editNombre.setText(nombre);
+                editApellido.setText(apellido);
+                editPassword.setText("********"); // No mostramos la contraseña real
+
+                if (consulta != null) consulta.close();
             }
         }
     }
@@ -289,8 +288,6 @@ public class CuentaFragment extends Fragment {
         String nuevoApellido = editApellido.getText().toString().trim();
         String nuevaPassword = editPassword.getText().toString().trim();
 
-        // Si el campo sigue con los ****** no cambiamos la contraseña
-        // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
         if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
         {
             nuevaPassword = null;
@@ -300,8 +297,49 @@ public class CuentaFragment extends Fragment {
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
         // Mostramos un mensaje donde verificamos que se a actualizado correctamente (Lo usuamos para comprobación)
         Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
-    }
+        // Si no hay nueva imagen seleccionada, obtener la imagen actual
+        if (imagenEnBytes == null) {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+            if (cursor.moveToFirst()) {
+                int fotoIndex = cursor.getColumnIndex("fotoPerfil");
+                if (fotoIndex != -1) {
+                    imagenEnBytes = cursor.getBlob(fotoIndex);
+                }
+            }
+            if (cursor != null) cursor.close();
+            db.close();
+        }
 
+        // Validar que la imagen sea válida
+        if (imagenEnBytes == null || imagenEnBytes.length == 0) {
+            Toast.makeText(requireContext(), "Error con la imagen de perfil. Por favor selecciona una válida.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validar que la imagen no sea demasiado grande (nuevo límite 5MB)
+        if (imagenEnBytes.length > 5 * 1024 * 1024) {
+            Toast.makeText(requireContext(), "La imagen es demasiado grande. Se intentará comprimir.", Toast.LENGTH_SHORT).show();
+            try {
+                // Intentar comprimir la imagen existente
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imagenEnBytes, 0, imagenEnBytes.length);
+                ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 70, compressedStream);
+                imagenEnBytes = compressedStream.toByteArray();
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Error al procesar la imagen. Por favor, selecciona otra.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        // Intentar actualizar el usuario
+        try {
+            dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
+            Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error al actualizar los datos: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
 
     /**
      * Lee todos los datos de un {@link InputStream} y los convierte en un arreglo de bytes.
@@ -325,6 +363,41 @@ public class CuentaFragment extends Fragment {
             byteBuffer.write(buffer, 0, len);
         }
 
-        return byteBuffer.toByteArray();
+        // Convertir el stream a bitmap para poder comprimirlo
+        byte[] imageData = byteBuffer.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+        
+        // Si el bitmap es null, retornar null
+        if (bitmap == null) {
+            return null;
+        }
+
+        // Redimensionar si la imagen es muy grande
+        int maxWidth = 2048;
+        int maxHeight = 2048;
+        if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
+            float ratio = Math.min(
+                (float) maxWidth / bitmap.getWidth(),
+                (float) maxHeight / bitmap.getHeight()
+            );
+            bitmap = Bitmap.createScaledBitmap(bitmap, 
+                (int)(bitmap.getWidth() * ratio),
+                (int)(bitmap.getHeight() * ratio),
+                true);
+        }
+
+        // Comprimir la imagen con calidad adaptativa
+        ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+        int quality = 95; // Empezamos con calidad alta
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream);
+        
+        // Si la imagen es muy grande, reducimos la calidad gradualmente
+        while (compressedStream.size() > 5 * 1024 * 1024 && quality > 50) { // 5MB límite
+            compressedStream.reset();
+            quality -= 5;
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream);
+        }
+
+        return compressedStream.toByteArray();
     }
 }

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -307,7 +308,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         TextView textNombreUsuario;
         EditText editTitulo, editDescripcion, editFechaInicio, editFechaLimite;
         Spinner spinnerPrioridad, spinnerEstado;
-        ImageButton btnEditar, btnEliminar;
+        MaterialButton btnEditar, btnEliminar;
         Button btnGuardar;
         View layoutDetalles;
 
