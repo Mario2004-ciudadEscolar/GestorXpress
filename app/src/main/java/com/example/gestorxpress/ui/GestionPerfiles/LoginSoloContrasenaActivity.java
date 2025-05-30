@@ -24,6 +24,7 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
     private TextView nombreTextView;
     private EditText passwordEditText;
     private Button loginButton;
+    private TextView registroTextView;
 
     private int usuarioId = -1;
     private String correoUsuario;
@@ -38,9 +39,9 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
         nombreTextView = findViewById(R.id.nombreUsuario);
         passwordEditText = findViewById(R.id.editTextPassword);
         loginButton = findViewById(R.id.botonLogin);
+        registroTextView = findViewById(R.id.textRegistro);
 
         dbHelper = new DatabaseHelper(this);
-
 
         usuarioId = getIntent().getIntExtra("usuarioId", -1);
 
@@ -104,6 +105,12 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
             }
+        });
+
+        // Configurar el clic en el texto de registro
+        registroTextView.setOnClickListener(v -> {
+            Intent intent = new Intent(this, RegistroActivity.class);
+            startActivity(intent);
         });
     }
 }

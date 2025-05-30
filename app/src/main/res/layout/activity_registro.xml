@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@drawable/loginbk"
+    android:background="@drawable/fondo_azul_difuminado"
     tools:context=".ui.GestionPerfiles.RegistroActivity">
 
     <androidx.cardview.widget.CardView
@@ -16,111 +16,122 @@
         android:layout_margin="30dp"
         app:cardCornerRadius="30dp"
         app:cardElevation="20dp"
-        android:background="@drawable/customer_edittext">
+        app:cardBackgroundColor="#33FFFFFF">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="711dp"
+            android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="0dp"
-            android:gravity="center_horizontal">
+            android:padding="24dp">
 
             <!-- Imagen de perfil -->
             <ImageView
                 android:id="@+id/imagenSeleccionada"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
-                android:src="@drawable/baseline_person_24"
-                android:background="@drawable/baseline_circle_24"
-                android:scaleType="centerCrop" />
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/borde_redondo"
+                android:scaleType="centerCrop"
+                android:src="@drawable/baseline_person_24" />
 
             <!-- Título -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Registro"
-                android:textSize="36sp"
-                android:textStyle="bold"
+                android:layout_marginBottom="24dp"
+                android:text="Crear Cuenta"
                 android:textAlignment="center"
-                android:textColor="@color/purple"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#FFFFFF"
+                android:textSize="36sp"
+                android:textStyle="bold" />
 
             <!-- Nombre -->
             <EditText
                 android:id="@+id/editNombre"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/customer_edittext"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="#33FFFFFF"
                 android:hint="Nombre"
+                android:inputType="textPersonName"
                 android:padding="8dp"
-                android:layout_margin="10dp"
-                android:textColor="@color/black"
-                android:inputType="textPersonName" />
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF" />
 
             <!-- Apellido -->
             <EditText
                 android:id="@+id/editApellido"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/customer_edittext"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="#33FFFFFF"
                 android:hint="Apellido"
+                android:inputType="textPersonName"
                 android:padding="8dp"
-                android:layout_margin="10dp"
-                android:textColor="@color/black"
-                android:inputType="textPersonName" />
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF" />
 
             <!-- Correo electrónico -->
             <EditText
                 android:id="@+id/editCorreo"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/customer_edittext"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="#33FFFFFF"
+                android:drawableLeft="@drawable/baseline_person_24"
+                android:drawablePadding="16dp"
+                android:drawableTint="#FFFFFF"
                 android:hint="Correo electrónico"
+                android:inputType="textEmailAddress"
                 android:padding="8dp"
-                android:layout_margin="10dp"
-                android:textColor="@color/black"
-                android:inputType="textEmailAddress" />
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF" />
 
             <!-- Contraseña -->
             <EditText
                 android:id="@+id/editContrasena"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/customer_edittext"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="#33FFFFFF"
+                android:drawableLeft="@drawable/baseline_lock_24"
+                android:drawablePadding="16dp"
+                android:drawableTint="#FFFFFF"
                 android:hint="Contraseña"
+                android:inputType="textPassword"
                 android:padding="8dp"
-                android:layout_margin="10dp"
-                android:textColor="@color/black"
-                android:inputType="textPassword" />
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF" />
 
             <!-- Repetir contraseña -->
             <EditText
                 android:id="@+id/editRepetirContrasena"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/customer_edittext"
+                android:layout_height="48dp"
+                android:layout_marginBottom="24dp"
+                android:background="#33FFFFFF"
+                android:drawableLeft="@drawable/baseline_lock_24"
+                android:drawablePadding="16dp"
+                android:drawableTint="#FFFFFF"
                 android:hint="Repetir contraseña"
+                android:inputType="textPassword"
                 android:padding="8dp"
-                android:layout_margin="10dp"
-                android:textColor="@color/black"
-                android:inputType="textPassword" />
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF" />
 
             <!-- Botón de registro -->
             <Button
                 android:id="@+id/btnRegistrar"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="Registrarse"
-                android:textSize="18sp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:backgroundTint="@color/purple"
-                android:textColor="@color/white"
-                app:cornerRadius="20dp" />
+                android:layout_height="48dp"
+                android:backgroundTint="#2196F3"
+                android:text="Crear Cuenta"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:cornerRadius="16dp" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

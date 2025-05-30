@@ -295,36 +295,60 @@ public class CuentaFragment extends Fragment {
      * .
      * NOTA: TENGO QUE DARLE UNA VUELTA ESTE METODO, SE PUEDE HACER MEJOR.
      */
-    private void guardarCambios() {
+    private void guardarCambios()
+    {
         String nuevoCorreo = editCorreo.getText().toString().trim();
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
         String nuevaPassword = editPassword.getText().toString().trim();
 
-        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty()) {
+        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
+        {
             nuevaPassword = null;
         }
 
+        // Si no hay nueva imagen seleccionada, obtener la imagen actual
         if (imagenEnBytes == null) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery("SELECT imagen FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+            Cursor cursor = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
             if (cursor.moveToFirst()) {
-                int imgIndex = cursor.getColumnIndex("imagen");
-                if (imgIndex != -1) {
-                    imagenEnBytes = cursor.getBlob(imgIndex);
+                int fotoIndex = cursor.getColumnIndex("fotoPerfil");
+                if (fotoIndex != -1) {
+                    imagenEnBytes = cursor.getBlob(fotoIndex);
                 }
             }
-            cursor.close();
+            if (cursor != null) cursor.close();
             db.close();
         }
 
+        // Validar que la imagen sea válida
         if (imagenEnBytes == null || imagenEnBytes.length == 0) {
             Toast.makeText(requireContext(), "Error con la imagen de perfil. Por favor selecciona una válida.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
-        Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
+        // Validar que la imagen no sea demasiado grande (nuevo límite 5MB)
+        if (imagenEnBytes.length > 5 * 1024 * 1024) {
+            Toast.makeText(requireContext(), "La imagen es demasiado grande. Se intentará comprimir.", Toast.LENGTH_SHORT).show();
+            try {
+                // Intentar comprimir la imagen existente
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imagenEnBytes, 0, imagenEnBytes.length);
+                ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 70, compressedStream);
+                imagenEnBytes = compressedStream.toByteArray();
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Error al procesar la imagen. Por favor, selecciona otra.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        // Intentar actualizar el usuario
+        try {
+            dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
+            Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error al actualizar los datos: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -369,6 +393,41 @@ public class CuentaFragment extends Fragment {
             byteBuffer.write(buffer, 0, len);
         }
 
-        return byteBuffer.toByteArray();
+        // Convertir el stream a bitmap para poder comprimirlo
+        byte[] imageData = byteBuffer.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+        
+        // Si el bitmap es null, retornar null
+        if (bitmap == null) {
+            return null;
+        }
+
+        // Redimensionar si la imagen es muy grande
+        int maxWidth = 2048;
+        int maxHeight = 2048;
+        if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
+            float ratio = Math.min(
+                (float) maxWidth / bitmap.getWidth(),
+                (float) maxHeight / bitmap.getHeight()
+            );
+            bitmap = Bitmap.createScaledBitmap(bitmap, 
+                (int)(bitmap.getWidth() * ratio),
+                (int)(bitmap.getHeight() * ratio),
+                true);
+        }
+
+        // Comprimir la imagen con calidad adaptativa
+        ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+        int quality = 95; // Empezamos con calidad alta
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream);
+        
+        // Si la imagen es muy grande, reducimos la calidad gradualmente
+        while (compressedStream.size() > 5 * 1024 * 1024 && quality > 50) { // 5MB límite
+            compressedStream.reset();
+            quality -= 5;
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream);
+        }
+
+        return compressedStream.toByteArray();
     }
 }

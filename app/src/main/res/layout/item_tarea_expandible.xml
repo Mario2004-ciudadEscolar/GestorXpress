@@ -5,12 +5,13 @@
     android:layout_margin="8dp"
     android:layout_height="wrap_content"
     app:cardElevation="4dp"
-    app:cardCornerRadius="8dp">
+    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="#33FFFFFF">
 
     <LinearLayout
         android:id="@+id/layout_contenedor"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -19,6 +20,7 @@
             android:id="@+id/text_titulo"
             android:textStyle="bold"
             android:textSize="18sp"
+            android:textColor="#FFFFFF"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -29,7 +31,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone"
-            android:paddingTop="8dp">
+            android:paddingTop="16dp">
 
             <!-- Nombre usuario visible solo para padres -->
             <TextView
@@ -37,16 +39,45 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
+                android:textColor="#FFFFFF"
                 android:visibility="gone"
                 android:layout_marginBottom="8dp" />
 
             <!-- Modo vista -->
-            <TextView android:id="@+id/text_descripcion" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:id="@+id/text_prioridad" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:id="@+id/text_estado" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:id="@+id/text_fecha_inicio" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:id="@+id/text_fecha_limite" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView 
+                android:id="@+id/text_descripcion" 
+                android:layout_width="match_parent" 
+                android:layout_height="wrap_content"
+                android:textColor="#E6FFFFFF"
+                android:layout_marginBottom="8dp"/>
+            
+            <TextView 
+                android:id="@+id/text_prioridad" 
+                android:layout_width="match_parent" 
+                android:layout_height="wrap_content"
+                android:textColor="#E6FFFFFF"
+                android:layout_marginBottom="8dp"/>
+            
+            <TextView 
+                android:id="@+id/text_estado" 
+                android:layout_width="match_parent" 
+                android:layout_height="wrap_content"
+                android:textColor="#E6FFFFFF"
+                android:layout_marginBottom="8dp"/>
+            
+            <TextView 
+                android:id="@+id/text_fecha_inicio" 
+                android:layout_width="match_parent" 
+                android:layout_height="wrap_content"
+                android:textColor="#E6FFFFFF"
+                android:layout_marginBottom="8dp"/>
+            
+            <TextView 
+                android:id="@+id/text_fecha_limite" 
+                android:layout_width="match_parent" 
+                android:layout_height="wrap_content"
+                android:textColor="#E6FFFFFF"
+                android:layout_marginBottom="16dp"/>
 
             <!-- Modo edición -->
             <EditText
@@ -54,40 +85,66 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:hint="Título" />
+                android:hint="Título"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:background="#33FFFFFF"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/edit_descripcion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:hint="Descripción" />
+                android:hint="Descripción"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:background="#33FFFFFF"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
 
             <Spinner
                 android:id="@+id/spinner_prioridad"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
+                android:layout_height="48dp"
+                android:visibility="gone"
+                android:background="#33FFFFFF"
+                android:popupBackground="#1A237E"
+                android:layout_marginBottom="8dp" />
 
             <Spinner
                 android:id="@+id/spinner_estado"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
+                android:layout_height="48dp"
+                android:visibility="gone"
+                android:background="#33FFFFFF"
+                android:popupBackground="#1A237E"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/edit_fecha_inicio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:hint="Fecha/Hora inicio" />
+                android:hint="Fecha/Hora inicio"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:background="#33FFFFFF"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/edit_fecha_limite"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:hint="Fecha límite" />
+                android:hint="Fecha límite"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:background="#33FFFFFF"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp" />
 
             <!-- Botones acción -->
             <LinearLayout
@@ -97,21 +154,25 @@
                 android:gravity="end"
                 android:paddingTop="8dp">
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_editar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
+                    app:icon="@android:drawable/ic_menu_edit"
+                    app:iconTint="#FFFFFF"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_menu_edit"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:contentDescription="Editar"/>
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_eliminar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:icon="@android:drawable/ic_menu_delete"
+                    app:iconTint="#FF5252"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_menu_delete"
-                    android:tint="@android:color/holo_red_dark"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:contentDescription="Eliminar"/>
             </LinearLayout>
 
@@ -121,6 +182,8 @@
                 android:layout_height="wrap_content"
                 android:text="Guardar"
                 android:visibility="gone"
+                android:backgroundTint="#2196F3"
+                android:textColor="#FFFFFF"
                 android:layout_gravity="end"/>
         </LinearLayout>
     </LinearLayout>

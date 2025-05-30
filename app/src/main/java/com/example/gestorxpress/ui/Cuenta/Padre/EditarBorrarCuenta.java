@@ -17,7 +17,6 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
-import com.example.gestorxpress.ui.Cuenta.Suscripcion.VisualSuscripcion;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorAvatarDialog;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 
@@ -42,9 +41,8 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editar_cuenta_hijo);
 
-        dbHelper = new DatabaseHelper(this); // INICIALIZADO AQUÍ ANTES DE USO
+        dbHelper = new DatabaseHelper(this); // 💡 Inicializado primero
 
-        // Recuperar ID desde el Intent
         usuarioId = getIntent().getIntExtra("usuarioId", -1);
         if (usuarioId == -1) {
             usuarioId = dbHelper.obtenerIdUsuario();
@@ -55,7 +53,6 @@ public class EditarBorrarCuenta extends AppCompatActivity {
             }
         }
 
-        // Inicializar vistas
         imgPerfil = findViewById(R.id.imgPerfil);
         editCorreo = findViewById(R.id.editCorreo);
         editPassword = findViewById(R.id.editPassword);
@@ -64,10 +61,6 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         btnEditarGuardar = findViewById(R.id.btnEditarGuardar);
         btnEliminarCuenta = findViewById(R.id.btnEliminarCuenta);
 
-        // Cargar datos del usuario incluyendo la imagen
-        cargarDatosUsuario();
-
-        // Configuración de toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -75,11 +68,12 @@ public class EditarBorrarCuenta extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
         toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(EditarBorrarCuenta.this, CuentaPadreActivity.class));
+            startActivity(new Intent(EditarBorrarCuenta.this, SelectorPerfilActivity.class));
             finish();
         });
 
-        // Botón editar/guardar
+        cargarDatosUsuario();
+
         btnEditarGuardar.setOnClickListener(v -> {
             if (!enModoEdicion) {
                 enModoEdicion = true;
@@ -93,7 +87,6 @@ public class EditarBorrarCuenta extends AppCompatActivity {
             }
         });
 
-        // Botón eliminar cuenta
         btnEliminarCuenta.setOnClickListener(v -> {
             boolean eliminado = dbHelper.eliminarUsuarioPorId(usuarioId);
             if (eliminado) {
@@ -103,7 +96,6 @@ public class EditarBorrarCuenta extends AppCompatActivity {
             }
         });
 
-        // Lanzador de galería
         galeriaLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -117,13 +109,10 @@ public class EditarBorrarCuenta extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-                }
-        );
+                });
 
-        // Clic en imagen de perfil
         imgPerfil.setOnClickListener(v -> {
             if (!enModoEdicion) return;
-
             new androidx.appcompat.app.AlertDialog.Builder(this)
                     .setTitle("Selecciona nueva imagen de perfil")
                     .setItems(new CharSequence[]{"Desde galería", "Desde avatares predefinidos"}, (dialog, which) -> {
@@ -143,40 +132,31 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         });
     }
 
-    // Carga datos del usuario, incluyendo nombre, correo, imagen, etc.
     private void cargarDatosUsuario() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
         if (cursor != null && cursor.moveToFirst()) {
-            int nombreIndex = cursor.getColumnIndex("nombre");
-            int apellidoIndex = cursor.getColumnIndex("apellido");
-            int correoIndex = cursor.getColumnIndex("correo");
-            int fotoIndex = cursor.getColumnIndex("fotoPerfil");
+            String nombre = cursor.getString(cursor.getColumnIndex("nombre"));
+            String apellido = cursor.getString(cursor.getColumnIndex("apellido"));
+            String correo = cursor.getString(cursor.getColumnIndex("correo"));
 
-            String nombre = cursor.getString(nombreIndex);
-            String apellido = cursor.getString(apellidoIndex);
-            String correo = cursor.getString(correoIndex);
-
-            if (!cursor.isNull(fotoIndex)) {
-                byte[] imagenBytes = cursor.getBlob(fotoIndex);
-                if (imagenBytes != null && imagenBytes.length > 0) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
-                    imgPerfil.setImageBitmap(bitmap);
-                    imagenEnBytes = imagenBytes; // Asignar imagen por si no se cambia después
-                }
+            byte[] imagenBytes = cursor.getBlob(cursor.getColumnIndex("fotoPerfil"));
+            if (imagenBytes != null && imagenBytes.length > 0) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
+                imgPerfil.setImageBitmap(bitmap);
+                imagenEnBytes = imagenBytes; // 💾 Guardamos para que no se pierda si no se edita
             }
 
             editCorreo.setText(correo);
             editNombre.setText(nombre);
             editApellido.setText(apellido);
             editPassword.setText("********");
-
-            cursor.close();
         } else {
-            Toast.makeText(this, "Error al acceder a los datos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No se encontraron datos del usuario", Toast.LENGTH_SHORT).show();
         }
 
+        if (cursor != null) cursor.close();
         db.close();
     }
 
@@ -192,29 +172,25 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         String nuevoApellido = editApellido.getText().toString().trim();
         String nuevaPassword = editPassword.getText().toString().trim();
 
-        // No actualizar contraseña si no cambia
         if (nuevaPassword.equals("********") || nuevaPassword.isEmpty()) {
             nuevaPassword = null;
         }
 
-        // Si no hay nueva imagen, mantener la anterior desde la base de datos
         if (imagenEnBytes == null || imagenEnBytes.length == 0) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
             Cursor cursor = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
             if (cursor.moveToFirst()) {
                 imagenEnBytes = cursor.getBlob(cursor.getColumnIndex("fotoPerfil"));
             }
-            cursor.close();
+            if (cursor != null) cursor.close();
             db.close();
         }
 
-        // Validación: evitar guardar imagen corrupta o nula
         if (imagenEnBytes == null || imagenEnBytes.length == 0) {
-            Toast.makeText(this, "Error: imagen no válida. Selecciona una imagen de perfil.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error: imagen no válida.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Guardar cambios en base de datos
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
         Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show();
     }
