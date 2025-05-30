@@ -37,30 +37,24 @@ import java.io.InputStream;
  */
 public class CuentaFragment extends Fragment
 {
-
-    // Atributos
     private ImageView imgPerfil;
     private byte[] imagenEnBytes;
     private EditText editCorreo, editPassword, editNombre, editApellido;
     private Button btnEditarGuardar;
     private boolean enModoEdicion = false;
-    private int usuarioId;
-    private ActivityResultLauncher<Intent> galeriaLauncher;
 
     // Clase DatabaseHelper (Donde realizamos todas las interacciones con la bbdd SLQite)
     private DatabaseHelper dbHelper;
+    private int usuarioId;
+
+    private ActivityResultLauncher<Intent> galeriaLauncher;
 
     // Constructor sin parametros
-    public CuentaFragment()
-    {
-
-    }
+    public CuentaFragment() { }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        //View view = inflater.inflate(R.layout.fragment_cuenta, container, false);
-
         // Instancia de la base de datos
         dbHelper = new DatabaseHelper(requireContext());
 
@@ -83,17 +77,15 @@ public class CuentaFragment extends Fragment
         /**
          * Verificamos si el usuario que esta ahora mismo logeado es el padre
          * y si es el padre se abrira una pagina que solo lo puede ver el padre (administrador)
-          */
+         */
         if (dbHelper.esUsuarioPadrePorId(usuarioId))
         {
-            Intent intent = new Intent(requireContext(), CuentaPadreActivity.class);
+            Intent intent = new Intent(requireContext(), CuentaPadreActivity.class); // Reemplaza con tu actividad real
             startActivity(intent);
             requireActivity().finish();
             return null;
         }
 
-        // Los atributos que hemos inicializa anteriormente lo asignamos con los id de los
-        // EditText, Button, Label, ImageView, etx... del xml que esta asociado a esta clase.
         imgPerfil = view.findViewById(R.id.imgPerfil);
         editCorreo = view.findViewById(R.id.editCorreo);
         editPassword = view.findViewById(R.id.editPassword);
@@ -110,9 +102,14 @@ public class CuentaFragment extends Fragment
         cargarDatosUsuario();
 
         /**
-         * Lo que hacemos aqui es que cuando el usuario de el boton de editar, ese boton pase
-         * ser a guardar, ya que cambiamos el nombre y el modo de edición que lo logramos
-         * haciendolo con un boolena.
+         * Lo que hacemos aqui es que cuando el usuario de el boton de editar, hacemos
+         * una comprobación mediante un boolean (que aprincipio va estar falso, ya que no se
+         * podra editar de momento), se active el modo 'edición' y llamamos un metodo que
+         * que deja al usuario editar sus datos personales y por ultimo le cambiamos el
+         * nombre del boton.
+         * .
+         * Luego guardamos todos los cambios que hace el usuario, ya no estara en modo
+         * 'Edición' y cambiaremos el nombre del boton.
          */
         btnEditarGuardar.setOnClickListener(v ->
         {
@@ -216,30 +213,27 @@ public class CuentaFragment extends Fragment
     {
         if (usuarioId != -1)
         {
+            //Instancia a la BBDD y permite Lectura (Read)
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
             // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
             Cursor consulta = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
-            // Comprobamos que la consulta no sea nula (que por lo menos haya obtenido un dato)
-            // Y movemos el curso a la primera fila de la tabla usuario
             if (consulta != null && consulta.moveToFirst())
             {
-                // Obtenemos los datos del usuario y lo guardamos en una variable (Cada variable guarda un dato del usuario)
                 int nombreIndex = consulta.getColumnIndex("nombre");
                 int apellidoIndex = consulta.getColumnIndex("apellido");
                 int correoIndex = consulta.getColumnIndex("correo");
                 int fotoIndex = consulta.getColumnIndex("fotoPerfil");
 
-                // Comprobamos que los datos que hemos obtenidos no sean nulos
-                if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1)
+                if (nombreIndex == -1 || apellidoIndex == -1 || correoIndex == -1 || fotoIndex == -1)
                 {
                     Toast.makeText(requireContext(), "Error: columnas no encontradas en la base de datos", Toast.LENGTH_SHORT).show();
                     consulta.close();
                     return;
                 }
 
-                byte[] imagenBytes = consulta.getBlob(fotoIndex); // para el cambio de foto
+                byte[] imagenBytes = consulta.getBlob(fotoIndex);
                 String nombre = consulta.getString(nombreIndex);
                 String apellido = consulta.getString(apellidoIndex);
                 String correo = consulta.getString(correoIndex);
@@ -251,16 +245,16 @@ public class CuentaFragment extends Fragment
                     imagenEnBytes = imagenBytes;
                 }
 
-                // Mostramos la información personal sacada al usuario y lo ponemos en los editText
                 editCorreo.setText(correo);
                 editNombre.setText(nombre);
                 editApellido.setText(apellido);
-                editPassword.setText("********"); // No mostramos la contraseña real
-
-                if (consulta != null) consulta.close();
+                editPassword.setText("********");
             }
+
+            if (consulta != null) consulta.close();
         }
     }
+
 
     /**
      * Lo que hace este metodo es que cuando el usuario quiere editar su información, es que
@@ -282,7 +276,6 @@ public class CuentaFragment extends Fragment
      */
     private void guardarCambios()
     {
-        // Obtenemos el contenido que esta en el EdidText y lo guardamos en una variable (Cada contenido se guarda en una variable distinta)
         String nuevoCorreo = editCorreo.getText().toString().trim();
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
@@ -293,53 +286,63 @@ public class CuentaFragment extends Fragment
             nuevaPassword = null;
         }
 
-        // Actualizamos los datos del usuario con un metodo que esta en la clase DatabaseHelèr
-        dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
-        // Mostramos un mensaje donde verificamos que se a actualizado correctamente (Lo usuamos para comprobación)
-        Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
         // Si no hay nueva imagen seleccionada, obtener la imagen actual
-        if (imagenEnBytes == null) {
+        if (imagenEnBytes == null)
+        {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
-            if (cursor.moveToFirst()) {
-                int fotoIndex = cursor.getColumnIndex("fotoPerfil");
-                if (fotoIndex != -1) {
-                    imagenEnBytes = cursor.getBlob(fotoIndex);
+
+            Cursor consulta = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+
+            if (consulta.moveToFirst())
+            {
+                int fotoIndex = consulta.getColumnIndex("fotoPerfil");
+                if (fotoIndex != -1)
+                {
+                    imagenEnBytes = consulta.getBlob(fotoIndex);
                 }
             }
-            if (cursor != null) cursor.close();
+            if (consulta != null) consulta.close();
             db.close();
         }
 
         // Validar que la imagen sea válida
-        if (imagenEnBytes == null || imagenEnBytes.length == 0) {
+        if (imagenEnBytes == null || imagenEnBytes.length == 0)
+        {
             Toast.makeText(requireContext(), "Error con la imagen de perfil. Por favor selecciona una válida.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Validar que la imagen no sea demasiado grande (nuevo límite 5MB)
-        if (imagenEnBytes.length > 5 * 1024 * 1024) {
+        if (imagenEnBytes.length > 5 * 1024 * 1024)
+        {
             Toast.makeText(requireContext(), "La imagen es demasiado grande. Se intentará comprimir.", Toast.LENGTH_SHORT).show();
-            try {
+            try
+            {
                 // Intentar comprimir la imagen existente
                 Bitmap bitmap = BitmapFactory.decodeByteArray(imagenEnBytes, 0, imagenEnBytes.length);
                 ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 70, compressedStream);
                 imagenEnBytes = compressedStream.toByteArray();
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Toast.makeText(requireContext(), "Error al procesar la imagen. Por favor, selecciona otra.", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
 
         // Intentar actualizar el usuario
-        try {
+        try
+        {
             dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
             Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Toast.makeText(requireContext(), "Error al actualizar los datos: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
 
     /**
      * Lee todos los datos de un {@link InputStream} y los convierte en un arreglo de bytes.
@@ -366,33 +369,36 @@ public class CuentaFragment extends Fragment
         // Convertir el stream a bitmap para poder comprimirlo
         byte[] imageData = byteBuffer.toByteArray();
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-        
+
         // Si el bitmap es null, retornar null
-        if (bitmap == null) {
+        if (bitmap == null)
+        {
             return null;
         }
 
         // Redimensionar si la imagen es muy grande
         int maxWidth = 2048;
         int maxHeight = 2048;
-        if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
+        if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight)
+        {
             float ratio = Math.min(
-                (float) maxWidth / bitmap.getWidth(),
-                (float) maxHeight / bitmap.getHeight()
+                    (float) maxWidth / bitmap.getWidth(),
+                    (float) maxHeight / bitmap.getHeight()
             );
-            bitmap = Bitmap.createScaledBitmap(bitmap, 
-                (int)(bitmap.getWidth() * ratio),
-                (int)(bitmap.getHeight() * ratio),
-                true);
+            bitmap = Bitmap.createScaledBitmap(bitmap,
+                    (int)(bitmap.getWidth() * ratio),
+                    (int)(bitmap.getHeight() * ratio),
+                    true);
         }
 
         // Comprimir la imagen con calidad adaptativa
         ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
         int quality = 95; // Empezamos con calidad alta
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream);
-        
+
         // Si la imagen es muy grande, reducimos la calidad gradualmente
-        while (compressedStream.size() > 5 * 1024 * 1024 && quality > 50) { // 5MB límite
+        while (compressedStream.size() > 5 * 1024 * 1024 && quality > 50)
+        { // 5MB límite
             compressedStream.reset();
             quality -= 5;
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, compressedStream);

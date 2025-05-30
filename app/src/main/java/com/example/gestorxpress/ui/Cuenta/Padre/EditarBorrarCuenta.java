@@ -26,15 +26,17 @@ import java.io.InputStream;
 
 /**
  * Autor: Alfonso Chenche y Mario Herrero
+ * Versión: 1.0
  */
-public class EditarBorrarCuenta extends AppCompatActivity {
+public class EditarBorrarCuenta extends AppCompatActivity
+{
 
     private ImageView imgPerfil;
     private byte[] imagenEnBytes;
     private EditText editCorreo, editPassword, editNombre, editApellido;
     private Button btnEditarGuardar, btnEliminarCuenta;
     private boolean enModoEdicion = false;
-    private DatabaseHelper dbHelper;
+    private DatabaseHelper dbHelper; // Instancia a la clase DatabaseHelper
     private int usuarioId;
 
     private ActivityResultLauncher<Intent> galeriaLauncher;
@@ -45,22 +47,21 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editar_cuenta_hijo);
 
-        dbHelper = new DatabaseHelper(this); // 💡 Inicializado primero
+        dbHelper = new DatabaseHelper(this); // Inicializo a la bbdd
 
+        // Obtenemos el ID que hemos enviado como dato extra desde la clase CuentaPadreActivity
         usuarioId = getIntent().getIntExtra("usuarioId", -1);
 
-        // Comprobamos que haya obtenido un id, osea que no sea '-1' que eso significa que no obtuvo nada desde el Inten anterior.
+        // Comprobamos que haya obtenido un id, osea que no sea '-1'
+        // que eso significa que no obtuvo nada desde el Inten anterior.
         if (usuarioId == -1)
         {
-            usuarioId = dbHelper.obtenerIdUsuario();
-            if (usuarioId == -1)
-            {
-                Toast.makeText(this, "No se ha recibido ID del usuario", Toast.LENGTH_SHORT).show();
-                finish();
-                return;
-            }
+            Toast.makeText(this, "No se ha recibido ID del usuario", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
 
+        // Instancia al contenido del xml
         imgPerfil = findViewById(R.id.imgPerfil);
         editCorreo = findViewById(R.id.editCorreo);
         editPassword = findViewById(R.id.editPassword);
@@ -76,28 +77,39 @@ public class EditarBorrarCuenta extends AppCompatActivity {
          */
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
+        if (getSupportActionBar() != null) 
+        {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        toolbar.setNavigationOnClickListener(v -> {
-            startActivity(new Intent(EditarBorrarCuenta.this, SelectorPerfilActivity.class));
+        toolbar.setNavigationOnClickListener(v ->
+        {
+            startActivity(new Intent(EditarBorrarCuenta.this, CuentaPadreActivity.class));
             finish();
         });
 
+        // Llamada al metodo para cargar los datos del usuario en el xml
         cargarDatosUsuario();
 
         /**
-         * Lo que hacemos aqui es que cuando el usuario de el boton de editar, ese boton pase
-         * ser a guardar, ya que cambiamos el nombre y el modo de edición que lo logramos
-         * haciendolo con un boolena.
+         * Lo que hacemos aqui es que cuando el usuario de el boton de editar, hacemos
+         * una comprobación mediante un boolean (que aprincipio va estar falso, ya que no se
+         * podra editar de momento), se active el modo 'edición' y llamamos un metodo que
+         * que deja al usuario editar sus datos personales y por ultimo le cambiamos el
+         * nombre del boton.
+         * .
+         * Luego guardamos todos los cambios que hace el usuario, ya no estara en modo
+         * 'Edición' y cambiaremos el nombre del boton.
          */
-        btnEditarGuardar.setOnClickListener(v -> {
-            if (!enModoEdicion) {
+        btnEditarGuardar.setOnClickListener(v ->
+        {
+            if (!enModoEdicion)
+            {
                 enModoEdicion = true;
                 cambiarModoEdicion(true);
                 btnEditarGuardar.setText("Guardar");
-            } else {
+            } else
+            {
                 guardarCambios();
                 enModoEdicion = false;
                 cambiarModoEdicion(false);
@@ -105,25 +117,37 @@ public class EditarBorrarCuenta extends AppCompatActivity {
             }
         });
 
-        btnEliminarCuenta.setOnClickListener(v -> {
+
+        /**
+         * Cuando el Padre (administrador) le de el boton eliminar cuenta, se eliminara la cuenta
+         * del hijo que estaba viendo en ese momento.
+         */
+        btnEliminarCuenta.setOnClickListener(v ->
+        {
             boolean eliminado = dbHelper.eliminarUsuarioPorId(usuarioId);
-            if (eliminado) {
+            if (eliminado)
+            {
                 Toast.makeText(this, "Cuenta eliminada", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, SelectorPerfilActivity.class));
+                startActivity(new Intent(this, CuentaPadreActivity.class));
                 finish();
             }
         });
 
         galeriaLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                result ->
+                {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null)
+                    {
                         Uri imageUri = result.getData().getData();
                         imgPerfil.setImageURI(imageUri);
-                        try {
+                        try
+                        {
                             InputStream inputStream = getContentResolver().openInputStream(imageUri);
                             imagenEnBytes = getBytes(inputStream);
-                        } catch (IOException e) {
+                        }
+                        catch (IOException e)
+                        {
                             e.printStackTrace();
                         }
                     }
@@ -139,17 +163,22 @@ public class EditarBorrarCuenta extends AppCompatActivity {
          *.
          * La imagen seleccionada se convierte a {@code byte[]} y se muestra en el {@code ImageView}.
          */
-        imgPerfil.setOnClickListener(v -> {
+        imgPerfil.setOnClickListener(v ->
+        {
             if (!enModoEdicion) return;
             new androidx.appcompat.app.AlertDialog.Builder(this)
                     .setTitle("Selecciona nueva imagen de perfil")
                     .setItems(new CharSequence[]{"Desde galería", "Desde avatares predefinidos"}, (dialog, which) -> {
-                        if (which == 0) {
+                        if (which == 0)
+                        {
                             Intent intent = new Intent(Intent.ACTION_PICK);
                             intent.setType("image/*");
                             galeriaLauncher.launch(intent);
-                        } else {
-                            SelectorAvatarDialog dialogo = new SelectorAvatarDialog(imagen -> {
+                        }
+                        else
+                        {
+                            SelectorAvatarDialog dialogo = new SelectorAvatarDialog(imagen ->
+                            {
                                 imagenEnBytes = imagen;
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(imagen, 0, imagen.length);
                                 imgPerfil.setImageBitmap(bitmap);
@@ -160,6 +189,7 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         });
     }
 
+
     /**
      * Lo que hacemos en este metodo es cargar la información del usuario y mostrarlo en la pagina,
      * ya que aqui el usuario puede ver su información personal y lo puede editar o actualizar si asi lo desea
@@ -168,18 +198,18 @@ public class EditarBorrarCuenta extends AppCompatActivity {
      */
     private void cargarDatosUsuario()
     {
-        // Generamos la conexión a la bbdd
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SQLiteDatabase db = dbHelper.getReadableDatabase(); //Instancia a la BBDD y permite Lectura (Read)
 
-        // Obtener los datos del usuario directamente desde la base de datos
+        // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
         Cursor consulta = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
         // Comprobamos que la consulta no sea nula (que por lo menos haya obtenido un dato)
         // Y movemos el curso a la primera fila de la tabla usuario
-        if (consulta != null && consulta.moveToFirst()) {
-            int nombre = consulta.getColumnIndex("nombre");
-            int apellido = consulta.getColumnIndex("apellido");
-            int correo = consulta.getColumnIndex("correo");
+        if (consulta != null && consulta.moveToFirst())
+        {
+            String nombre = consulta.getString(consulta.getColumnIndex("nombre"));
+            String apellido = consulta.getString(consulta.getColumnIndex("apellido"));
+            String correo = consulta.getString(consulta.getColumnIndex("correo"));
 
             byte[] imagenBytes = consulta.getBlob(consulta.getColumnIndex("fotoPerfil"));
             if (imagenBytes != null && imagenBytes.length > 0)
@@ -189,12 +219,10 @@ public class EditarBorrarCuenta extends AppCompatActivity {
                 imagenEnBytes = imagenBytes; // 💾 Guardamos para que no se pierda si no se edita
             }
 
-            // Mostramos la información personal sacada al usuario y lo ponemos en los editText
             editCorreo.setText(correo);
             editNombre.setText(nombre);
             editApellido.setText(apellido);
             editPassword.setText("********");
-
         }
         else
         {
@@ -205,16 +233,19 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         db.close();
     }
 
+
     /**
      * Lo que hace este metodo es que cuando el usuario quiere editar su información, es que
      * habilitamos los editTest para que puede editarlo o actualizar su información.
      * @param habilitar Para habilitar la información.
      */
-    private void cambiarModoEdicion(boolean habilitar){
+    private void cambiarModoEdicion(boolean habilitar)
+    {
         editNombre.setEnabled(habilitar);
         editApellido.setEnabled(habilitar);
         editPassword.setEnabled(habilitar);
     }
+
 
     /**
      * Si el usuario realiza algún cambio, lo que hacemos es un UPDATE en la bbdd
@@ -222,7 +253,8 @@ public class EditarBorrarCuenta extends AppCompatActivity {
      * .
      * NOTA: TENGO QUE DARLE UNA VUELTA ESTE METODO, SE PUEDE HACER MEJOR.
      */
-    private void guardarCambios() {
+    private void guardarCambios()
+    {
         String nuevoCorreo = editCorreo.getText().toString().trim();
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
@@ -230,14 +262,18 @@ public class EditarBorrarCuenta extends AppCompatActivity {
 
         // Si el campo sigue con los ****** no cambiamos la contraseña
         // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
-        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty()) {
+        if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
+        {
             nuevaPassword = null;
         }
 
         if (imagenEnBytes == null || imagenEnBytes.length == 0)
         {
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            SQLiteDatabase db = dbHelper.getReadableDatabase(); //Instancia a la BBDD y permite Lectura (Read)
+
+            // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
             Cursor cursor = db.rawQuery("SELECT fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+
             if (cursor.moveToFirst())
             {
                 imagenEnBytes = cursor.getBlob(cursor.getColumnIndex("fotoPerfil"));
@@ -255,6 +291,7 @@ public class EditarBorrarCuenta extends AppCompatActivity {
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
         Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show();
     }
+
 
     /**
      * Lee todos los datos de un {@link InputStream} y los convierte en un arreglo de bytes.

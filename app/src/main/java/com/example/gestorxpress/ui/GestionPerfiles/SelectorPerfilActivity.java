@@ -25,7 +25,8 @@ import java.util.List;
  * Autor: Alfonso Chenche y Mario Herrero
  * Verión: 1.0
  */
-public class SelectorPerfilActivity extends AppCompatActivity {
+public class SelectorPerfilActivity extends AppCompatActivity
+{
 
     // Lista de elementos (Donde va ir la lista de todos los usuarios)
     private RecyclerView recyclerView;
@@ -48,7 +49,8 @@ public class SelectorPerfilActivity extends AppCompatActivity {
      * @param savedInstanceState Bundle con estado previo de la actividad.
      */
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selector_perfil); // Instancias al xml
 
@@ -79,6 +81,11 @@ public class SelectorPerfilActivity extends AppCompatActivity {
             // Iniciamos el MainActivity
             startActivity(intent);
         });
+
+        findViewById(R.id.iconoAgregar).setOnClickListener(v -> {
+            startActivity(new Intent(this, RegistroActivity.class));
+        });
+
 
         // Llamada a un metodo donde centramos el RecyclerView con la listas de los usuarios
         centrarItemsListaUsuario(recyclerView, perfilAdapter);
