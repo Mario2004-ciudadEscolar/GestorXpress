@@ -29,30 +29,60 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class CrearTareaFragment extends Fragment {
-
+public class CrearTareaFragment extends Fragment
+{
+    // Atributos
     private EditText editTitulo, editDescripcion, editFechaFin, editFechaInicio;
     private Spinner spinnerPrioridad, spinnerEstado, spinnerHijos;
     private Button btnGuardar;
+
+    // Instancia a la clase DatabaseHelper
     private DatabaseHelper dbHelper;
+
+    //Atributo para guardar el ID del usuario
     private int idUsuario = -1;
 
     private Calendar fechaHoraInicioCalendar, fechaFinCalendar;
 
+    // Atributo para comprobar si es el padre o no
     private boolean esPadre = false;
 
-    public CrearTareaFragment() {
-        // Constructor vacío requerido
-    }
+    // Constructor sin parametros
+    public CrearTareaFragment() { }
 
+    /**
+     * e llama para inflar el diseño del fragmento y configurar los datos visuales.
+     * .
+     * Se genero automaticamente al crear el javaDoc
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return La llamada al xml (Vista del fragmento)
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             Bundle savedInstanceState)
+    {
         return inflater.inflate(R.layout.fragment_crear__tarea, container, false);
     }
 
+    /**
+     * Se llama este metodo imediatamente despues de que onCreateView haya retornado la vista del fragmento
+     *
+     * Este metodo es útil
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
         super.onViewCreated(view, savedInstanceState);
 
         // Inicialización de vistas
@@ -65,7 +95,9 @@ public class CrearTareaFragment extends Fragment {
         spinnerHijos = view.findViewById(R.id.spinnerHijos);
         btnGuardar = view.findViewById(R.id.btnGuardar);
 
+        // Instnacia a la bbdd e inicio de conexión a la base de datos
         dbHelper = new DatabaseHelper(requireContext());
+
         fechaHoraInicioCalendar = Calendar.getInstance();
         fechaFinCalendar = Calendar.getInstance();
 
@@ -73,6 +105,8 @@ public class CrearTareaFragment extends Fragment {
         // Con esto obtenemos el ID del usuario que esta logueado en este momento
         idUsuario = dbHelper.obtenerIdUsuario();  // Método en nuestro DatabaseHelper
 
+        // Si no existe el usuario, Mostraremos un mensaje informativo, indicando
+        // el error y desactivando el boton para que no pueda crear la tarea.
         if (idUsuario == -1)
         {
             Toast.makeText(getContext(), "Error: Usuario no válido", Toast.LENGTH_SHORT).show();
@@ -106,14 +140,19 @@ public class CrearTareaFragment extends Fragment {
         adapterEstado.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerEstado.setAdapter(adapterEstado);
 
-        // Configurar Spinner de hijos si es padre
+        // Configuramos el 'Spinner' (Nombre de los usuarios) de hijos si es padre
         if (esPadre)
         {
-            // El usuario es padre: mostrar spinner con los hijos (usuarios que no son padre)
+            // Si el usuario es padre (administrador): Muestra el spinner con los hijos
             spinnerHijos.setVisibility(View.VISIBLE);
 
+            // Mediante el metodo que hemos lavorado en la bbdd, obtenemos todos los nombres de los usuarios
+            // y lo guardamos en una lista, para luego mostrarlo en el Spinner
             List<String> nombresHijos = dbHelper.obtenerNombresHijos();
 
+            // Si la lista esta vacia, mostraremos un mensaje informativo indicando el tipo de error.
+            // El error puede ser porque no hay hijos (usuarios) dado de alta en la aplicación,
+            // osea que no hay otros usuarios creados aparte del padre (administrador).
             if (nombresHijos.isEmpty())
             {
                 nombresHijos.add("Sin hijos disponibles");
@@ -121,6 +160,8 @@ public class CrearTareaFragment extends Fragment {
                 btnGuardar.setEnabled(false);
             }
 
+            // Lo usamos para mostrar en el Spinner los nombres de los hijos que lo hemos guardado
+            // previamente en la lista.
             ArrayAdapter<String> hijosAdapter = new ArrayAdapter<>(
                     requireContext(),
                     android.R.layout.simple_spinner_item,
@@ -131,6 +172,8 @@ public class CrearTareaFragment extends Fragment {
         }
         else
         {
+            // Si el que va crear la tarea es el hijo,
+            // no mostraremos el Spinner que es previamente para el padre
             spinnerHijos.setVisibility(View.GONE);
         }
 
@@ -148,13 +191,16 @@ public class CrearTareaFragment extends Fragment {
      * Lo que hace este método es obtener el contenido que ha escrito el usuario para crear la tarea
      * y en un método que llamamos desde la BBDD, creamos y guardamos la tarea en la BBDD.
      */
-    private void guardarTarea() {
+    private void guardarTarea()
+    {
+        // Obtenemos el contenido de los campos y lo guardamos en las variables
         String titulo = editTitulo.getText().toString().trim();
         String descripcion = editDescripcion.getText().toString().trim();
         String prioridad = spinnerPrioridad.getSelectedItem().toString();
         String estado = spinnerEstado.getSelectedItem().toString();
 
-        // Validación de campos vacíos
+        // Comprovamos que los campos no esten vacios, si algunos de los campos
+        // estan vacios, indicamos un mensaje informativo indicando el error.
         if (TextUtils.isEmpty(titulo) || TextUtils.isEmpty(descripcion)
                 || TextUtils.isEmpty(editFechaInicio.getText()) || TextUtils.isEmpty(editFechaFin.getText())) {
             Toast.makeText(getContext(), "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
@@ -166,31 +212,45 @@ public class CrearTareaFragment extends Fragment {
         String fechaHoraInicio = sdf.format(fechaHoraInicioCalendar.getTime());
         String fechaHoraFin = sdf.format(fechaFinCalendar.getTime());
 
+        // Este atributo lo usamos para comprobar si ha creado correctamente la tarea.
         boolean exito;
 
+        // Si es el Padre (administrador)
         if (esPadre)
         {
+            // Obtenemos el nombre del hijo que ha seleccionado en el Spinner
             String nombreHijoSeleccionado = spinnerHijos.getSelectedItem().toString();
+
+            // Si no ha seleccionado ningún hijo, mostramos un mensaje informativo.
             if (nombreHijoSeleccionado.equals("Sin hijos disponibles"))
             {
                 Toast.makeText(getContext(), "No puedes asignar tareas si no tienes hijos registrados", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            // Si ha obtenido algún nombre de cualquier hijo seleccionado, llamamos al metodo
+            // que hemos elavorado en la bbdd, donde obtenemos el id del hijo gracias al nombre
+            // que hemos obtenido.
             int idHijo = dbHelper.obtenerIdUsuarioPorNombre(nombreHijoSeleccionado);
+
+            // Comprobamos si existe ese ID, si no mostramos un mensaje informativo.
             if (idHijo == -1)
             {
                 Toast.makeText(getContext(), "Error al obtener el ID del hijo", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            // Si hemos obtenido un ID, le asignamos la tarea al hijo y lo insertamos en la bbdd
             exito = dbHelper.crearTareaUsuarioAsignado(idHijo, titulo, descripcion, prioridad, estado, fechaHoraFin, fechaHoraInicio);
         }
         else
         {
+            // Si es el hijo el que esta creando la tarea, creamos la tarea para el
             exito = dbHelper.crearTarea(idUsuario, titulo, descripcion, prioridad, estado, fechaHoraFin, fechaHoraInicio);
         }
 
+        // Si se ha creado correctamente, mostraremos un mensaje informativo
+        // indicando que se ha creado correctamente
         if (exito)
         {
             Toast.makeText(getContext(), "Tarea guardada correctamente", Toast.LENGTH_SHORT).show();
@@ -201,6 +261,7 @@ public class CrearTareaFragment extends Fragment {
         }
         else
         {
+            // Si no indicamos el error.
             Toast.makeText(getContext(), "Error al guardar la tarea", Toast.LENGTH_SHORT).show();
         }
     }
@@ -210,7 +271,8 @@ public class CrearTareaFragment extends Fragment {
      * se limpiarán todos los campos para crear otra tarea por
      * si el usuario quiere crear otra tarea más.
      */
-    private void limpiarCampos() {
+    private void limpiarCampos()
+    {
         editTitulo.setText("");
         editDescripcion.setText("");
         editFechaFin.setText("");
@@ -222,12 +284,14 @@ public class CrearTareaFragment extends Fragment {
     /**
      * Método para mostrar un selector combinado de fecha y hora.
      */
-    private void mostrarSelectorFechaHora(EditText campo, Calendar calendario) {
+    private void mostrarSelectorFechaHora(EditText campo, Calendar calendario)
+    {
         int anio = calendario.get(Calendar.YEAR);
         int mes = calendario.get(Calendar.MONTH);
         int dia = calendario.get(Calendar.DAY_OF_MONTH);
 
-        new DatePickerDialog(requireContext(), (view, y, m, d) -> {
+        new DatePickerDialog(requireContext(), (view, y, m, d) ->
+        {
             calendario.set(Calendar.YEAR, y);
             calendario.set(Calendar.MONTH, m);
             calendario.set(Calendar.DAY_OF_MONTH, d);
@@ -235,7 +299,8 @@ public class CrearTareaFragment extends Fragment {
             int hora = calendario.get(Calendar.HOUR_OF_DAY);
             int minuto = calendario.get(Calendar.MINUTE);
 
-            new TimePickerDialog(requireContext(), (timeView, h, min) -> {
+            new TimePickerDialog(requireContext(), (timeView, h, min) ->
+            {
                 calendario.set(Calendar.HOUR_OF_DAY, h);
                 calendario.set(Calendar.MINUTE, min);
                 SimpleDateFormat formatoCompleto = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
@@ -245,7 +310,8 @@ public class CrearTareaFragment extends Fragment {
         }, anio, mes, dia).show();
     }
 
-    private void programarAlarmaEnReloj(Calendar fecha, String mensaje) {
+    private void programarAlarmaEnReloj(Calendar fecha, String mensaje)
+    {
         int hora = fecha.get(Calendar.HOUR_OF_DAY);
         int minuto = fecha.get(Calendar.MINUTE);
 
@@ -265,7 +331,8 @@ public class CrearTareaFragment extends Fragment {
     /**
      * Inserta un evento en el calendario con la información de la tarea.
      */
-    private void insertarEventoEnCalendario(String titulo, String descripcion, long inicioMillis, long finMillis) {
+    private void insertarEventoEnCalendario(String titulo, String descripcion, long inicioMillis, long finMillis)
+    {
         Intent intent = new Intent(Intent.ACTION_INSERT)
                 .setData(CalendarContract.Events.CONTENT_URI)
                 .putExtra(CalendarContract.Events.TITLE, titulo)

@@ -20,7 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment
+{
 
     private TextView textHome;
     private RecyclerView recyclerView;
@@ -31,15 +32,17 @@ public class HomeFragment extends Fragment {
     private DatabaseHelper dbHelper;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        dbHelper = new DatabaseHelper(requireContext()); // Crea una sola instancia
+        dbHelper = new DatabaseHelper(requireContext()); // Instancia a la bbdd
         setHasOptionsMenu(true); // Permite mostrar iconos en el toolbar
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState)
+    {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         textHome = root.findViewById(R.id.text_home);
@@ -67,25 +70,38 @@ public class HomeFragment extends Fragment {
     {
         new Thread(() ->
         {
+            // Obtenemos el ID del usuario que esta logeado en este momento en nuestra aplicación
             int idUsuario = dbHelper.obtenerIdUsuario();
+
+            // Comprobamos mediante el id si ese usuario es el padre
             boolean esPadre = dbHelper.esUsuarioPadrePorId(idUsuario);
+
+            // Generamos una colección donde vamos a guardar las tareas y mostrarlas en el home
             List<Map<String, String>> listaTareas = new ArrayList<>();
 
+            // Si el usuario es diferente que -1, osea que si existe ese id
+            // Me realiza las siguientes funciones
             if (idUsuario != -1)
             {
+                // Conexión a la bbdd
                 SQLiteDatabase db = dbHelper.getReadableDatabase();
-                Cursor cursor;
+
+                // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
+                Cursor consulta;
 
                 // Construimos la consulta con filtros opcionales
                 StringBuilder queryBuilder = new StringBuilder();
                 List<String> argsList = new ArrayList<>();
 
-                if (esPadre) {
+                // Si es el padre (administrador) realizamos la siguiente consulta.
+                if (esPadre)
+                {
 
                     // Padre: visualiza las tareas de usuarios que no son padres
                     queryBuilder.append("SELECT id, titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite, usuario_id ")
                             .append("FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0)");
                 }
+                // Si es el hijo, realiza la siguiente consulta.
                 else
                 {
                     // Hijo: visualiza solo sus tareas
@@ -107,34 +123,42 @@ public class HomeFragment extends Fragment {
                 }
 
                 String[] args = argsList.toArray(new String[0]);
-                cursor = db.rawQuery(queryBuilder.toString(), args);
+                consulta = db.rawQuery(queryBuilder.toString(), args);
 
-                if (cursor.moveToFirst())
+                // Ponemos el cursor a principio
+                if (consulta.moveToFirst())
                 {
-                    do {
+                    // Y cada vez que recorremos una tarea lo vamos guardando en una colección
+                    do
+                    {
                         Map<String, String> tarea = new HashMap<>();
-                        tarea.put("id", cursor.getString(0));
-                        tarea.put("titulo", cursor.getString(1));
-                        tarea.put("descripcion", cursor.getString(2));
-                        tarea.put("prioridad", cursor.getString(3));
-                        tarea.put("estado", cursor.getString(4));
-                        tarea.put("fechaHoraInicio", cursor.getString(5));
-                        tarea.put("fechaLimite", cursor.getString(6));
-                        tarea.put("usuario_id", cursor.getString(7));
+                        tarea.put("id", consulta.getString(0));
+                        tarea.put("titulo", consulta.getString(1));
+                        tarea.put("descripcion", consulta.getString(2));
+                        tarea.put("prioridad", consulta.getString(3));
+                        tarea.put("estado", consulta.getString(4));
+                        tarea.put("fechaHoraInicio", consulta.getString(5));
+                        tarea.put("fechaLimite", consulta.getString(6));
+                        tarea.put("usuario_id", consulta.getString(7));
                         listaTareas.add(tarea);
-                    } while (cursor.moveToNext());
+                    }
+                    while (consulta.moveToNext());
                 }
 
-                cursor.close();
+                consulta.close();
 
             }
 
-            requireActivity().runOnUiThread(() -> {
-                if (listaTareas.isEmpty()) {
+            requireActivity().runOnUiThread(() ->
+            {
+                if (listaTareas.isEmpty())
+                {
                     textHome.setText("No hay tareas disponibles.");
                     textHome.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
-                } else {
+                }
+                else
+                {
                     textHome.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
                     recyclerView.setAdapter(new TareaAdapter(requireContext(), listaTareas, dbHelper, esPadre));
@@ -147,9 +171,11 @@ public class HomeFragment extends Fragment {
      * Metodo que llamamos para cerrar la bbdd
      */
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
-        if (dbHelper != null) {
+        if (dbHelper != null)
+        {
             dbHelper.close(); // Cerrar dbHelper sólo aquí
             dbHelper = null;
         }
@@ -158,29 +184,62 @@ public class HomeFragment extends Fragment {
 
 
     // Muestra el popup de filtro anclado al toolbar
-    public void mostrarMenuFiltro(View anchor) {
+
+    /**
+     * Muestra un menú emergente (popup) de filtros anclado a una vista (generalmente el botón del toolbar).
+     *.
+     * Este menú permite filtrar las tareas según su prioridad (Alta, Media, Baja)
+     * o estado (Pendiente, Completada). También permite quitar los filtros.
+     *.
+     * Cuando el usuario selecciona una opción:
+     *  - Se actualizan las variables `filtroPrioridad` y/o `filtroEstado`.
+     *  - Se recarga la lista de tareas usando los filtros aplicados.
+     *
+     * @param anchor Vista a la que se ancla el menú emergente (normalmente un bóton del toolbar)
+     */
+    public void mostrarMenuFiltro(View anchor)
+    {
+        // Crea el popupMenu anclado a la vista 'anchor', alineado a la derecha e inferior
         PopupMenu popup = new PopupMenu(requireContext(), anchor, Gravity.END | Gravity.BOTTOM);
+
+        // Agregamos opciones al menú de filto por prioridad y estado
         popup.getMenu().add("Prioridad: Alta");
         popup.getMenu().add("Prioridad: Media");
         popup.getMenu().add("Prioridad: Baja");
         popup.getMenu().add("Estado: Pendiente");
         popup.getMenu().add("Estado: Completada");
-        popup.getMenu().add("Quitar filtros");
+        popup.getMenu().add("Quitar filtros"); // Opción para quitar los filtros actuales
 
-        popup.setOnMenuItemClickListener(item -> {
+        // Se activa cuando el usuaio selecciona una opción del menú
+        popup.setOnMenuItemClickListener(item ->
+        {
+            // Guardamos el texto del item seleccionado
             String titulo = item.getTitle().toString();
-            if (titulo.startsWith("Prioridad")) {
-                filtroPrioridad = titulo.split(": ")[1];
-            } else if (titulo.startsWith("Estado")) {
-                filtroEstado = titulo.split(": ")[1];
-            } else {
+
+            // Si el título comienza con "Prioridad", extrae y guarda la prioridad seleccionada
+            if (titulo.startsWith("Prioridad"))
+            {
+                filtroPrioridad = titulo.split(": ")[1]; // Ej: "Prioridad: Alta" --> "Alta"
+            }
+            // Si el títutlo comienza con "Estado", extrae y guarda el estado seleccionado
+            else if (titulo.startsWith("Estado"))
+            {
+                filtroEstado = titulo.split(": ")[1]; // Ej: "Estado: Completada" --> "Completada"
+            }
+            // Si se elige "Quitar filtros", se elimina los filtros aplicados
+            else
+            {
                 filtroPrioridad = null;
                 filtroEstado = null;
             }
+
+            // Recarga las tareas desde la base de datos, aplicando los filtros (si los hay)
             cargarTareasDelUsuarioLogueado();
+
             return true;
         });
 
+        // Mostramos el menú en pantalla
         popup.show();
     }
 

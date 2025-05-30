@@ -14,6 +14,10 @@ import com.example.gestorxpress.MainActivity;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 
+/**
+ * Autor: Alfonso Chenche y Mario Herrero
+ * Versión: 1.0
+ */
 public class SobreNosotros extends AppCompatActivity {
 
     @Override
@@ -32,7 +36,7 @@ public class SobreNosotros extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        // Manejar la flecha
+        // Cuando selecciono la flecha me vuelve a la pagina anterior
         toolbar.setNavigationOnClickListener(v ->
         {
             Intent intent = new Intent(SobreNosotros.this, CuentaPadreActivity.class);

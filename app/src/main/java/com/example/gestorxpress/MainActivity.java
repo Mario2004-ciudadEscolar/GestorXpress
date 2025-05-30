@@ -27,17 +27,23 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
 
     private AppBarConfiguration mAppBarConfiguration;
+
+    // Instancia a la clase DatabaseHelper
     private ActivityMainBinding binding;
-// prueba comentario
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
+        // Metodo donde revisamos las tareas creadas y programamos las alarmas que estan por acercar
         revisarTareasYProgramarAlarmas();
 
+        // Instancia a la bbdd
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -59,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Acciones personalizadas de menú
-        navigationView.setNavigationItemSelectedListener(item -> {
+        navigationView.setNavigationItemSelectedListener(item ->
+        {
             int id = item.getItemId();
 
             /**
@@ -97,27 +104,20 @@ public class MainActivity extends AppCompatActivity {
                 drawer.closeDrawers();
                 return true;
             }
-            /**
-             * Para visualizar la cuenta del usuario
-             */
-           /* else if (id == R.id.nav_Cuenta)
-            {
-                startActivity(new Intent(MainActivity.this, CuentaActivity.class));
-                drawer.closeDrawers();
-                return true;
-            }*/
-
             NavigationUI.onNavDestinationSelected(item, navController);
             drawer.closeDrawers();
             return true;
         });
 
         ImageButton btnFiltro = findViewById(R.id.btn_toolbar_filtro);
-        btnFiltro.setOnClickListener(v -> {
+        btnFiltro.setOnClickListener(v ->
+        {
             Fragment navHostFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-            if (navHostFragment != null) {
+            if (navHostFragment != null)
+            {
                 List<Fragment> fragments = navHostFragment.getChildFragmentManager().getFragments();
-                if (!fragments.isEmpty() && fragments.get(0) instanceof HomeFragment) {
+                if (!fragments.isEmpty() && fragments.get(0) instanceof HomeFragment)
+                {
                     ((HomeFragment) fragments.get(0)).mostrarMenuFiltro(v);
                 }
             }
@@ -134,8 +134,13 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    // cuando se cree mirara en la bbdd si hay que poner alguna alarma por que solo deja 24 horas antes
-    private void programarAlarmaEnReloj(Calendar fecha, String mensaje) {
+    /**
+     *
+     * @param fecha La hora que debe programarse el reloz
+     * @param mensaje Titulo de la alarma
+     */
+    private void programarAlarmaEnReloj(Calendar fecha, String mensaje)
+    {
         int hora = fecha.get(Calendar.HOUR_OF_DAY);
         int minuto = fecha.get(Calendar.MINUTE);
 
@@ -145,35 +150,67 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(android.provider.AlarmClock.EXTRA_MESSAGE, mensaje);
         intent.putExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, true);
 
-        if (intent.resolveActivity(getPackageManager()) != null) {
+        if (intent.resolveActivity(getPackageManager()) != null)
+        {
             startActivity(intent);
         }
     }
-    private void revisarTareasYProgramarAlarmas() {
-        new Thread(() -> {
+
+    /**
+     * Este método revisa las tareas futuras del usuario actual en segundo plano
+     * y programa alarmas (notificaciones) para el inicio y fin de cada una.
+     *.
+     * Utiliza un hilo secundario para evitar bloquear la interfaz de usuario.
+     * Las fechas de inicio y fin lo obtenemos mediante la base de datos y
+     * lo usamos para programar recordatorios (alarmas) con mensajes personalizados.
+     */
+    private void revisarTareasYProgramarAlarmas()
+    {
+        // Inicia un nuevo hilo para ejecutar la operación sin bloquear el interfaz
+        new Thread(() ->
+        {
+            // Instancia a la bbdd
             DatabaseHelper dbHelper = new DatabaseHelper(MainActivity.this);
+
+            // Obtenemos el ID del usuario actualmente logueado
             int usuarioId = dbHelper.obtenerIdUsuario();
 
-            if (usuarioId != -1) {
+            // Si se obtuvo un ID válido (es decir, hay sesión activa)
+            if (usuarioId != -1)
+            {
+                // Obtiene una lista de tareas futuras para ese usuario
                 List<Map<String, String>> tareas = dbHelper.getTareasFuturas(usuarioId);
+
+                // Formato con el que están guardadas las fechas en la base de datos
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-                for (Map<String, String> tarea : tareas) {
-                    try {
+                // Recorremos cada tarea creada
+                for (Map<String, String> tarea : tareas)
+                {
+                    try
+                    {
+                        // Crea una instancia del calendario para la fecha de inicio
                         Calendar calInicio = Calendar.getInstance();
+                        // Parsea y asigna la fecha de inicio de la tarea
                         calInicio.setTime(sdf.parse(tarea.get("inicio")));
 
+                        // Crea una instancia del calendario para la fecha de fin
                         Calendar calFin = Calendar.getInstance();
+                        // Parsea y asigna la fecha de fin de la tarea
                         calFin.setTime(sdf.parse(tarea.get("fin")));
 
+                        // Programa una alarma para la fecha de inicio de la tarea
                         programarAlarmaEnReloj(calInicio, "Inicio: " + tarea.get("titulo"));
+                        // Programa una alarma para la fecha de fin de la tarea
                         programarAlarmaEnReloj(calFin, "Fin: " + tarea.get("titulo"));
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         e.printStackTrace();
                     }
                 }
             }
-        }).start();
+        }).start(); // Ejecuta el hilo
     }
 
 }

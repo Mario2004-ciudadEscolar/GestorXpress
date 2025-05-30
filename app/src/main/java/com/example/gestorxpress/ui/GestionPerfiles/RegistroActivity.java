@@ -26,6 +26,7 @@ import java.io.InputStream;
 
 public class RegistroActivity extends AppCompatActivity {
 
+    // Atributos
     private EditText editNombre, editApellido, editCorreo, editContrasena, editRepetirContrasena;
     private Button btnRegistrar;
     private ImageView imagenSeleccionada;
@@ -39,8 +40,9 @@ public class RegistroActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_registro);
+        setContentView(R.layout.activity_registro); // Instancia al xml
 
+        // Referencia a los elementos de la interfaz (XML)
         editNombre = findViewById(R.id.editNombre);
         editApellido = findViewById(R.id.editApellido);
         editCorreo = findViewById(R.id.editCorreo);
@@ -91,7 +93,9 @@ public class RegistroActivity extends AppCompatActivity {
          * - Lo que hace es validar los campos del formulario.
          * - Y registra el usuario en la base de datos local si todo es correcto.
          */
-        btnRegistrar.setOnClickListener(v -> {
+        btnRegistrar.setOnClickListener(v ->
+        {
+            // Obtenemos el texto introducido en los EditText en una variable
             String nombre = editNombre.getText().toString().trim();
             String apellido = editApellido.getText().toString().trim();
             String correo = editCorreo.getText().toString().trim();
@@ -121,11 +125,12 @@ public class RegistroActivity extends AppCompatActivity {
              * Validamos que las dos contraseñas que introduce el usuario a la hora de darse de alta
              * coincidan, ya que asi el usuario comprueba y afirma que ha puesto la contraseña que
              * queria poner.
-             *
+             *.
              * Si las dos contraseñas no coinciden, no le dejara registrarse y le mostramos un mensaje informativo
              * indicandole que las contraseñas introducidas no coinciden.
              */
-            if (!contrasena.equals(contrasena2)) {
+            if (!contrasena.equals(contrasena2))
+            {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -133,10 +138,10 @@ public class RegistroActivity extends AppCompatActivity {
 
             /**
              * Asigna una imagen de perfil por defecto si el usuario no ha seleccionado ninguna.
-             *
+             *.
              * La imagen por defecto se obtiene de los recursos (por ejemplo, un ícono de persona),
              * se convierte a Bitmap y luego a un arreglo de bytes (`imagenEnBytes`) para poder almacenarla o mostrarla.
-             *
+             *.
              * También maneja errores en caso de que la imagen no pueda cargarse correctamente.
              */
             if (imagenEnBytes == null)

@@ -13,6 +13,10 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 
+/**
+ * Autor: Alfonso Chenche y Mario Herrero
+ * Versión: 1.0
+ */
 public class CambioDeSuscrip extends AppCompatActivity {
 
     @Override
@@ -31,7 +35,7 @@ public class CambioDeSuscrip extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        // Manejar la flecha
+        // Cuando selecciono la flecha me vuelve a la pagina anterior
         toolbar.setNavigationOnClickListener(v ->
         {
             Intent intent = new Intent(CambioDeSuscrip.this, VisualSuscripcion  .class);

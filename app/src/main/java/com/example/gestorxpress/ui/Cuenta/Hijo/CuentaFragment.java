@@ -31,21 +31,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Autor: Alfonso Chenche y Mario Herrero
+ * Versión: 1.0
+ */
 public class CuentaFragment extends Fragment {
 
+    // Atributos
     private ImageView imgPerfil;
     private byte[] imagenEnBytes;
     private EditText editCorreo, editPassword, editNombre, editApellido;
     private Button btnEditarGuardar;
     private boolean enModoEdicion = false;
-    private DatabaseHelper dbHelper;
     private int usuarioId;
-
     private ActivityResultLauncher<Intent> galeriaLauncher;
 
+    // Clase DatabaseHelper (Donde realizamos todas las interacciones con la bbdd SLQite)
+    private DatabaseHelper dbHelper;
+
+    // Constructor sin parametros
     public CuentaFragment()
     {
-        // Constructor público vacío requerido
+
     }
 
     @Override
@@ -53,6 +60,7 @@ public class CuentaFragment extends Fragment {
     {
         //View view = inflater.inflate(R.layout.fragment_cuenta, container, false);
 
+        // Instancia de la base de datos
         dbHelper = new DatabaseHelper(requireContext());
 
         // Llamamos el metodo que tenemos en nuestra clase de la bbdd para obtener el id
@@ -77,12 +85,14 @@ public class CuentaFragment extends Fragment {
           */
         if (dbHelper.esUsuarioPadrePorId(usuarioId))
         {
-            Intent intent = new Intent(requireContext(), CuentaPadreActivity.class); // Reemplaza con tu actividad real
+            Intent intent = new Intent(requireContext(), CuentaPadreActivity.class);
             startActivity(intent);
             requireActivity().finish();
             return null;
         }
 
+        // Los atributos que hemos inicializa anteriormente lo asignamos con los id de los
+        // EditText, Button, Label, ImageView, etx... del xml que esta asociado a esta clase.
         imgPerfil = view.findViewById(R.id.imgPerfil);
         editCorreo = view.findViewById(R.id.editCorreo);
         editPassword = view.findViewById(R.id.editPassword);
@@ -105,19 +115,33 @@ public class CuentaFragment extends Fragment {
          */
         btnEditarGuardar.setOnClickListener(v ->
         {
+            // Comprueba si actualmente no estamos en modo edición
             if (!enModoEdicion)
             {
-                // Activar edición
+                // Entra en modo edición
+                // Indicamos que ahora sí estamos en modo edición
                 enModoEdicion = true;
+
+                // Llamamos a un metodo donde habilitamos EditText para que el usuario
+                // pueda editar el contenido que esta en los EditText.
                 cambiarModoEdicion(true);
+
+                // Cambiamos el nombre del boton a 'Guardar'
                 btnEditarGuardar.setText("Guardar");
             }
             else
             {
-                // Guardar cambios
+                // Llamamos el metodo donde vamos a guardar los cambios que a realizado el
+                // usuario a la bbdd.
                 guardarCambios();
+
+                // Ahora el modo edición pasa a ser falso
                 enModoEdicion = false;
+
+                // Cambiamos el modo edición, osea que ya no se puede editar los EditText
                 cambiarModoEdicion(false);
+
+                // Cambiamos el nombre del boton a 'Editar'
                 btnEditarGuardar.setText("Editar");
             }
         });
@@ -194,22 +218,27 @@ public class CuentaFragment extends Fragment {
         {
             // Obtener los datos del usuario directamente desde la base de datos
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
-            if (cursor != null && cursor.moveToFirst())
+            // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
+            Cursor consulta = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+
+            // Comprobamos que la consulta no sea nula (que por lo menos haya obtenido un dato)
+            // Y movemos el curso a la primera fila de la tabla usuario
+            if (consulta != null && consulta.moveToFirst())
             {
-                int nombreIndex = cursor.getColumnIndex("nombre");
-                int apellidoIndex = cursor.getColumnIndex("apellido");
-                int correoIndex = cursor.getColumnIndex("correo");
-                int fotoIndex = cursor.getColumnIndex("fotoPerfil");
+                // Obtenemos los datos del usuario y lo guardamos en una variable (Cada variable guarda un dato del usuario)
+                int nombreIndex = consulta.getColumnIndex("nombre");
+                int apellidoIndex = consulta.getColumnIndex("apellido");
+                int correoIndex = consulta.getColumnIndex("correo");
+                int fotoIndex = consulta.getColumnIndex("fotoPerfil");
 
+                // Comprobamos que los datos que hemos obtenidos no sean nulos
                 if (nombreIndex != -1 && apellidoIndex != -1 && correoIndex != -1 && fotoIndex != -1)
                 {
-                    // Comprobar si las columnas existen en el cursor
-                    byte[] imagenBytes = cursor.getBlob(fotoIndex); // para el cambio de foto
-                    String nombre = cursor.getString(nombreIndex);
-                    String apellido = cursor.getString(apellidoIndex);
-                    String correo = cursor.getString(correoIndex);
+                    byte[] imagenBytes = consulta.getBlob(fotoIndex); // para el cambio de foto
+                    String nombre = consulta.getString(nombreIndex);
+                    String apellido = consulta.getString(apellidoIndex);
+                    String correo = consulta.getString(correoIndex);
 
                     if (imagenBytes != null)
                     {
@@ -218,14 +247,14 @@ public class CuentaFragment extends Fragment {
                         imagenEnBytes = imagenBytes;
                     }
 
-                    // Mostramos la información personal sacada al usuario y lo ponemos en los editTest
+                    // Mostramos la información personal sacada al usuario y lo ponemos en los editText
                     editCorreo.setText(correo);
                     editNombre.setText(nombre);
                     editApellido.setText(apellido);
-                    editPassword.setText("********"); // No mostrar la contraseña real
+                    editPassword.setText("********"); // No mostramos la contraseña real
                 }
 
-                cursor.close();
+                consulta.close();
             }
             else
             {
@@ -254,6 +283,7 @@ public class CuentaFragment extends Fragment {
      */
     private void guardarCambios()
     {
+        // Obtenemos el contenido que esta en el EdidText y lo guardamos en una variable (Cada contenido se guarda en una variable distinta)
         String nuevoCorreo = editCorreo.getText().toString().trim();
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
@@ -266,7 +296,9 @@ public class CuentaFragment extends Fragment {
             nuevaPassword = null;
         }
 
+        // Actualizamos los datos del usuario con un metodo que esta en la clase DatabaseHelèr
         dbHelper.actualizarUsuario(usuarioId, nuevoNombre, nuevoApellido, nuevoCorreo, nuevaPassword, imagenEnBytes);
+        // Mostramos un mensaje donde verificamos que se a actualizado correctamente (Lo usuamos para comprobación)
         Toast.makeText(requireContext(), "Datos actualizados", Toast.LENGTH_SHORT).show();
     }
 

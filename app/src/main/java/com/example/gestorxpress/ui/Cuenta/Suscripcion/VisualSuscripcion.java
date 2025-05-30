@@ -16,6 +16,10 @@ import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 import com.example.gestorxpress.ui.Cuenta.Padre.EditarBorrarCuenta;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 
+/**
+ * Autor: Alfonso Chenche y Mario Herrero
+ * Versión: 1.0
+ */
 public class VisualSuscripcion extends AppCompatActivity {
 
     @Override
@@ -34,7 +38,7 @@ public class VisualSuscripcion extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        // Manejar la flecha
+        // Cuando selecciono la flecha me vuelve a la pagina anterior
         toolbar.setNavigationOnClickListener(v ->
         {
             Intent intent = new Intent(VisualSuscripcion.this, CuentaPadreActivity.class);
@@ -42,10 +46,15 @@ public class VisualSuscripcion extends AppCompatActivity {
             finish(); // Opcional
         });
 
+        // Llamada al metodo donde iniciamos otro MainActivity (otra pagina)
         llamadasActivity();
 
     }
 
+    /**
+     * Este metodo se utiliza para llamar a los activity (otras paginas) cuando seleccionamos o
+     *  clicamos sobre un boton o un Texto
+     */
     private void llamadasActivity()
     {
 
