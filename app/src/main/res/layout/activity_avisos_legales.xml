@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/fondo_azul_difuminado"
-    tools:context="com.example.gestorxpress.ui.Cuenta.SobreGestoXpress.SobreNosotros">
+    tools:context="com.example.gestorxpress.ui.Cuenta.AvisoLegal.AvisosLegales">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -14,7 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@drawable/side_nav_bar"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:title="Sobre nosotros"
+        app:title="Aviso Legal y Privacidad"
         app:titleTextColor="#FFFFFF"
         app:navigationIcon="@drawable/arrow_back"
         app:layout_constraintTop_toTopOf="parent" />
@@ -44,7 +44,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="GestorXpress"
+                    android:text="Aviso Legal"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"
@@ -53,7 +53,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="GestorXpress es una aplicación móvil desarrollada por Mario Herrero y Alfonso Chenche como parte del proyecto final del ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM), versión 1.0 (abril de 2025)."
+                    android:text="GestorXpress es una aplicación desarrollada por Mario Herrero y Alfonso Chenche como parte del proyecto final del ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM). Todos los derechos están reservados. Esta app no recoge datos personales sensibles y funciona completamente en local, sin conexión a Internet."
                     android:textColor="#DDFFFFFF"
                     android:textSize="16sp"
                     android:layout_marginBottom="16dp" />
@@ -61,7 +61,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="¿Por qué creamos GestorXpress?"
+                    android:text="Política de Privacidad"
                     android:textStyle="bold"
                     android:textSize="18sp"
                     android:textColor="#FFFFFF"
@@ -70,7 +70,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="En los hogares modernos, donde cada miembro de la familia tiene horarios distintos, se hace necesario organizar mejor las tareas. Existen muchas apps, pero pocas están pensadas para el uso familiar sin conexión. GestorXpress es nuestra propuesta sencilla, intuitiva y 100% offline."
+                    android:text="• No recopilamos información personal del usuario.\n• Todos los datos se almacenan localmente en el dispositivo.\n• No se comparte información con terceros.\n• El usuario puede eliminar sus datos en cualquier momento desde la propia app."
                     android:textColor="#DDFFFFFF"
                     android:textSize="16sp"
                     android:layout_marginBottom="16dp" />
@@ -78,7 +78,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="¿Qué ofrece la app?"
+                    android:text="Términos de Uso"
                     android:textStyle="bold"
                     android:textSize="18sp"
                     android:textColor="#FFFFFF"
@@ -87,24 +87,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="• Gestión de tareas con título, prioridad, estado y fecha límite.\n• Sistema de perfiles individuales y un perfil 'familiar'.\n• Estadísticas personalizadas y globales.\n• Notificaciones automáticas y recordatorios configurables.\n• Uso completamente local sin necesidad de Internet.\n• Interfaz accesible y clara para todas las edades."
-                    android:textColor="#DDFFFFFF"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="¿Qué viene después?"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Planeamos integrar sincronización entre dispositivos, asistencia por voz (Alexa, Google Assistant), y una versión para iOS. También se ampliarán las estadísticas y los métodos de recordatorio inteligentes."
+                    android:text="La aplicación está destinada exclusivamente a fines educativos y personales. No nos responsabilizamos del mal uso de la misma. El contenido y funcionalidades pueden cambiar sin previo aviso."
                     android:textColor="#DDFFFFFF"
                     android:textSize="16sp"
                     android:layout_marginBottom="32dp" />

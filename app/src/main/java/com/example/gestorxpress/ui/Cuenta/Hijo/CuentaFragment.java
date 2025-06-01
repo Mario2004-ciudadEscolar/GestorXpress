@@ -39,7 +39,7 @@ public class CuentaFragment extends Fragment
 {
     private ImageView imgPerfil;
     private byte[] imagenEnBytes;
-    private EditText editCorreo, editPassword, editNombre, editApellido;
+    private EditText editCorreo, editPassword, editNombre, editApellido, editPassword2;
     private Button btnEditarGuardar;
     private boolean enModoEdicion = false;
 
@@ -89,6 +89,7 @@ public class CuentaFragment extends Fragment
         imgPerfil = view.findViewById(R.id.imgPerfil);
         editCorreo = view.findViewById(R.id.editCorreo);
         editPassword = view.findViewById(R.id.editPassword);
+        editPassword2 = view.findViewById(R.id.editPassword2);
         editNombre = view.findViewById(R.id.editNombre);
         editApellido = view.findViewById(R.id.editApellido);
         btnEditarGuardar = view.findViewById(R.id.btnEditarGuardar);
@@ -217,7 +218,7 @@ public class CuentaFragment extends Fragment
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
             // El resultado se guarda en el 'Cursor', que permite recorrer los resultados fila por fila.
-            Cursor consulta = db.rawQuery("SELECT nombre, apellido, correo, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
+            Cursor consulta = db.rawQuery("SELECT nombre, apellido, correo, contrasenia, fotoPerfil FROM Usuario WHERE id = ?", new String[]{String.valueOf(usuarioId)});
 
             if (consulta != null && consulta.moveToFirst())
             {
@@ -249,6 +250,7 @@ public class CuentaFragment extends Fragment
                 editNombre.setText(nombre);
                 editApellido.setText(apellido);
                 editPassword.setText("********");
+                editPassword2.setText("");
             }
 
             if (consulta != null) consulta.close();
@@ -266,6 +268,8 @@ public class CuentaFragment extends Fragment
         editNombre.setEnabled(habilitar);
         editApellido.setEnabled(habilitar);
         editPassword.setEnabled(habilitar);
+        editPassword.setEnabled(habilitar);
+        editPassword2.setEnabled(habilitar);
     }
 
     /**
@@ -280,10 +284,27 @@ public class CuentaFragment extends Fragment
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
         String nuevaPassword = editPassword.getText().toString().trim();
+        String nuevaPassword2 = editPassword2.getText().toString().trim();
 
+        // Validamos si el usuario no cambió la contraseña (dejó la que estaba o vacío)
         if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
         {
-            nuevaPassword = null;
+            nuevaPassword = null; // No cambiamos la contraseña
+        }
+        else
+        {
+            if(!esContraseniaValida(nuevaPassword))
+            {
+                Toast.makeText(requireContext(), "Contraseña no válida: debe contener una mayúscula, " +
+                        "un carácter especial y tener más de 6 caracteres.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (!nuevaPassword.equals(nuevaPassword2))
+            {
+                Toast.makeText(requireContext(), "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
+                return;
+            }
         }
 
         // Si no hay nueva imagen seleccionada, obtener la imagen actual
@@ -405,5 +426,29 @@ public class CuentaFragment extends Fragment
         }
 
         return compressedStream.toByteArray();
+    }
+
+
+    /**
+     * Valida que la contraseña cumpla con los requisitos:
+     * - Mínimo 7 caracteres
+     * - Que contenga al menos una letra mayúscula
+     * - Que contenga al menos un carácter especial
+     *
+     * @param contrasenia La contraseña a validar
+     * @return true si cumple, false si no cumple
+     */
+    public boolean esContraseniaValida(String contrasenia)
+    {
+        if (contrasenia == null) return false;
+        if (contrasenia.length() <= 6) return false;
+
+        // Para que al menos contenga una mayúscula
+        boolean tieneMayuscula = contrasenia.matches(".*[A-Z].*");
+
+        // Para que al menos contenga un carácter especial
+        boolean tieneCaracterEspecial = contrasenia.matches(".*[!@#$%^&*()\\-_=+\\[\\]{};:'\",.<>?/].*");
+
+        return tieneMayuscula && tieneCaracterEspecial;
     }
 }

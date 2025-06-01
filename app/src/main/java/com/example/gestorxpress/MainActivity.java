@@ -1,6 +1,9 @@
 package com.example.gestorxpress;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.example.gestorxpress.database.DatabaseHelper;
@@ -40,6 +43,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        // Crear canal de notificaciones (solo una vez)
+        crearCanalDeNotificaciones();
 
         // Metodo donde revisamos las tareas creadas y programamos las alarmas que estan por acercar
         revisarTareasYProgramarAlarmas();
@@ -213,5 +219,21 @@ public class MainActivity extends AppCompatActivity
             }
         }).start(); // Ejecuta el hilo
     }
+
+    private void crearCanalDeNotificaciones()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            CharSequence nombre = "Canal de tareas";
+            String descripcion = "Notificaciones de recordatorios de tareas";
+            int importancia = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel canal = new NotificationChannel("canal_tareas", nombre, importancia);
+            canal.setDescription(descripcion);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(canal);
+        }
+    }
+
 
 }

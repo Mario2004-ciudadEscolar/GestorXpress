@@ -142,9 +142,11 @@ public class SelectorPerfilActivity extends AppCompatActivity
 
                     Bitmap imagen = null;
                     int fotoIndex = consulta.getColumnIndexOrThrow("fotoPerfil");
-                    if (!consulta.isNull(fotoIndex)) {
+                    if (!consulta.isNull(fotoIndex))
+                    {
                         byte[] imagenBytes = consulta.getBlob(fotoIndex);
-                        if (imagenBytes != null && imagenBytes.length > 0) {
+                        if (imagenBytes != null && imagenBytes.length > 0)
+                        {
                             imagen = BitmapFactory.decodeByteArray(imagenBytes, 0, imagenBytes.length);
                         }
                     }

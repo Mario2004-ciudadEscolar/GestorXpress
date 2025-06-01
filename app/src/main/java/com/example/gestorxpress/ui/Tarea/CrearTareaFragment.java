@@ -20,9 +20,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.example.gestorxpress.ui.Notificacion.NotificacionHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -202,8 +202,16 @@ public class CrearTareaFragment extends Fragment
         // Comprovamos que los campos no esten vacios, si algunos de los campos
         // estan vacios, indicamos un mensaje informativo indicando el error.
         if (TextUtils.isEmpty(titulo) || TextUtils.isEmpty(descripcion)
-                || TextUtils.isEmpty(editFechaInicio.getText()) || TextUtils.isEmpty(editFechaFin.getText())) {
+                || TextUtils.isEmpty(editFechaInicio.getText()) || TextUtils.isEmpty(editFechaFin.getText()))
+        {
             Toast.makeText(getContext(), "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Valida que la fecha de inicio sea anterior a la fecha de fin usando
+        if (fechaHoraInicioCalendar.after(fechaFinCalendar))
+        {
+            Toast.makeText(getContext(), "La fecha de inicio debe ser anterior a la fecha de fin", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -254,9 +262,20 @@ public class CrearTareaFragment extends Fragment
         if (exito)
         {
             Toast.makeText(getContext(), "Tarea guardada correctamente", Toast.LENGTH_SHORT).show();
+
+            // Aqui programamos notificaciones y eventos
+            Log.d("Tareas", "Programando alarma de inicio para: " + fechaHoraInicioCalendar.getTime().toString());
             programarAlarmaEnReloj(fechaHoraInicioCalendar, "Inicio: " + titulo);
+
+            Log.d("Tareas", "Programando alarma de fin para: " + fechaFinCalendar.getTime().toString());
             programarAlarmaEnReloj(fechaFinCalendar, "Fin: " + titulo);
+
             insertarEventoEnCalendario(titulo, descripcion, fechaHoraInicioCalendar.getTimeInMillis(), fechaFinCalendar.getTimeInMillis());
+
+            // Aqui programamos una notificación 1 hora antes de que finalice
+            int idTarea = dbHelper.obtenerUltimoIdTareaInsertada();
+            NotificacionHelper.programarNotificacionDesdeBD(requireContext(), idTarea, titulo, fechaFinCalendar, dbHelper);
+
             limpiarCampos();
         }
         else
@@ -328,6 +347,8 @@ public class CrearTareaFragment extends Fragment
             Toast.makeText(requireContext(), "No se encontró una app de Reloj compatible", Toast.LENGTH_SHORT).show();
         }
     }
+
+
     /**
      * Inserta un evento en el calendario con la información de la tarea.
      */
@@ -343,4 +364,5 @@ public class CrearTareaFragment extends Fragment
 
         startActivity(intent);
     }
+
 }

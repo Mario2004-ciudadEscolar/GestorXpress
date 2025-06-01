@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="32dp">
+    android:background="@drawable/fondo_azul_difuminado"
+    android:padding="24dp">
 
     <!-- Resumen -->
     <androidx.cardview.widget.CardView
@@ -14,6 +15,7 @@
         android:layout_marginBottom="24dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="8dp"
+        app:cardBackgroundColor="#33000000"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -25,7 +27,7 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tv_title_summary"
+                android:id="@+id/txtTitulo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tareas realizadas"
@@ -34,22 +36,22 @@
                 android:textColor="#000000" />
 
             <TextView
-                android:id="@+id/tv_tareas_realizadas"
+                android:id="@+id/txtTareasRealizadas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:textSize="48sp"
                 android:textStyle="bold"
-                android:textColor="#3F51B5"
+                android:textColor="#BBDEFB"
                 android:layout_marginTop="8dp"/>
 
             <TextView
-                android:id="@+id/tv_porcentaje"
+                android:id="@+id/txtPorcentaje"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0%"
                 android:textSize="22sp"
-                android:textColor="#757575"
+                android:textColor="#E0E0E0"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

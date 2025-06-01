@@ -1,4 +1,4 @@
-package com.example.gestorxpress.ui.Cuenta.SobreGestoXpress;
+package com.example.gestorxpress.ui.Cuenta.AvisoLegal;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,21 +10,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.gestorxpress.MainActivity;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
+import com.example.gestorxpress.ui.Cuenta.SobreGestoXpress.SobreNosotros;
 
-/**
- * Autor: Alfonso Chenche y Mario Herrero
- * Versión: 1.0
- */
-public class SobreNosotros extends AppCompatActivity {
+public class AvisosLegales extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sobre_nosotros);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_avisos_legales);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -39,9 +36,10 @@ public class SobreNosotros extends AppCompatActivity {
         // Cuando selecciono la flecha me vuelve a la pagina anterior
         toolbar.setNavigationOnClickListener(v ->
         {
-            Intent intent = new Intent(SobreNosotros.this, CuentaPadreActivity.class);
+            Intent intent = new Intent(AvisosLegales.this, CuentaPadreActivity.class);
             startActivity(intent);
-            finish();
+            finish(); // Opcional
         });
+
     }
 }

@@ -18,8 +18,11 @@ import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.ui.slideshow.Graficas.Grafica;
 import com.example.gestorxpress.ui.slideshow.Graficas.GraficaCircular;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -31,7 +34,7 @@ public class SlideshowFragment extends Fragment
     // Instancia a la clase DatabaseHelper
     private DatabaseHelper bd;
 
-    private TextView tvTareasRealizadas, tvPorcentaje;
+    private TextView txtTareasRealizadas, txtPorcentaje;
 
     // Instancia a la clase Grafica (lo utilizamos para dibujar la grafica)
     private Grafica grafica;
@@ -65,8 +68,8 @@ public class SlideshowFragment extends Fragment
         bd = new DatabaseHelper(requireContext());
 
         // Vincula elementos xml del layout
-        tvTareasRealizadas = root.findViewById(R.id.tv_tareas_realizadas);
-        tvPorcentaje = root.findViewById(R.id.tv_porcentaje);
+        txtTareasRealizadas = root.findViewById(R.id.txtTareasRealizadas);
+        txtPorcentaje = root.findViewById(R.id.txtPorcentaje);
         grafica = root.findViewById(R.id.barChart);
         graficaCircular = root.findViewById(R.id.grafica_circular);
         legendContainer = root.findViewById(R.id.legend_container);
@@ -76,8 +79,8 @@ public class SlideshowFragment extends Fragment
         if (idUsuario == -1)
         {
             // Usuario no logueado o error (No muestra nada)
-            tvTareasRealizadas.setText("0");
-            tvPorcentaje.setText("0%");
+            txtTareasRealizadas.setText("0");
+            txtPorcentaje.setText("0%");
             grafica.setDatos(new LinkedHashMap<>());
             graficaCircular.setVisibility(View.GONE);
             grafica.setVisibility(View.VISIBLE);
@@ -104,22 +107,72 @@ public class SlideshowFragment extends Fragment
     }
 
     /**
+     * Este método se llama cuando el fragmento pasa al estado **resumed**,
+     * osea, cuando el fragmento se vuelve visible y está listo para interactuar con el usuario.
+     *.
+     * En este caso, slo usamos para actualizar la interfaz mostrando datos recientes
+     * cada vez que el usuario vuelve a ver el fragmento.
+     */
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        //Obtenemos el id del usuario que esta loggeado en este momento
+        int idUsuario = bd.obtenerIdUsuario();
+
+        // Si no obtenemos el ID del usuario, no mostramos nada
+        if (idUsuario == -1)
+        {
+            txtTareasRealizadas.setText("0");
+            txtPorcentaje.setText("0%");
+            grafica.setDatos(new LinkedHashMap<>());
+            graficaCircular.setVisibility(View.GONE);
+            grafica.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            // Si obtnemos un ID, comprobamos que si ese ID obtenido
+            // es el padre, osea que el usuario es el padre (administrador)
+            boolean esPadre = bd.esUsuarioPadrePorId(idUsuario);
+
+            // Si es el padre, mostramos los datos que solo puede ver el padre
+            if (esPadre)
+            {
+                cargarDatosParaPadre();
+            }
+            else
+            {
+                // Si no mostramos los datos que solo lo puede ver el hijo
+                cargarDatosParaHijo(idUsuario);
+            }
+        }
+    }
+
+
+    /**
      * Carga datos de tareas completadas por un usuario hijo.
      * Muestra gráfica de barras con tareas completadas por día.
      * @param idUsuario ID del usuario hijo.
      */
     private void cargarDatosParaHijo(int idUsuario)
     {
-        SQLiteDatabase consulta = bd.getReadableDatabase(); // Modo lectura
+        SQLiteDatabase db = bd.getReadableDatabase(); // Modo lectura
+
+        // Obtenemos el dia de la semana actual (Osea el lunes y domingo)
+        // Para luego solo obtener las tareas completadas de esa semana
+        String lunes = obtenerLunesSemanaActual();
+        String domingo = obtenerDomingoSemanaActual();
 
         // Contar tareas completadas por día
-        Cursor cursorCompletadas = consulta.rawQuery(
+        Cursor consultaCompletadas = db.rawQuery(
                 "SELECT DATE(fechaTareaFinalizada) AS fecha, COUNT(*) AS total " +
                         "FROM Tarea " +
                         "WHERE usuario_id = ? AND estado = 'Completada' " +
+                        "AND DATE(fechaTareaFinalizada) BETWEEN ? AND ? " +
                         "GROUP BY DATE(fechaTareaFinalizada) " +
                         "ORDER BY fecha",
-                new String[]{String.valueOf(idUsuario)}
+                new String[]{String.valueOf(idUsuario), lunes, domingo}
         );
 
         // Recorre los resultados y guarda datos
@@ -127,19 +180,19 @@ public class SlideshowFragment extends Fragment
         int totalCompletadas = 0;
 
         // Recorre los resultados y agrega a la colección
-        while (cursorCompletadas.moveToNext())
+        while (consultaCompletadas.moveToNext())
         {
-            String fecha = cursorCompletadas.getString(0);
-            int cantidad = cursorCompletadas.getInt(1);
+            String fecha = consultaCompletadas.getString(0);
+            int cantidad = consultaCompletadas.getInt(1);
             datos.put(fecha, cantidad);
             totalCompletadas += cantidad;
         }
-        cursorCompletadas.close();
+        consultaCompletadas.close();
 
         // Contar todas las tareas del usuario (sin importar estado)
-        Cursor cursorTotal = consulta.rawQuery(
-                "SELECT COUNT(*) FROM Tarea WHERE usuario_id = ?",
-                new String[]{String.valueOf(idUsuario)}
+        Cursor cursorTotal = db.rawQuery(
+                "SELECT COUNT(*) FROM Tarea WHERE usuario_id = ? AND DATE(fechaCreacion) BETWEEN ? AND ?",
+                new String[]{String.valueOf(idUsuario), lunes, domingo}
         );
 
         int totalTareas = 0;
@@ -150,14 +203,14 @@ public class SlideshowFragment extends Fragment
         cursorTotal.close();
 
         // Actualiza texto de tareas completadas
-        tvTareasRealizadas.setText(String.valueOf(totalCompletadas));
+        txtTareasRealizadas.setText(String.valueOf(totalCompletadas));
 
         // Calcular porcentaje (evitando división por cero)
         int porcentaje = totalTareas > 0 ? (int) ((totalCompletadas * 100) / totalTareas) : 0;
-        tvPorcentaje.setText(porcentaje + "%");
+        txtPorcentaje.setText(porcentaje + "%");
 
         // Muestra gráfica de barras con datos
-        grafica.setDatos(datos);
+        grafica.setDatosSemanaActual(datos);
         grafica.setVisibility(View.VISIBLE);
         graficaCircular.setVisibility(View.GONE);
     }
@@ -168,50 +221,67 @@ public class SlideshowFragment extends Fragment
      */
     private void cargarDatosParaPadre()
     {
-        SQLiteDatabase consulta = bd.getReadableDatabase();
+        SQLiteDatabase db = bd.getReadableDatabase();
+
+        // Obtenemos el dia de la semana actual (Osea el lunes y domingo)
+        // Para luego solo obtener las tareas completadas de esa semana
+        String lunes = obtenerLunesSemanaActual();
+        String domingo = obtenerDomingoSemanaActual();
 
         // Consulta las tareas completadas por cada hijo
-        Cursor cursor = consulta.rawQuery(
+        Cursor consulta = db.rawQuery(
                 "SELECT Usuario.nombre, COUNT(Tarea.id) as total " +
                         "FROM Tarea " +
                         "JOIN Usuario ON Tarea.usuario_id = Usuario.id " +
                         "WHERE Usuario.esPadre = 0 AND Tarea.estado = 'Completada' " +
-                        "GROUP BY Usuario.id, Usuario.nombre", null
+                        "AND DATE(fechaTareaFinalizada) BETWEEN ? AND ? " +
+                        "GROUP BY Usuario.id, Usuario.nombre",
+                new String[]{lunes, domingo}
         );
 
         Map<String, Integer> datosPorHijo = new LinkedHashMap<>();
         int totalCompletadas = 0;
 
         // Recorre los hijos y cuenta las tareas que tiene
-        while (cursor.moveToNext())
+        while (consulta.moveToNext())
         {
-            String nombreHijo = cursor.getString(0);
-            int tareasCompletadas = cursor.getInt(1);
+            String nombreHijo = consulta.getString(0);
+            int tareasCompletadas = consulta.getInt(1);
             datosPorHijo.put(nombreHijo, tareasCompletadas);
             totalCompletadas += tareasCompletadas;
         }
-        cursor.close();
+        consulta.close();
 
         // Consulta donde obtenemos el total de tareas de todos los hijos
-        Cursor cursorTotal = consulta.rawQuery(
+        /*Cursor consultaTotal = db.rawQuery(
                 "SELECT COUNT(*) FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0)",
                 null
+        );*/
+        Cursor consultaTotal = db.rawQuery(
+                "SELECT COUNT(*) FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0) " +
+                        "AND DATE(fechaCreacion) BETWEEN ? AND ?",
+                new String[]{lunes, domingo}
         );
 
         int totalTareas = 0;
-        if (cursorTotal.moveToFirst())
+        if (consultaTotal.moveToFirst())
         {
-            totalTareas = cursorTotal.getInt(0);
+            totalTareas = consultaTotal.getInt(0);
         }
-        cursorTotal.close();
+        consultaTotal.close();
 
         // Muestra datos en los TextViews
-        tvTareasRealizadas.setText(String.valueOf(totalCompletadas));
+        txtTareasRealizadas.setText(String.valueOf(totalCompletadas));
         int porcentaje = totalTareas > 0 ? (int) ((totalCompletadas * 100) / totalTareas) : 0;
-        tvPorcentaje.setText(porcentaje + "%");
+        txtPorcentaje.setText(porcentaje + "%");
 
         // Muestra gráfica circular con los datos por hijo
         graficaCircular.setDatos(datosPorHijo);
+
+
+        // Desactiva leyenda (nombre de los hijos) dibujada en la gráfica para evitar duplicados
+        graficaCircular.setMostrarLeyenda(false);
+
         graficaCircular.setVisibility(View.VISIBLE);
         grafica.setVisibility(View.GONE);
 
@@ -222,11 +292,15 @@ public class SlideshowFragment extends Fragment
         List<String> etiquetas = graficaCircular.getEtiquetas();
         List<Integer> colores = graficaCircular.getColores();
 
-        // Por cada etiqueta (nombre de usuarios) crea un item en la leyenda
+        // Construye leyenda manualmente para mostrar colores y nombres de los hijos
         for (int i = 0; i < etiquetas.size(); i++)
         {
             String nombre = etiquetas.get(i);
             int color = colores.get(i);
+
+            //int tareasHijo = datosPorHijo.get(nombre);
+            // Calcula porcentaje redondeado a entero
+            //int porcentajeHijo = totalTareas > 0 ? (int) ((tareasHijo * 100) / totalTareas) : 0;
 
             // Contenedor horizontal por elemento
             LinearLayout item = new LinearLayout(requireContext());
@@ -247,12 +321,60 @@ public class SlideshowFragment extends Fragment
             label.setTextSize(16f);
             label.setPadding(8, 0, 0, 0);
 
+            // Texto con porcentaje
+           /* TextView porcentajeView = new TextView(requireContext());
+            porcentajeView.setText(porcentajeHijo + "%");
+            porcentajeView.setTextSize(16f);
+            porcentajeView.setPadding(8, 0, 0, 0);*/
+
             // Agrega a la fila y luego al contenedor principal
             item.addView(colorBox);
             item.addView(label);
+            //item.addView(porcentajeView);
 
             legendContainer.addView(item);
         }
     }
+
+
+    /**
+     * Este método nos sirve para obtener la fecha del lunes
+     * de la semana actual en formato "yyyy-MM-dd".
+     */
+    private String obtenerLunesSemanaActual()
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY); // Establece lunes como primer día de la semana
+
+        /*int diaSemana = cal.get(Calendar.DAY_OF_WEEK);
+        if (diaSemana == Calendar.SUNDAY) {
+            cal.add(Calendar.DAY_OF_MONTH, -1);  // Mueve un día atrás para ajustar al sábado
+        }*/
+
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); // Se posiciona en el lunes actual
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(cal.getTime());
+    }
+
+    /**
+     * Este método nos sirve para obtener la fecha del domingo
+     * de la semana actual en formato "yyyy-MM-dd".
+     */
+    private String obtenerDomingoSemanaActual()
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setFirstDayOfWeek(Calendar.MONDAY); // Establece lunes como primer día de la semana
+
+        /*int diaSemana = cal.get(Calendar.DAY_OF_WEEK);
+        if (diaSemana == Calendar.SUNDAY) {
+            cal.add(Calendar.DAY_OF_MONTH, -1);
+        }*/
+
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); // Se posiciona en el domingo actual
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(cal.getTime());
+    }
+
+
 }
 

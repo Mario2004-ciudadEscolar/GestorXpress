@@ -15,7 +15,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Título visible siempre -->
         <TextView
             android:id="@+id/text_titulo"
             android:textStyle="bold"
@@ -24,7 +23,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <!-- Layout desplegable -->
         <LinearLayout
             android:id="@+id/layout_detalles"
             android:layout_width="match_parent"

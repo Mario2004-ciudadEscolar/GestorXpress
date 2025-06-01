@@ -6,15 +6,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.Cuenta.Padre.CuentaPadreActivity"
-    android:background="#121212">
+    android:background="@drawable/fondo_azul_difuminado">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@drawable/side_nav_bar"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Cuenta"
+        app:titleTextColor="#FFFFFF"
         app:navigationIcon="@drawable/arrow_back"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,7 +23,7 @@
         android:id="@+id/titulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="70dp"
         android:text="Gestión de cuentas"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
@@ -61,7 +62,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:layout_marginBottom="32dp"
-        android:background="#1E1E1E"
+        android:background="#33FFFFFF"
         android:orientation="vertical"
         android:paddingHorizontal="16dp"
         android:gravity="center"
@@ -70,21 +71,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <Button
-            android:id="@+id/btnGestionar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:backgroundTint="#333333"
-            android:fontFamily="sans-serif-medium"
-            android:text="Gestionar perfiles"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp" />
-
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#444444"
+            android:background="#33FFFFFF"
             android:layout_marginBottom="16dp" />
 
         <TextView
@@ -93,7 +83,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="12dp"
             android:text="Cuenta"
-            android:textColor="#AAAAAA"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:background="?android:attr/selectableItemBackground" />
 
@@ -103,7 +93,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="12dp"
             android:text="Suscripción"
-            android:textColor="#AAAAAA"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:background="?android:attr/selectableItemBackground" />
 
@@ -113,7 +103,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="12dp"
             android:text="Aviso legal y de privacidad"
-            android:textColor="#AAAAAA"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:background="?android:attr/selectableItemBackground" />
 
@@ -123,7 +113,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="12dp"
             android:text="Sobre nosotros..."
-            android:textColor="#AAAAAA"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:background="?android:attr/selectableItemBackground" />
 

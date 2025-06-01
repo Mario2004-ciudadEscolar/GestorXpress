@@ -1,6 +1,7 @@
 package com.example.gestorxpress.ui.slideshow.Graficas;
 
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,6 +14,11 @@ import androidx.annotation.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Calendar;
+import java.util.Locale;
+import java.text.SimpleDateFormat;
+import java.text.DateFormatSymbols;
 
 /**
  * Autor: Alfonso Chenche y Mario Herrero
@@ -30,8 +36,11 @@ public class Grafica extends View
     private Paint paintBar;   // Para las barras
     private Paint paintText;  // Para los textos
     private Paint paintAxis;  // Para los ejes
-    private Paint paintLineaPromedio;  // Para la línea del promedio
-    private Paint paintBarGradient;
+
+    // Declaramos el formateador para fechas "yyyy-MM-dd"
+    @SuppressLint("SimpleDateFormat")
+    private final SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
 
     /**
      * Constructor principal de la vista.
@@ -73,26 +82,36 @@ public class Grafica extends View
     {
         // Pintura para las barras
         paintBar = new Paint();
-        paintBar.setColor(Color.parseColor("#3F51B5"));
+        paintBar.setColor(Color.parseColor("#FF5722"));
         paintBar.setStyle(Paint.Style.FILL);
 
         // Pintura para los textos
         paintText = new Paint();
-        paintText.setColor(Color.BLACK);
-        paintText.setTextSize(36f);
+        paintText.setColor(Color.WHITE);
+        paintText.setTextSize(dpToPx(16));
         paintText.setTextAlign(Paint.Align.CENTER);
         paintText.setAntiAlias(true);
 
         // Pintura para los ejes
         paintAxis = new Paint();
-        paintAxis.setColor(Color.DKGRAY);
-        paintAxis.setStrokeWidth(3f);
+        paintAxis.setColor(Color.parseColor("#E0E0E0"));
+        paintAxis.setStrokeWidth(dpToPx(2));
 
-        // Pintura para la línea del promedio
-        paintLineaPromedio = new Paint();
-        paintLineaPromedio.setColor(Color.RED);
-        paintLineaPromedio.setStrokeWidth(3f);
-        paintLineaPromedio.setStyle(Paint.Style.STROKE);
+    }
+
+    /**
+     * Este metodo convierte una cantidad en dp (density-independent pixels)
+     * a píxeles (px) según la densidad de pantalla.
+     * Esto es útil para adaptar tamaños visuales en diferentes
+     * dispositivos con distintas densidades.
+     *
+     * @param dp Valor en dp que se desea convertir.
+     * @return Valor equivalente en píxeles (px).
+     */
+    private float dpToPx(float dp)
+    {
+        // Multiplica los dp por la densidad de pantalla para obtener px
+        return dp * getResources().getDisplayMetrics().density;
     }
 
     /**
@@ -114,11 +133,11 @@ public class Grafica extends View
         animator.setDuration(900); // Duración en milisegundos
         animator.setInterpolator(new DecelerateInterpolator()); // Efecto de desaceleración
 
-        // Actualiza el progreso de la animación y redibuja la vista
+        // Actualizamos el progreso de la animación y redibuja la vista
         animator.addUpdateListener(animation ->
         {
             animacionProgreso = (float) animation.getAnimatedValue();
-            invalidate(); // Fuerza el redibujado
+            invalidate(); // Redibuja la vista
         });
         animator.start(); // Inicia la animación
     }
@@ -133,93 +152,168 @@ public class Grafica extends View
     {
         super.onDraw(canvas);
 
-        int width = getWidth();   // Ancho total de la vista
-        int height = getHeight(); // Alto total de la vista
+        if (datos == null || datos.isEmpty()) return;
+
+        // Obtiene ancho y alto total del canvas
+        int width = getWidth();
+        int height = getHeight();
 
         // Espaciado interno
-        int paddingLeft = 80;
-        int paddingRight = 80;
-        int paddingTop = 80;
-        int paddingBottom = 160;
+        int paddingLeft = (int) dpToPx(80);
+        int paddingRight = (int) dpToPx(60);
+        int paddingTop = (int) dpToPx(80);
+        int paddingBottom = (int) dpToPx(120);
 
         // Altura disponible para las barras
         int chartHeight = height - paddingTop - paddingBottom;
 
-        // Dibuja los ejes X y Y
+        // Dibuja eje X (horizontal)
         canvas.drawLine(paddingLeft, height - paddingBottom, width - paddingRight, height - paddingBottom, paintAxis);
+
+        // Dibuja eje Y (vertical)
         canvas.drawLine(paddingLeft, paddingTop, paddingLeft, height - paddingBottom, paintAxis);
 
-        int numBarras = datos.size();
-        if (numBarras == 0) return;
+        int numBarras = datos.size(); // Número de días con tareas
+        if (numBarras == 0) return; // Si no hay datos, no hace nada
 
-        // Calcula el valor máximo y promedio
-        int maxValue = 0;
-        int total = 0;
+        // Dibuja las etiquetas del eje Y de 0 a 5
+        // Osea que dibujamos a mano la parte izquiera del grafico, que eso
+        // indicaria cuantas tareas tiene realiado en el dia
+        int maxEscala = 5;
+        for (int i = 0; i <= maxEscala; i++)
+        {
+            float y = height - paddingBottom - ((float) i / maxEscala) * chartHeight;
+            canvas.drawText(String.valueOf(i), paddingLeft - dpToPx(30), y + dpToPx(10), paintText);
+        }
+
+        // Calcula el total pero fija el valor máximo en 5 porque es el límite del eje Y
+        int maxValue = 5;
 
         for (int valor : datos.values())
         {
             if (valor > maxValue) maxValue = valor;
-            total += valor;
         }
 
-        maxValue = Math.max(maxValue, 1); // Evita división por cero
-        float promedio = (float) total / numBarras;
-
-        // Calcular el ancho de las barras y su espaciado
+        // Calcula el ancho de las barras y su espaciado para que entren 7 barras con margen
         int availableWidth = width - paddingLeft - paddingRight;
-        int barWidth = Math.min(80, availableWidth / (numBarras * 2));
-        int spaceBetween = (availableWidth - (barWidth * numBarras)) / (numBarras + 1);
+        int marginBetweenBars = (int) dpToPx(24);  // Margen fijo entre barras
+        int barWidth = Math.min((availableWidth - marginBetweenBars * (numBarras - 1)) / numBarras, (int) dpToPx(48));
 
         int index = 0;
+
+        /// Dibuja el nombre del mes y lo colacamos en la parte izquierda
+        String primeraFecha = datos.keySet().iterator().next();
+        int mes = Integer.parseInt(primeraFecha.substring(5, 7)) - 1;
+        String primerMesAbreviado = new DateFormatSymbols(Locale.getDefault()).getShortMonths()[mes];
+        canvas.drawText(primerMesAbreviado, paddingLeft - dpToPx(40), height - paddingBottom + dpToPx(60), paintText);
+
 
         // Recorrer los datos y dibujar cada barra
         for (Map.Entry<String, Integer> entry : datos.entrySet())
         {
-            String fecha = entry.getKey();
-            int valor = entry.getValue();
+            String fecha = entry.getKey(); // Fecha tipo yyyy-MM-dd
+            int valor = entry.getValue(); // Número de tareas
 
-            // Altura de la barra animada
-            float barHeight = ((float) valor / maxValue) * chartHeight * animacionProgreso;
-
-            // Posiciones para la barra
-            float left = paddingLeft + spaceBetween * (index + 1) + barWidth * index;
-            float top = height - paddingBottom - barHeight;
+            // Coordenadas de la barra
+            float left = paddingLeft + (barWidth + marginBetweenBars) * index;
             float right = left + barWidth;
             float bottom = height - paddingBottom;
 
-            // Dibujar barra
-            canvas.drawRect(left, top, right, bottom, paintBar);
+            // Solo dibujar la barra y el número si hay tareas
+            if (valor > 0)
+            {
+                // Calcula altura proporcional de la barra según su valor
+                float barHeight = ((float) valor / maxValue) * chartHeight * animacionProgreso;
 
-            // Dibujar valor sobre la barra
-            canvas.drawText(String.valueOf(valor), left + barWidth / 2f, top - 12, paintText);
+                // Coordenadas de la barra
+                float top = height - paddingBottom - barHeight;
 
-            // Dibujar fecha abreviada debajo de la barra
-            canvas.drawText(abreviarFecha(fecha), left + barWidth / 2f, height - paddingBottom + 50, paintText);
+                // Dibujar barra en pantall
+                canvas.drawRect(left, top, right, bottom, paintBar);
+
+                // Dibuja el número de tareas arriba de cada barra
+                canvas.drawText(String.valueOf(valor), left + barWidth / 2f, top - dpToPx(8), paintText);
+            }
+
+            // Dibuja solo el número de día debajo de cada barra
+            String dia = fecha.length() >= 10 ? fecha.substring(8, 10) : fecha;
+            canvas.drawText(dia, left + barWidth / 2f, height - paddingBottom + dpToPx(60), paintText);
+
 
             index++;
         }
+    }
 
-        // Dibujar línea horizontal de promedio
-        float promedioY = height - paddingBottom - ((promedio / maxValue) * chartHeight * animacionProgreso);
-        canvas.drawLine(paddingLeft, promedioY, width - paddingRight, promedioY, paintLineaPromedio);
-        canvas.drawText("Promedio: " + String.format("%.1f", promedio), width - paddingRight + 10, promedioY - 10, paintText);
+
+    /**
+     * Este metodo filtra un mapa con datos diarios para devolver
+     * sólo los datos correspondientes a la semana actual.
+     * .
+     * La semana actual se considera de lunes a domingo,
+     * y se ajusta según la fecha de hoy.
+     *
+     * @param originales Mapa con datos originales donde la clave es la fecha en formato String ("2025-05-31")
+     *                   y el valor es la cantidad de tareas completadas ese día.
+     * @return Devuelve un nuevo mapa con las fechas de la semana actual.
+     */
+    public Map<String, Integer> obtenerDatosSemanaActual(Map<String, Integer> originales)
+    {
+        // Usamos TreeMap para que los datos estén ordenados por fecha
+        Map<String, Integer> datosSemana = new TreeMap<>();
+
+        // Obtiene la fecha actual y la pone a medianoche (sin horas, minutos ni segundos)
+        Calendar hoy = Calendar.getInstance();
+        hoy.set(Calendar.HOUR_OF_DAY, 0);
+        hoy.set(Calendar.MINUTE, 0);
+        hoy.set(Calendar.SECOND, 0);
+        hoy.set(Calendar.MILLISECOND, 0);
+
+        // Establece el lunes como primer día de la semana para el cálculo
+        hoy.setFirstDayOfWeek(Calendar.MONDAY);
+
+        // Obtenemos el día de la semana actual
+        int diaSemana = hoy.get(Calendar.DAY_OF_WEEK);
+
+        // Calcula el offset (días que hay que restar para llegar al lunes de esta semana)
+        // Si es domingo, retrocede 6 días para llegar al lunes
+        // Si es otro día, ajusta con base al día actual y lunes
+        int offset = (diaSemana == Calendar.SUNDAY) ? -6 : Calendar.MONDAY - diaSemana;
+        hoy.add(Calendar.DAY_OF_MONTH, offset); //Con esto ajustamos al lunes de la semana actual
+
+        int mesActual = hoy.get(Calendar.MONTH); // mes actual desde el lunes de esta semana
+
+        // Itera 7 días desde el lunes, agregando las fechas y valores al mapa resultado
+        for (int i = 0; i < 7; i++)
+        {
+            /*int mes = hoy.get(Calendar.MONTH);
+            if (mes != mesActual) break; // dejamos de agregar días si cambia de mes*/
+
+            // Conviertimos la fecha a String con el formato esperado
+            String fechaStr = formatoFecha.format(hoy.getTime());
+
+            // Obtemos el valor original para esa fecha, o 0 si no hay dato
+            int valor = originales.containsKey(fechaStr) ? originales.get(fechaStr) : 0;
+
+            // Añadimos la fecha y el valor (incluso si es 0) para que se vea en la gráfica
+            datosSemana.put(fechaStr, valor);
+
+            // Avanzamos al siguiente día
+            hoy.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        // Devolvemos el mapa con sólo los datos de la semana actual
+        return datosSemana;
     }
 
     /**
-     * Abrevia la fecha al formato "dd/MM" para mostrarla debajo de cada barra.
-     * @param fecha Fecha en formato "yyyy-MM-dd"
-     * @return Fecha abreviada como "dd/MM", o la original si hay error.
+     * Este metodo es para establecer los datos filtrados de la semana actual en la gráfica.
+     * Recibe el mapa con todos los datos originales, filtra la semana actual y luego
+     * pasa ese subconjunto al método que dibuja la gráfica.
+     *
+     * @param datosOriginales Mapa con todos los datos originales (fecha -> cantidad).
      */
-    private String abreviarFecha(String fecha)
+    public void setDatosSemanaActual(Map<String, Integer> datosOriginales)
     {
-        try
-        {
-            String[] partes = fecha.split("-");
-            return partes[2] + "/" + partes[1]; // Retorna día/mes
-        }
-        catch (Exception e)
-        {
-            return fecha; // Si falla, retorna la fecha origina
-        }
+        Map<String, Integer> datosSemana = obtenerDatosSemanaActual(datosOriginales);
+        setDatos(datosSemana);
     }
 }

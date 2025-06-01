@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.example.gestorxpress.ui.Notificacion.NotificacionHelper;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
@@ -200,24 +201,68 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
             String nuevaFechaInicio = holder.editFechaInicio.getText().toString();
             String nuevaFechaLimite = holder.editFechaLimite.getText().toString();
 
+            // Guardamos la fecha límite antigua para comparar
+            String fechaLimiteAntigua = tarea.get("fechaLimite");
+
             // Llamamos al método editarTarea del la clase databaseHelper
             // para hacer el UPDATE en la bbdd con los nuevos valores
             if (dbHelper.editarTarea(Integer.parseInt(idTarea), nuevoTitulo, nuevaDescripcion,
                     nuevaPrioridad, nuevoEstado, nuevaFechaLimite, nuevaFechaInicio))
             {
-                // Si la actualización fue exitosa, también actualizamos los datos en la lista local (Map)
-                tarea.put("titulo", nuevoTitulo);
-                tarea.put("descripcion", nuevaDescripcion);
-                tarea.put("prioridad", nuevaPrioridad);
-                tarea.put("estado", nuevoEstado);
-                tarea.put("fechaHoraInicio", nuevaFechaInicio);
-                tarea.put("fechaLimite", nuevaFechaLimite);
+                // Comprobamos si el estado fue modificado, ya que si pasa a completa, no se veria
+                // en el Home, solo se veria al filtrar por 'Completada'
+                if (nuevoEstado.equalsIgnoreCase("completada") || nuevoEstado.equalsIgnoreCase("completada"))
+                {
+                    // Quitamos la tarea de la lista local
+                    listaTareas.remove(position);
+                    notifyItemRemoved(position);
+                    notifyItemRangeChanged(position, listaTareas.size());
+                    // Enviamos un mensaje informatifo indicando que se ha quitado esa tarea, bueno lo
+                    // ocultamos, ya que se podria seguir viendo en el filtro
+                    Toast.makeText(context, "Tarea completada y oculta", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    // Si la actualización fue exitosa, también actualizamos los datos en la lista local (Map)
+                    tarea.put("titulo", nuevoTitulo);
+                    tarea.put("descripcion", nuevaDescripcion);
+                    tarea.put("prioridad", nuevaPrioridad);
+                    tarea.put("estado", nuevoEstado);
+                    tarea.put("fechaHoraInicio", nuevaFechaInicio);
+                    tarea.put("fechaLimite", nuevaFechaLimite);
 
-                // Notificamos al adaptador que el ítem cambió para que se refresque la vista
-                notifyItemChanged(position);
+                    // Notificamos al adaptador que el ítem cambió para que se refresque la vista
+                    notifyItemChanged(position);
+                    // Mostramos un mensaje de exito
+                    Toast.makeText(context, "Tarea actualizada", Toast.LENGTH_SHORT).show();
+                }
 
-                // Mostramos un mensaje de exito
-                Toast.makeText(context, "Tarea actualizada", Toast.LENGTH_SHORT).show();
+                // Comprobamos si se ha cambiado la fecha limite de la tarea
+                // Para reprogramar la alarma
+                if (!nuevaFechaLimite.equals(fechaLimiteAntigua))
+                {
+                    try
+                    {
+                        SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(formato.parse(nuevaFechaLimite));
+
+                        // Llamamos a la clase NotificaciónHelper para reprogramar la alarma
+                        NotificacionHelper.programarNotificacionDesdeBD(
+                                context,
+                                Integer.parseInt(idTarea),
+                                nuevoTitulo,
+                                calendar,
+                                dbHelper
+                        );
+                        Log.d("TareaAdapter", "Notificación reprogramada correctamente tras la edición de la tarea.");
+                    }
+                    catch (Exception e)
+                    {
+                        Log.e("TareaAdapter", "Error al reprogramar la notificación: " + e.getMessage());
+                    }
+                }
+
             }
             else
             {

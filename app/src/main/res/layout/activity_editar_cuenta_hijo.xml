@@ -7,17 +7,15 @@
     android:orientation="vertical"
     android:background="@drawable/fondo_azul_difuminado">
 
-    <!-- TOOLBAR -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#1A237E"
+        android:background="@drawable/side_nav_bar"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Mi cuenta"
         app:navigationIcon="@drawable/arrow_back" />
 
-    <!-- CONTENIDO SCROLLABLE -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -67,19 +65,6 @@
                 android:layout_marginBottom="12dp" />
 
             <EditText
-                android:id="@+id/editPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Password"
-                android:inputType="textPassword"
-                android:enabled="false"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#CCFFFFFF"
-                android:background="#33FFFFFF"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
-
-            <EditText
                 android:id="@+id/editNombre"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,7 +86,33 @@
                 android:textColorHint="#CCFFFFFF"
                 android:background="#33FFFFFF"
                 android:padding="12dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/editPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:enabled="false"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:background="#33FFFFFF"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/editPassword2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Contraseña repetir"
+                android:inputType="textPassword"
+                android:enabled="false"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:background="#33FFFFFF"
+                android:padding="12dp"
+                android:layout_marginBottom="19dp" />
 
             <Button
                 android:id="@+id/btnEditarGuardar"
@@ -110,7 +121,7 @@
                 android:text="Editar"
                 android:backgroundTint="#2196F3"
                 android:textColor="#FFFFFF"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="10dp" />
 
             <Button
                 android:id="@+id/btnEliminarCuenta"

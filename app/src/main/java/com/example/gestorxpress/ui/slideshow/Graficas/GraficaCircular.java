@@ -29,6 +29,9 @@ public class GraficaCircular extends View
     private List<Integer> valores = new ArrayList<>();
     private List<Integer> colores = new ArrayList<>();
 
+    // Booleano para mostrar los nombres de lo hijos
+    private boolean mostrarLeyenda = true;
+
     /**
      * Constructor para uso programático de la vista.
      * @param context contexto de la aplicación
@@ -93,6 +96,12 @@ public class GraficaCircular extends View
     }
 
     /**
+     * Utilzo el setMostrarLeyenda para controlar los nombres dibujada
+     * @param mostrar TRUE/FALSE para mostrar
+     */
+    public void setMostrarLeyenda(boolean mostrar) {mostrarLeyenda = mostrar; invalidate();}
+
+    /**
      * Obtiene los colores asignados a cada sector.
      * @return lista de colores en orden
      */
@@ -151,34 +160,38 @@ public class GraficaCircular extends View
             startAngle += sweepAngle;
         }
 
-        // Dibuja la leyenda
-        paint.setTextSize(36);
-        paint.setColor(Color.BLACK);
-
-        int leyendaX = padding;
-        int leyendaY = padding + min + 60;
-        int boxSize = 40; // Tamaño del recuadro de color
-        int espacio = 20; // Espacio entre leyendas
-
-        for (int i = 0; i < etiquetas.size(); i++)
+        if (mostrarLeyenda)
         {
-            // Recuadro de color
-            paint.setColor(colores.get(i));
-            canvas.drawRect(leyendaX, leyendaY - boxSize, leyendaX + boxSize, leyendaY, paint);
-
-            // Texto de la etiqueta
+            // Dibuja la leyenda
+            paint.setTextSize(36);
             paint.setColor(Color.BLACK);
-            canvas.drawText(etiquetas.get(i), leyendaX + boxSize + 10, leyendaY - 10, paint);
 
-            // Mover posición horizontalmente
-            leyendaX += paint.measureText(etiquetas.get(i)) + boxSize + espacio + 20;
+            int leyendaX = padding;
+            int leyendaY = padding + min + 60;
+            int boxSize = 40; // Tamaño del recuadro de color
+            int espacio = 20; // Espacio entre leyendas
 
-            // Si se sale del ancho, pasa a la siguiente línea
-            if (leyendaX > width - 200)
+            for (int i = 0; i < etiquetas.size(); i++)
             {
-                leyendaX = padding;
-                leyendaY += boxSize + 30;
+                // Recuadro de color
+                paint.setColor(colores.get(i));
+                canvas.drawRect(leyendaX, leyendaY - boxSize, leyendaX + boxSize, leyendaY, paint);
+
+                // Texto de la etiqueta
+                paint.setColor(Color.BLACK);
+                canvas.drawText(etiquetas.get(i), leyendaX + boxSize + 10, leyendaY - 10, paint);
+
+                // Mover posición horizontalmente
+                leyendaX += paint.measureText(etiquetas.get(i)) + boxSize + espacio + 20;
+
+                // Si se sale del ancho, pasa a la siguiente línea
+                if (leyendaX > width - 200)
+                {
+                    leyendaX = padding;
+                    leyendaY += boxSize + 30;
+                }
             }
         }
+
     }
 }

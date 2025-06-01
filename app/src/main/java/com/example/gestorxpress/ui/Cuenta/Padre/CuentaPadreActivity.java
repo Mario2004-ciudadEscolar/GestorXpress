@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.gestorxpress.MainActivity;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
+import com.example.gestorxpress.ui.Cuenta.AvisoLegal.AvisosLegales;
 import com.example.gestorxpress.ui.Cuenta.SobreGestoXpress.SobreNosotros;
 import com.example.gestorxpress.ui.Cuenta.Suscripcion.VisualSuscripcion;
 import com.example.gestorxpress.ui.GestionPerfiles.PerfilAdapterSinClase;
@@ -46,15 +47,11 @@ public class CuentaPadreActivity extends AppCompatActivity
     // Lista donde obtenemos y mostramos los datos de los perfiles (usuarios)
     private List<HashMap<String, Object>> listaPerfiles;
 
-    private Button btnGestionar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cuenta_padre); // Instancia al xml
-
-        btnGestionar = findViewById(R.id.btnGestionar);
 
         // Configuración de la barra de herramientas
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -117,11 +114,6 @@ public class CuentaPadreActivity extends AppCompatActivity
      */
     private void llamadasActivity()
     {
-       /* btnGestionar.setOnClickListener(v -> {
-            Intent intent = new Intent(CuentaPadreActivity.this, GestionCuentaHijos.class);
-            startActivity(intent);
-        });*/
-
         findViewById(R.id.btncuentaPadre).setOnClickListener(v ->
         {
             Intent intent = new Intent(CuentaPadreActivity.this, EditarBorrarCuenta.class);
@@ -134,11 +126,11 @@ public class CuentaPadreActivity extends AppCompatActivity
             startActivity(intent);
         });
 
-       /* findViewById(R.id.btnAvisoLegalPriv).setOnClickListener(v ->
+       findViewById(R.id.btnAvisoLegalPriv).setOnClickListener(v ->
         {
-            Intent intent = new Intent(CuentaPadreActivity.this, AvisoLegalActivity.class);
+            Intent intent = new Intent(CuentaPadreActivity.this, AvisosLegales.class);
             startActivity(intent);
-        });*/
+        });
 
         findViewById(R.id.btnSobreNosotros).setOnClickListener(v ->
         {

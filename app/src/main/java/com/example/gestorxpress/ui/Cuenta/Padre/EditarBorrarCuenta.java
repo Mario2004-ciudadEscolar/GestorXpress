@@ -33,7 +33,7 @@ public class EditarBorrarCuenta extends AppCompatActivity
 
     private ImageView imgPerfil;
     private byte[] imagenEnBytes;
-    private EditText editCorreo, editPassword, editNombre, editApellido;
+    private EditText editCorreo, editPassword, editNombre, editApellido, editPassword2;
     private Button btnEditarGuardar, btnEliminarCuenta;
     private boolean enModoEdicion = false;
     private DatabaseHelper dbHelper; // Instancia a la clase DatabaseHelper
@@ -56,15 +56,21 @@ public class EditarBorrarCuenta extends AppCompatActivity
         // que eso significa que no obtuvo nada desde el Inten anterior.
         if (usuarioId == -1)
         {
-            Toast.makeText(this, "No se ha recibido ID del usuario", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+            usuarioId = dbHelper.obtenerIdUsuario();
+            if (usuarioId == -1)
+            {
+                Toast.makeText(this, "No se ha recibido ID del usuario", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+
         }
 
         // Instancia al contenido del xml
         imgPerfil = findViewById(R.id.imgPerfil);
         editCorreo = findViewById(R.id.editCorreo);
         editPassword = findViewById(R.id.editPassword);
+        editPassword2 = findViewById(R.id.editPassword2);
         editNombre = findViewById(R.id.editNombre);
         editApellido = findViewById(R.id.editApellido);
         btnEditarGuardar = findViewById(R.id.btnEditarGuardar);
@@ -244,6 +250,8 @@ public class EditarBorrarCuenta extends AppCompatActivity
         editNombre.setEnabled(habilitar);
         editApellido.setEnabled(habilitar);
         editPassword.setEnabled(habilitar);
+        editPassword2.setEnabled(habilitar);
+
     }
 
 
@@ -259,12 +267,27 @@ public class EditarBorrarCuenta extends AppCompatActivity
         String nuevoNombre = editNombre.getText().toString().trim();
         String nuevoApellido = editApellido.getText().toString().trim();
         String nuevaPassword = editPassword.getText().toString().trim();
+        String nuevaPassword2 = editPassword2.getText().toString().trim();
 
-        // Si el campo sigue con los ****** no cambiamos la contraseña
-        // que me daba error y si cambio solo la foto me cambiaba la contraseña y no podia entrar una liada
+        // Validamos si el usuario no cambió la contraseña (dejó la que estaba o vacío)
         if (nuevaPassword.equals("********") || nuevaPassword.isEmpty())
         {
-            nuevaPassword = null;
+            nuevaPassword = null; // No cambiamos la contraseña
+        }
+        else
+        {
+            if(!esContraseniaValida(nuevaPassword))
+            {
+                Toast.makeText(this, "Contraseña no válida: debe contener una mayúscula, " +
+                        "un carácter especial y tener más de 6 caracteres.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (!nuevaPassword.equals(nuevaPassword2))
+            {
+                Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
+                return;
+            }
         }
 
         if (imagenEnBytes == null || imagenEnBytes.length == 0)
@@ -313,5 +336,29 @@ public class EditarBorrarCuenta extends AppCompatActivity
             byteBuffer.write(buffer, 0, len);
         }
         return byteBuffer.toByteArray();
+    }
+
+
+    /**
+     * Valida que la contraseña cumpla con los requisitos:
+     * - Mínimo 7 caracteres
+     * - Que contenga al menos una letra mayúscula
+     * - Que contenga al menos un carácter especial
+     *
+     * @param contrasenia La contraseña a validar
+     * @return true si cumple, false si no cumple
+     */
+    public boolean esContraseniaValida(String contrasenia)
+    {
+        if (contrasenia == null) return false;
+        if (contrasenia.length() <= 6) return false;
+
+        // Para que al menos contenga una mayúscula
+        boolean tieneMayuscula = contrasenia.matches(".*[A-Z].*");
+
+        // Para que al menos contenga un carácter especial
+        boolean tieneCaracterEspecial = contrasenia.matches(".*[!@#$%^&*()\\-_=+\\[\\]{};:'\",.<>?/].*");
+
+        return tieneMayuscula && tieneCaracterEspecial;
     }
 }

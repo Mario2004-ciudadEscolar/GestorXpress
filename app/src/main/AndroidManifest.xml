@@ -20,6 +20,9 @@
         android:theme="@style/Theme.GestorXpress"
         tools:targetApi="31">
         <activity
+            android:name=".ui.Cuenta.AvisoLegal.AvisosLegales"
+            android:exported="false" />
+        <activity
             android:name=".ui.Cuenta.SobreGestoXpress.SobreNosotros"
             android:exported="false" />
         <activity
@@ -66,6 +69,10 @@
         <activity
             android:name=".CompartirActivity"
             android:exported="false" />
+
+        <receiver
+            android:name=".ui.Notificacion.NotificacionReceiver"
+            android:exported="true" />
     </application>
 
 </manifest>

@@ -43,7 +43,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 12;
 
 
     /**
@@ -126,13 +126,22 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 "CREATE TABLE Notificacion (" +
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "tarea_id INTEGER NOT NULL, " +
-                        "tipo TEXT, " +                 // Enum simulado con TEXT
                         "tiempoAntes INTEGER, " +
-                        "horaPersonalizada TEXT, " +
-                        "activa INTEGER, " +            // 0 = false, 1 = true
                         "FOREIGN KEY(tarea_id) REFERENCES Tarea(id) ON DELETE CASCADE" +
                         ");"
         );
+
+        // Trigger para crear una notificación automáticamente al crear una tarea
+        db.execSQL(
+                "CREATE TRIGGER IF NOT EXISTS crear_notificacion_despues_de_tarea " +
+                        "AFTER INSERT ON Tarea " +
+                        "FOR EACH ROW " +
+                        "BEGIN " +
+                        "INSERT INTO Notificacion (tarea_id, tiempoAntes) " +
+                        "VALUES (NEW.id, 60); " +
+                        "END;"
+        );
+
 
     }
 
@@ -292,11 +301,13 @@ public class DatabaseHelper extends SQLiteOpenHelper
         while (cursor.moveToNext()) {
             data.append("Notificación -> ID: ").append(cursor.getInt(0))
                     .append(", TareaID: ").append(cursor.getInt(1))
-                    .append(", Tipo: ").append(cursor.getString(2))
-                    .append(", Activa: ").append(cursor.getInt(5))
+                    .append(", tiempoAntes: ").append(cursor.getInt(2))
                     .append("\n");
         }
         cursor.close();
+
+        if (data.length() == 0) {return "No hay notificaciones";}
+
         return data.toString();
     }
 
@@ -850,55 +861,77 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
     //----------------------- METODOS A USAR A FUTURO -----------------------//
     /**
+     * Obtiene una lista de tareas del usuario que tienen fecha de inicio o fecha límite
+     * dentro de las próximas 24 horas desde el momento actual.
      *
-     * @param usuarioId
-     * @return
+     * @param usuarioId El ID del usuario para filtrar las tareas.
+     * @return Una lista de mapas, donde cada mapa representa una tarea con sus datos:
+     *         "titulo", "descripcion", "inicio" (fechaHoraInicio) y "fin" (fechaLimite).
      */
     public List<Map<String, String>> getTareasFuturas(int usuarioId)
     {
+        // Lista que almacenará las tareas filtradas para devolverlas
         List<Map<String, String>> tareas = new ArrayList<>();
+
+        // Obtener una instancia para lectura de la base de datos
         SQLiteDatabase db = this.getReadableDatabase();
 
+        // Obtener el tiempo actual en milisegundos
         long ahora = System.currentTimeMillis();
-        long en24Horas = ahora + (24 * 60 * 60 * 1000); // ahora + 24 horas
 
-        Cursor cursor = db.rawQuery(
+        // Calcular el tiempo en milisegundos correspondiente a 24 horas después de 'ahora'
+        long en24Horas = ahora + (24 * 60 * 60 * 1000); // 24 horas en milisegundos
+
+        // Obtenemos los datos de la clase Tarea
+        Cursor consulta = db.rawQuery(
                 "SELECT titulo, descripcion, fechaHoraInicio, fechaLimite FROM Tarea WHERE usuario_id = ?",
                 new String[]{String.valueOf(usuarioId)}
         );
 
+        // Formato para convertir las fechas en String al tipo Date y luego a milisegundos
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-        while (cursor.moveToNext())
+        while (consulta.moveToNext())
         {
             try
             {
-                String titulo = cursor.getString(0);
-                String descripcion = cursor.getString(1);
-                String inicio = cursor.getString(2);
-                String fin = cursor.getString(3);
+                // Obtener los datos de la fila actual
+                String titulo = consulta.getString(0);
+                String descripcion = consulta.getString(1);
+                String inicio = consulta.getString(2);
+                String fin = consulta.getString(3);
 
+                // Parsear las fechas (strings) al tipo Date y obtener su tiempo en milisegundos
                 long inicioMs = sdf.parse(inicio).getTime();
                 long finMs = sdf.parse(fin).getTime();
 
+                // Comprobar si la fecha de inicio o la fecha límite está dentro del rango de las próximas 24 horas
                 if ((inicioMs > ahora && inicioMs < en24Horas) || (finMs > ahora && finMs < en24Horas)) {
+                    // Crear un mapa para almacenar los datos de esta tarea
                     Map<String, String> tarea = new HashMap<>();
                     tarea.put("titulo", titulo);
                     tarea.put("descripcion", descripcion);
                     tarea.put("inicio", inicio);
                     tarea.put("fin", fin);
+
+                    // Agregar la tarea a la lista que será devuelta
                     tareas.add(tarea);
                 }
             }
             catch (Exception e)
             {
+                // Captura cualquier error que ocurra al parsear las fechas y lo imprime en consola
                 e.printStackTrace();
             }
         }
+        // Cerrar el cursor para liberar recursos
+        consulta.close();
 
-        cursor.close();
+        // Devolver la lista con las tareas que cumplen la condición
         return tareas;
     }
+
+
     // Borra todos los datos de todas las tablas (sin eliminar las tablas)
     // por si se queda algn perfil corrupto borrarlo, en el onCreate del main debajo del bd metes esto     dbHelper.borrarTodo();
     //        Toast.makeText(this, "Base de datos limpiada", Toast.LENGTH_SHORT).show(); y ya esta
@@ -921,5 +954,33 @@ public class DatabaseHelper extends SQLiteOpenHelper
             db.endTransaction();
         }
     }
+
+    //----------------------- METODO PARA LA CLASE NOTIFICACIÓN -----------------------//
+
+    /**
+     * Este metodo lo uso para obtener la tarea que se a creado recientemente (la última que se creo)
+     * .
+     * Esto nos sirva para generar una notificación
+     *
+     * @return devulevo el ID de la tarea
+     */
+    public int obtenerUltimoIdTareaInsertada()
+    {
+        SQLiteDatabase db = this.getReadableDatabase(); // Permitimos leer (READ) en la base de datos
+
+        // Realizamos la consulta donde obtenemos el ID de la tarea
+        Cursor consulta = db.rawQuery("SELECT id FROM Tarea ORDER BY id DESC LIMIT 1", null);
+
+        int id = -1;
+
+        if (consulta.moveToFirst())
+        {
+            id = consulta.getInt(0);
+        }
+        consulta.close();
+
+        return id;
+    }
+
 
 }

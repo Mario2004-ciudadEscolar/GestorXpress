@@ -124,6 +124,15 @@ public class RegistroActivity extends AppCompatActivity {
                 return;
             }
 
+            // Aqui valido que la contraseña contenga mayusculas, caracter especial
+            // y que la contraseña sea igual o mayor de 6 digitos
+            if(!esContraseniaValida(contrasena) )
+            {
+                Toast.makeText(this, "Contraseña no válida: debe contener una mayúscula, " +
+                        "un carácter especial y tener más de 6 caracteres.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             /**
              * Validamos que las dos contraseñas que introduce el usuario a la hora de darse de alta
              * coincidan, ya que asi el usuario comprueba y afirma que ha puesto la contraseña que
@@ -258,4 +267,28 @@ public class RegistroActivity extends AppCompatActivity {
         }
         return byteBuffer.toByteArray();
     }
+
+    /**
+     * Valida que la contraseña cumpla con los requisitos:
+     * - Mínimo 7 caracteres
+     * - Que contenga al menos una letra mayúscula
+     * - Que contenga al menos un carácter especial
+     *
+     * @param contrasenia La contraseña a validar
+     * @return true si cumple, false si no cumple
+     */
+    public boolean esContraseniaValida(String contrasenia)
+    {
+        if (contrasenia == null) return false;
+        if (contrasenia.length() <= 6) return false;
+
+        // Para que al menos contenga una mayúscula
+        boolean tieneMayuscula = contrasenia.matches(".*[A-Z].*");
+
+        // Para que al menos contenga un carácter especial
+        boolean tieneCaracterEspecial = contrasenia.matches(".*[!@#$%^&*()\\-_=+\\[\\]{};:'\",.<>?/].*");
+
+        return tieneMayuscula && tieneCaracterEspecial;
+    }
+
 }
