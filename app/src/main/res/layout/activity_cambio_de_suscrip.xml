@@ -60,6 +60,8 @@
                     android:textSize="16sp"
                     android:textColor="#FFFFFF"
                     android:background="#55222222"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:padding="8dp" />
 
                 <TextView
@@ -71,6 +73,8 @@
                     android:text="anual"
                     android:textSize="16sp"
                     android:textColor="#CCCCCC"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:padding="8dp" />
             </LinearLayout>
 
@@ -107,7 +111,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0,00 € /mes"
+                    android:text="0,00 €"
                     android:textColor="#FFFFFF"
                     android:textSize="18sp"
                     android:layout_marginBottom="12dp" />
@@ -115,7 +119,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="• Disponible en 1 dispositivos a la vez\n• Creación de 5 tareas por semana"
+                    android:text="• Incluye anuncios\n• Gráfico simplificado"
                     android:textColor="#DDDDDD"
                     android:textSize="14sp"
                     android:layout_marginBottom="16dp" />
@@ -141,18 +145,33 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4,99 € /mes"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:layout_marginBottom="12dp" />
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/precio_estandar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4,99 €"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/periodo_estandar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="/mes"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp" />
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="• Disponible en 2 dispositivos a la vez\n• Sin anuncios\n• Creación de tareas ilimitado"
+                    android:text="• Sin anuncios\n• Gráfico ampliado con más detalle"
                     android:textColor="#DDDDDD"
                     android:textSize="14sp"
                     android:layout_marginBottom="16dp" />

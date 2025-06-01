@@ -3,6 +3,8 @@ package com.example.gestorxpress.ui.home;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.provider.CalendarContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -78,6 +80,28 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
 
         // Obtenemos el contenido y establecemos el texto visible en el modo lectura (no editable)
         holder.textTitulo.setText(tarea.get("titulo"));
+        
+        // Establecer el color del título según la prioridad
+        String prioridad = tarea.get("prioridad");
+        if (prioridad != null) {
+            int colorResId;
+            switch (prioridad.toLowerCase()) {
+                case "baja":
+                    colorResId = R.color.prioridad_baja;
+                    break;
+                case "media":
+                    colorResId = R.color.prioridad_media;
+                    break;
+                case "alta":
+                    colorResId = R.color.prioridad_alta;
+                    break;
+                default:
+                    colorResId = android.R.color.white;
+                    break;
+            }
+            holder.textTitulo.setTextColor(context.getResources().getColor(colorResId));
+        }
+
         holder.textDescripcion.setText("Descripción: " + tarea.get("descripcion"));
         holder.textPrioridad.setText("Prioridad: " + tarea.get("prioridad"));
         holder.textEstado.setText("Estado: " + tarea.get("estado"));
@@ -143,24 +167,28 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         // Si el usuario le da el boton eliminar, elimina la tarea
         holder.btnEliminar.setOnClickListener(v ->
         {
-            String idTarea = tarea.get("id"); // Obtenemos el id de la tarea que vamos a eliminar
+            String idTarea = tarea.get("id");
+            String tituloTarea = tarea.get("titulo");
 
-            //Comprobamos que esa tarea no sea nula
             if (idTarea != null)
             {
-                // Lo usamos para controlar posibles errores que nos da al eliminar o obtener el id de la tarea a borrar
                 try
                 {
-                    int idInt = Integer.parseInt(idTarea); // Guardamos el id de la tarea a borrar.
+                    int idInt = Integer.parseInt(idTarea);
 
-                    if (dbHelper.eliminarTarea(idInt)) // Llamamos el metodo donde borramos la tarea, y obtenemos un boolean según si se borro o no.
+                    if (dbHelper.eliminarTarea(idInt))
                     {
+                        Toast.makeText(context, "Por favor, elimina el evento '" + tituloTarea + "' de tu calendario", Toast.LENGTH_LONG).show();
+                        
+                        // Abrir el calendario
+                        abrirCalendario();
+                        
                         listaTareas.remove(position);
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, listaTareas.size());
                         Toast.makeText(context, "Tarea eliminada", Toast.LENGTH_SHORT).show();
                     }
-                    else // Por si surgui un error.
+                    else
                     {
                         Toast.makeText(context, "Error al eliminar tarea", Toast.LENGTH_SHORT).show();
                     }
@@ -190,10 +218,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         // Cuando el usuario le dal al boton guardar, hara lo siguiente...
         holder.btnGuardar.setOnClickListener(v ->
         {
-            // Obtiene el ID de la tarea actual
             String idTarea = tarea.get("id");
-
-            // Leemos los valores actualizados de los campos de edición (EditText)
             String nuevoTitulo = holder.editTitulo.getText().toString();
             String nuevaDescripcion = holder.editDescripcion.getText().toString();
             String nuevaPrioridad = holder.spinnerPrioridad.getSelectedItem().toString();
@@ -201,29 +226,28 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
             String nuevaFechaInicio = holder.editFechaInicio.getText().toString();
             String nuevaFechaLimite = holder.editFechaLimite.getText().toString();
 
-            // Guardamos la fecha límite antigua para comparar
+            // Guardamos las fechas y título antiguos para comparar
+            String fechaInicioAntigua = tarea.get("fechaHoraInicio");
             String fechaLimiteAntigua = tarea.get("fechaLimite");
+            String tituloAntiguo = tarea.get("titulo");
+            
+            // Verificar si se modificaron las fechas o el título
+            boolean fechasModificadas = !nuevaFechaInicio.equals(fechaInicioAntigua) || 
+                                      !nuevaFechaLimite.equals(fechaLimiteAntigua);
+            boolean tituloModificado = !nuevoTitulo.equals(tituloAntiguo);
 
-            // Llamamos al método editarTarea del la clase databaseHelper
-            // para hacer el UPDATE en la bbdd con los nuevos valores
             if (dbHelper.editarTarea(Integer.parseInt(idTarea), nuevoTitulo, nuevaDescripcion,
                     nuevaPrioridad, nuevoEstado, nuevaFechaLimite, nuevaFechaInicio))
             {
-                // Comprobamos si el estado fue modificado, ya que si pasa a completa, no se veria
-                // en el Home, solo se veria al filtrar por 'Completada'
-                if (nuevoEstado.equalsIgnoreCase("completada") || nuevoEstado.equalsIgnoreCase("completada"))
+                if (nuevoEstado.equalsIgnoreCase("completada"))
                 {
-                    // Quitamos la tarea de la lista local
                     listaTareas.remove(position);
                     notifyItemRemoved(position);
                     notifyItemRangeChanged(position, listaTareas.size());
-                    // Enviamos un mensaje informatifo indicando que se ha quitado esa tarea, bueno lo
-                    // ocultamos, ya que se podria seguir viendo en el filtro
                     Toast.makeText(context, "Tarea completada y oculta", Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
-                    // Si la actualización fue exitosa, también actualizamos los datos en la lista local (Map)
                     tarea.put("titulo", nuevoTitulo);
                     tarea.put("descripcion", nuevaDescripcion);
                     tarea.put("prioridad", nuevaPrioridad);
@@ -231,10 +255,20 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                     tarea.put("fechaHoraInicio", nuevaFechaInicio);
                     tarea.put("fechaLimite", nuevaFechaLimite);
 
-                    // Notificamos al adaptador que el ítem cambió para que se refresque la vista
                     notifyItemChanged(position);
-                    // Mostramos un mensaje de exito
                     Toast.makeText(context, "Tarea actualizada", Toast.LENGTH_SHORT).show();
+
+                    // Si se modificaron las fechas o el título, mostrar los mensajes correspondientes
+                    if (fechasModificadas || tituloModificado) {
+                        if (tituloModificado) {
+                            Toast.makeText(context, "Por favor, cambia el título del evento de '" + tituloAntiguo + "' a '" + nuevoTitulo + "' en tu calendario", Toast.LENGTH_LONG).show();
+                        }
+                        if (fechasModificadas) {
+                            Toast.makeText(context, "Por favor, actualiza las fechas del evento '" + nuevoTitulo + "' en tu calendario", Toast.LENGTH_LONG).show();
+                        }
+                        // Abrir el calendario
+                        abrirCalendario();
+                    }
                 }
 
                 // Comprobamos si se ha cambiado la fecha limite de la tarea
@@ -262,7 +296,6 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                         Log.e("TareaAdapter", "Error al reprogramar la notificación: " + e.getMessage());
                     }
                 }
-
             }
             else
             {
@@ -339,6 +372,16 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
 
         // Mostramos el botón "Editar" solo en modo visualización
         holder.btnEditar.setVisibility(visTexto);
+    }
+
+    private void abrirCalendario() {
+        Intent intent = new Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_APP_CALENDAR);
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(context, "No se pudo abrir el calendario", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

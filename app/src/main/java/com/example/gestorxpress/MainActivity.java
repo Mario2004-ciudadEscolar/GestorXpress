@@ -103,11 +103,14 @@ public class MainActivity extends AppCompatActivity
             }
             else if (id == R.id.nav_compartir)
             {
-                // Voy a comentar esto para poner el de "Ver la BBDD"
-                //startActivity(new Intent(MainActivity.this, CompartirActivity.class));
-
-                // Lo voy a poner de momento para ver la bbdd, luego se quitara
-                startActivity(new Intent(MainActivity.this, VerBBDDActivity.class));
+                // Create share intent
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Descarga GestorXpress");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "¡Descarga GestorXpress desde GitHub!\nhttps://github.com/Mario2004-ciudadEscolar/ciudadEscolar_GestorXpress");
+                
+                // Start the share activity
+                startActivity(Intent.createChooser(shareIntent, "Compartir enlace de descarga"));
                 drawer.closeDrawers();
                 return true;
             }

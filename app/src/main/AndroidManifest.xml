@@ -66,9 +66,6 @@
         <activity
             android:name=".ui.GestionPerfiles.LoginSoloContrasenaActivity"
             android:exported="false" />
-        <activity
-            android:name=".CompartirActivity"
-            android:exported="false" />
 
         <receiver
             android:name=".ui.Notificacion.NotificacionReceiver"

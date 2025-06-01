@@ -8,11 +8,13 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
+import android.util.DisplayMetrics;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
@@ -52,11 +54,14 @@ public class SelectorPerfilActivity extends AppCompatActivity
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_selector_perfil); // Instancias al xml
+        setContentView(R.layout.activity_selector_perfil);
 
         // RecyclerView donde se muestran los perfiles
         recyclerView = findViewById(R.id.recyclerViewPerfiles);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        
+        // Calcular el número de columnas basado en el ancho de la pantalla
+        int spanCount = calculateSpanCount();
+        recyclerView.setLayoutManager(new GridLayoutManager(this, spanCount));
 
         // Instancia a la clase DatabaseHelper
         dbHelper = new DatabaseHelper(this);
@@ -64,21 +69,11 @@ public class SelectorPerfilActivity extends AppCompatActivity
         //Inicializamos la lista
         listaPerfiles = new ArrayList<>();
 
-        // Se crea una instancia a la clase PerfilAdapterSinClase, ya este adaptador obtiene una lista
-        // de perfiles y una función que se llama cuando le haces click en el perfil.
-        perfilAdapter = new PerfilAdapterSinClase(listaPerfiles, perfil ->
-        {
-            // Obtiene el id del perfil que ha seleccionado
-            // 'perfil' es un Map (clave-valor), por eso se usa get("id").
+        // Se crea una instancia a la clase PerfilAdapterSinClase
+        perfilAdapter = new PerfilAdapterSinClase(listaPerfiles, perfil -> {
             int id = (int) perfil.get("id");
-
-            // Navegamos al Activity EditarBorrarCuenta, cuando seleccionamos el perfil
             Intent intent = new Intent(this, LoginSoloContrasenaActivity.class);
-
-            // Mandamos como Id del usuario como dato extra al Intent (EditarBorrarCuenta)
             intent.putExtra("usuarioId", id);
-
-            // Iniciamos el MainActivity
             startActivity(intent);
         });
 
@@ -86,14 +81,43 @@ public class SelectorPerfilActivity extends AppCompatActivity
             startActivity(new Intent(this, RegistroActivity.class));
         });
 
+        // Espaciado mínimo entre perfiles (1dp ≈ 4px)
+        int spacing = dpToPx(1);
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(view);
+                int column = position % spanCount;
 
-        // Llamada a un metodo donde centramos el RecyclerView con la listas de los usuarios
-        centrarItemsListaUsuario(recyclerView, perfilAdapter);
+                // Espaciado horizontal mínimo
+                outRect.left = column == 0 ? 0 : spacing;
+                outRect.right = column == spanCount - 1 ? 0 : spacing;
 
-        // Llamada al metodo donde cargamos los perfiles al xml (Los datos que se ve en la aplicación)
+                // Solo añadir espaciado superior si no está en la primera fila
+                if (position >= spanCount) {
+                    outRect.top = spacing * 2; // 2dp para el espaciado vertical
+                }
+            }
+        });
+
+        recyclerView.setAdapter(perfilAdapter);
         cargarPerfiles();
     }
 
+    private int calculateSpanCount() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+        
+        // Ajustar el cálculo para considerar el espaciado exacto
+        int itemWidth = dpToPx(120); // Solo el ancho del item
+        int spacing = dpToPx(1); // El mismo espaciado que usamos arriba
+        
+        // Calcular cuántas columnas caben considerando el espaciado y los márgenes laterales de 40dp
+        int availableWidth = screenWidth - dpToPx(80); // Restar márgenes laterales (40dp + 40dp)
+        int spanCount = Math.max(2, availableWidth / (itemWidth + spacing));
+        return Math.min(spanCount, 4);
+    }
 
     /**
      * Método del ciclo de vida de la actividad que se llama cuando la actividad vuelve al primer plano.
