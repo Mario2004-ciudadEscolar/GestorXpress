@@ -191,16 +191,21 @@ public class SlideshowFragment extends Fragment
 
         // Contar todas las tareas del usuario (sin importar estado)
         Cursor cursorTotal = db.rawQuery(
-                "SELECT COUNT(*) FROM Tarea WHERE usuario_id = ? AND DATE(fechaCreacion) BETWEEN ? AND ?",
-                new String[]{String.valueOf(idUsuario), lunes, domingo}
+                "SELECT COUNT(*) FROM Tarea " +
+                        "WHERE usuario_id = ? AND estado != 'Completada'",
+                new String[]{String.valueOf(idUsuario)}
         );
 
-        int totalTareas = 0;
+
+        int totalNoCompletadas = 0;
         if (cursorTotal.moveToFirst())
         {
-            totalTareas = cursorTotal.getInt(0);
+            totalNoCompletadas = cursorTotal.getInt(0);
         }
         cursorTotal.close();
+
+        // 3. Total = completadas + no completadas
+        int totalTareas = totalCompletadas + totalNoCompletadas;
 
         // Actualiza texto de tareas completadas
         txtTareasRealizadas.setText(String.valueOf(totalCompletadas));
@@ -253,22 +258,23 @@ public class SlideshowFragment extends Fragment
         consulta.close();
 
         // Consulta donde obtenemos el total de tareas de todos los hijos
-        /*Cursor consultaTotal = db.rawQuery(
-                "SELECT COUNT(*) FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0)",
-                null
-        );*/
         Cursor consultaTotal = db.rawQuery(
-                "SELECT COUNT(*) FROM Tarea WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0) " +
-                        "AND DATE(fechaCreacion) BETWEEN ? AND ?",
-                new String[]{lunes, domingo}
+                "SELECT COUNT(*) FROM Tarea " +
+                        "WHERE usuario_id IN (SELECT id FROM Usuario WHERE esPadre = 0) " +
+                        "AND estado != 'Completada'",
+                null
         );
 
-        int totalTareas = 0;
+
+        int totalNoCompletadas = 0;
         if (consultaTotal.moveToFirst())
         {
-            totalTareas = consultaTotal.getInt(0);
+            totalNoCompletadas = consultaTotal.getInt(0);
         }
         consultaTotal.close();
+
+        //Total = completadas + no completadas
+        int totalTareas = totalCompletadas + totalNoCompletadas;
 
         // Muestra datos en los TextViews
         txtTareasRealizadas.setText(String.valueOf(totalCompletadas));

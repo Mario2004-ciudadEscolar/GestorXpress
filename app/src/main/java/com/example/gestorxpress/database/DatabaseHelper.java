@@ -43,7 +43,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * !!IMPORTANTE¡¡ Ver si cuando cambiamos la versión se nos
      * cambia automaticamente a nosotros tambien.
      */
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 14;
 
 
     /**
@@ -105,7 +105,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         "fechaTareaFinalizada TEXT, "+
                         "prioridad TEXT, " +            // Enum simulado con TEXT
                         "estado TEXT, " +               // Enum simulado con TEXT
-                        "fechaCreacion TEXT NOT NULL, " +
                         "fechaHoraInicio TEXT, "+ //Este se ha agregado
                         "FOREIGN KEY(usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE" +
                         ");"
@@ -207,6 +206,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                 String nombre = consulta.getString(consulta.getColumnIndexOrThrow("nombre"));
                 String apellido = consulta.getString(consulta.getColumnIndexOrThrow("apellido"));
                 String correo = consulta.getString(consulta.getColumnIndexOrThrow("correo"));
+                String contra = consulta.getString(consulta.getColumnIndexOrThrow("contrasenia"));
                 String fechaRaw = consulta.getString(consulta.getColumnIndexOrThrow("fechaRegistro"));
                 int logged = consulta.getInt(consulta.getColumnIndexOrThrow("logged_in"));
                 int esPadre = consulta.getInt(consulta.getColumnIndexOrThrow("esPadre"));
@@ -231,6 +231,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
                         .append(", Nombre: ").append(nombre)
                         .append(", Apellido: ").append(apellido)
                         .append(", Correo: ").append(correo)
+                        .append((", Contraseña")).append(contra)
                         .append(", Fecha de Registro: ").append(fechaFormateada)
                         .append(", Logged_in: ").append(logged)
                         .append(", esPadre: ").append(esPadre)
@@ -652,8 +653,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         {
             actualiUsuario.put("fotoPerfil", nuevaImagen);
         }
-
-
         // Ejecutamos la actualización y obtenemos un numerico que lo usamos para comprobar si se ha actualizado o no
         int filasActualizadas = db.update("Usuario", actualiUsuario, "id = ?", new String[]{String.valueOf(idUsuario)});
 
@@ -694,7 +693,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     public boolean crearTarea(int usuarioId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaHoraInicio) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String fechaCreacion = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
         // El ContentValues se utiliza para almacenar pares clave-valor
         // Donde las claves son los nombres de las columnas de una tabla de la BBDD SQLite
         ContentValues aniadirTarea = new ContentValues();
@@ -704,8 +702,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         aniadirTarea.put("prioridad", prioridad);
         aniadirTarea.put("estado", estado);
         aniadirTarea.put("fechaLimite", fechaLimite);
-        aniadirTarea.put("fechaCreacion", fechaCreacion);
-        aniadirTarea.put("fechaHoraInicio", fechaHoraInicio); // NUEVO campo
+        aniadirTarea.put("fechaHoraInicio", fechaHoraInicio);
 
         // Al hacer la inserción en la BBDD de SQLite, en la variable resultado
         // se guarda un numero donde se comprueba si se ha creado la tarea o no.
@@ -725,10 +722,10 @@ public class DatabaseHelper extends SQLiteOpenHelper
      * @param prioridad Nivel de prioridad de la tarea (por ejemplo: Alta, Media, Baja).
      * @param estado Estado actual de la tarea (por ejemplo: Pendiente, Completada).
      * @param fechaLimite Fecha límite para completar la tarea (en formato yyyy-MM-dd).
-     * @param fechaCreacion Fecha cuando se creo la tarea (en formato yyyy-MM-dd).
+     * @param fechaHoraInicio Fecha cuando se inicia la tarea (en formato yyyy-MM-dd).
      * @return true si la tarea fue creada exitosamente; false si ocurrió un error.
      */
-    public boolean crearTareaUsuarioAsignado(int usuarioAsignadoId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaCreacion) {
+    public boolean crearTareaUsuarioAsignado(int usuarioAsignadoId, String titulo, String descripcion, String prioridad, String estado, String fechaLimite, String fechaHoraInicio) {
         // Conexión a la bbdd
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -740,7 +737,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         datos.put("prioridad", prioridad);
         datos.put("estado", estado);
         datos.put("fechaLimite", fechaLimite);
-        datos.put("fechaCreacion", fechaCreacion);
+        datos.put("fechaHoraInicio", fechaHoraInicio);
 
         long resultado = db.insert("Tarea", null, datos);
         return resultado != -1;
@@ -929,30 +926,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         // Devolver la lista con las tareas que cumplen la condición
         return tareas;
-    }
-
-
-    // Borra todos los datos de todas las tablas (sin eliminar las tablas)
-    // por si se queda algn perfil corrupto borrarlo, en el onCreate del main debajo del bd metes esto     dbHelper.borrarTodo();
-    //        Toast.makeText(this, "Base de datos limpiada", Toast.LENGTH_SHORT).show(); y ya esta
-    public void borrarTodo() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.beginTransaction();
-        try {
-            db.delete("Usuario", null, null);
-            // Añade más tablas si tienes otras, como por ejemplo:
-            // db.delete("Tarea", null, null);
-            // db.delete("Suscripcion", null, null);
-
-            // Reinicia el contador de ID autoincremental (opcional)
-            db.execSQL("DELETE FROM sqlite_sequence");
-
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.endTransaction();
-        }
     }
 
     //----------------------- METODO PARA LA CLASE NOTIFICACIÓN -----------------------//

@@ -49,8 +49,6 @@ public class HomeFragment extends Fragment
         recyclerView = root.findViewById(R.id.recycler_view_tareas);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        //insertarTareasDePrueba(); // <--- AÑADE ESTO PARA PRUEBA
-
         cargarTareasDelUsuarioLogueado();
 
         return root;
@@ -251,41 +249,5 @@ public class HomeFragment extends Fragment
         // Mostramos el menú en pantalla
         popup.show();
     }
-
-
-    private void insertarTareasDePrueba()
-    {
-        new Thread(() -> {
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-            int idUsuario = dbHelper.obtenerIdUsuario(); // ID hardcodeado para pruebas
-
-            for (int i = 26; i <= 31; i++) {
-                String dia = (i < 10 ? "0" + i : String.valueOf(i));
-                String fechaInicio = "2025-06-" + dia + " 09:00";
-                String fechaLimite = "2025-06-" + dia + " 17:00";
-                String fechaCreacion = "2025-06-" + dia + " 08:00";
-                String fechaFinalizada = "2025-06-" + dia + " 18:00"; // Mismo día, una hora después del límite
-
-                String titulo = "Tarea Día " + i;
-                String descripcion = "Descripción para la tarea del día " + i;
-                String prioridad = "Media";
-                String estado = "Completada"; // Ya que tiene fecha de finalización
-
-                db.execSQL("INSERT INTO Tarea (titulo, descripcion, prioridad, estado, fechaHoraInicio, fechaLimite, fechaCreacion, fechaTareaFinalizada, usuario_id) " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        new Object[]{titulo, descripcion, prioridad, estado, fechaInicio, fechaLimite, fechaCreacion, fechaFinalizada, idUsuario});
-            }
-
-            db.close();
-
-            requireActivity().runOnUiThread(this::cargarTareasDelUsuarioLogueado);
-
-        }).start();
-    }
-
-
-
-
 
 }

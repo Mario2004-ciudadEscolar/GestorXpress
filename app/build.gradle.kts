@@ -52,6 +52,9 @@ dependencies {
     implementation(libs.volley)
     implementation(libs.activity)
 
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
+
+
     testImplementation(libs.junit)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
