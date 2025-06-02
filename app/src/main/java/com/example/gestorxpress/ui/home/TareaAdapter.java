@@ -226,6 +226,37 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
             String nuevaFechaInicio = holder.editFechaInicio.getText().toString();
             String nuevaFechaLimite = holder.editFechaLimite.getText().toString();
 
+            try {
+                // Convertir las fechas a Calendar para validación
+                SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
+                Calendar fechaInicioCalendar = Calendar.getInstance();
+                Calendar fechaFinCalendar = Calendar.getInstance();
+                Calendar ahora = Calendar.getInstance();
+
+                fechaInicioCalendar.setTime(formato.parse(nuevaFechaInicio));
+                fechaFinCalendar.setTime(formato.parse(nuevaFechaLimite));
+
+                // Validar que la fecha de inicio no sea posterior a la fecha de fin
+                if (fechaInicioCalendar.after(fechaFinCalendar)) {
+                    Toast.makeText(context, "Error: La fecha de inicio no puede ser posterior a la fecha de fin", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                // Validar que las fechas no sean anteriores a la fecha actual
+                if (fechaInicioCalendar.before(ahora)) {
+                    Toast.makeText(context, "Error: La fecha de inicio no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (fechaFinCalendar.before(ahora)) {
+                    Toast.makeText(context, "Error: La fecha de fin no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            } catch (Exception e) {
+                Toast.makeText(context, "Error al validar las fechas", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             // Guardamos las fechas y título antiguos para comparar
             String fechaInicioAntigua = tarea.get("fechaHoraInicio");
             String fechaLimiteAntigua = tarea.get("fechaLimite");
