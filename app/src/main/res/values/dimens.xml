@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
@@ -5,4 +6,28 @@
     <dimen name="nav_header_vertical_spacing">8dp</dimen>
     <dimen name="nav_header_height">176dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Tamaños de texto -->
+    <dimen name="text_size_title">20sp</dimen>
+    <dimen name="text_size_subtitle">18sp</dimen>
+    <dimen name="text_size_body">16sp</dimen>
+    <dimen name="text_size_button">16sp</dimen>
+
+    <!-- Márgenes y padding -->
+    <dimen name="margin_normal">12dp</dimen>
+    <dimen name="margin_small">6dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
+    <dimen name="padding_normal">12dp</dimen>
+    <dimen name="padding_small">6dp</dimen>
+    <dimen name="padding_large">20dp</dimen>
+
+    <!-- Tamaños de botones y elementos de UI -->
+    <dimen name="button_height">44dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="toolbar_height">52dp</dimen>
+    
+    <!-- Tamaños específicos para elementos de perfil -->
+    <dimen name="profile_image_size">72dp</dimen>
+    <dimen name="profile_card_width">140dp</dimen>
+    <dimen name="profile_card_height">180dp</dimen>
 </resources>

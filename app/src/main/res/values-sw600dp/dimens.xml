@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tamaños de texto para tablets -->
+    <dimen name="text_size_title">24sp</dimen>
+    <dimen name="text_size_subtitle">20sp</dimen>
+    <dimen name="text_size_body">18sp</dimen>
+    <dimen name="text_size_button">18sp</dimen>
+
+    <!-- Márgenes y padding para tablets -->
+    <dimen name="margin_normal">20dp</dimen>
+    <dimen name="margin_small">10dp</dimen>
+    <dimen name="margin_large">40dp</dimen>
+    <dimen name="padding_normal">20dp</dimen>
+    <dimen name="padding_small">10dp</dimen>
+    <dimen name="padding_large">30dp</dimen>
+
+    <!-- Tamaños de elementos UI para tablets -->
+    <dimen name="profile_image_size">96dp</dimen>
+    <dimen name="profile_card_width">180dp</dimen>
+    <dimen name="profile_card_height">220dp</dimen>
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="toolbar_height">64dp</dimen>
+</resources> 
