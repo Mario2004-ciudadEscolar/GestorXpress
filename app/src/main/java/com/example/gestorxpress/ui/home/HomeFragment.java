@@ -110,23 +110,23 @@ public class HomeFragment extends Fragment
                     argsList.add(String.valueOf(idUsuario));
                 }
 
-                // Si NO hay filtro de estado, ocultamos las tareas completadas
-                if (filtroEstado == null)
+                // Aplicar filtros si existen
+                if (filtroEstado != null)
                 {
-                    queryBuilder.append(" AND estado <> 'Completada'");
-                }
-                else
-                {
-                    // Si hay filtroEstado, filtramos según lo seleccionado
                     queryBuilder.append(" AND estado = ?");
                     argsList.add(filtroEstado);
                 }
 
-                // Aplicar filtros si existen
                 if (filtroPrioridad != null)
                 {
                     queryBuilder.append(" AND prioridad = ?");
                     argsList.add(filtroPrioridad);
+                }
+
+                // Si NO hay filtro de estado, ocultamos las tareas completadas
+                if (filtroEstado == null && filtroPrioridad == null)
+                {
+                    queryBuilder.append(" AND estado <> 'Completada'");
                 }
 
                 String[] args = argsList.toArray(new String[0]);
