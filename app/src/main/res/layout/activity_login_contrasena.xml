@@ -73,11 +73,11 @@
     </androidx.cardview.widget.CardView>
 
     <TextView
-        android:id="@+id/textRegistro"
+        android:id="@+id/textError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="¿No tienes cuenta? Regístrate"
-        android:textColor="#FFFFFF"
+        android:text=""
+        android:textColor="#e74c3c"
         android:textSize="16sp"
         android:padding="16dp"
         android:layout_marginTop="16dp"

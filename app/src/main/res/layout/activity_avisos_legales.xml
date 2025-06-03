@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/fondo_azul_difuminado"
+    android:fitsSystemWindows="true"
     tools:context="com.example.gestorxpress.ui.Cuenta.AvisoLegal.AvisosLegales">
 
     <androidx.appcompat.widget.Toolbar

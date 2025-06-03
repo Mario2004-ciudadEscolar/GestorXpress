@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.graphics.Canvas;
@@ -30,6 +31,7 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText editNombre, editApellido, editCorreo, editContrasena, editRepetirContrasena;
     private Button btnRegistrar;
     private ImageView imagenSeleccionada;
+    private TextView textError;
     private byte[] imagenEnBytes;
     private static final int REQUEST_GALERIA = 1;
     private boolean imagenSeleccionadaPorUsuario = false;
@@ -51,6 +53,7 @@ public class RegistroActivity extends AppCompatActivity {
         btnRegistrar = findViewById(R.id.btnRegistrar);
         editRepetirContrasena = findViewById(R.id.editRepetirContrasena);
         imagenSeleccionada = findViewById(R.id.imagenSeleccionada);
+        textError = findViewById(R.id.textError);
 
         /**
          * Muestra un diálogo que permite al usuario seleccionar una imagen de perfil,
@@ -113,14 +116,16 @@ public class RegistroActivity extends AppCompatActivity {
                     TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)
                     || TextUtils.isEmpty((contrasena2)))
             {
-                Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                textError.setText("Por favor complete todos los campos");
                 return;
             }
 
             // Validación de formato de correo
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches())
             {
-                Toast.makeText(this, "Formato de correo invalido [usuario@dominio.com] ", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Formato de correo invalido [usuario@dominio.com] ", Toast.LENGTH_LONG).show();
+                textError.setText("Formato de correo invalido [usuario@dominio.com]");
                 return;
             }
 
@@ -128,9 +133,12 @@ public class RegistroActivity extends AppCompatActivity {
             // y que la contraseña sea igual o mayor de 6 digitos
             if(!esContraseniaValida(contrasena) )
             {
-                Toast.makeText(this, "Contraseña no válida: debe contener una mayúscula, " +
-                        "un carácter especial y tener más de 6 caracteres.", Toast.LENGTH_LONG).show();
+                /*Toast.makeText(this, "Contraseña no válida: debe contener una mayúscula, " +
+                        "un carácter especial y tener más de 6 caracteres.", Toast.LENGTH_LONG).show();*/
+                textError.setText("Contraseña no válida: debe contener una mayúscula, " +
+                        "un carácter especial y tener más de 6 caracteres.");
                 return;
+
             }
 
             /**
@@ -143,7 +151,8 @@ public class RegistroActivity extends AppCompatActivity {
              */
             if (!contrasena.equals(contrasena2))
             {
-                Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
+                textError.setText("Error: Las contraseñas no coinciden");
                 return;
             }
 

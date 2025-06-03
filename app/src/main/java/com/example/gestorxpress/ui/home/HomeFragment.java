@@ -227,11 +227,14 @@ public class HomeFragment extends Fragment
             if (titulo.startsWith("Prioridad"))
             {
                 filtroPrioridad = titulo.split(": ")[1]; // Ej: "Prioridad: Alta" --> "Alta"
+                filtroEstado = null; // Resetea estado cuando se filtra por prioridad
             }
             // Si el títutlo comienza con "Estado", extrae y guarda el estado seleccionado
             else if (titulo.startsWith("Estado"))
             {
                 filtroEstado = titulo.split(": ")[1]; // Ej: "Estado: Completada" --> "Completada"
+                filtroPrioridad = null; // Resetea prioridad cuando se filtra por estado
+
             }
             // Si se elige "Quitar filtros", se elimina los filtros aplicados
             else

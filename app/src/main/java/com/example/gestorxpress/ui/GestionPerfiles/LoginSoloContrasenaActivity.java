@@ -25,7 +25,7 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
     private TextView nombreTextView;
     private EditText passwordEditText;
     private Button loginButton;
-    private TextView registroTextView;
+    private TextView textError;
     private int usuarioId = -1;
     private String correoUsuario;
 
@@ -46,7 +46,7 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
         nombreTextView = findViewById(R.id.nombreUsuario);
         passwordEditText = findViewById(R.id.editTextPassword);
         loginButton = findViewById(R.id.botonLogin);
-        registroTextView = findViewById(R.id.textRegistro);
+        textError = findViewById(R.id.textError);
 
         // Instancia a la clase DatabaseHelper
         dbHelper = new DatabaseHelper(this);
@@ -114,7 +114,8 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
             if (TextUtils.isEmpty(password))
             {
                 // Si es asi, se mostrara un mensaje de error.
-                Toast.makeText(this, "Introduce la contraseña", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Introduce la contraseña", Toast.LENGTH_SHORT).show();
+                textError.setText("Introduce una contraseña");
                 return;
             }
 
@@ -142,14 +143,9 @@ public class LoginSoloContrasenaActivity extends AppCompatActivity {
             else
             {
                 // Si la contraseña es incorrecta, muestra un mensaje de error
-                Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                textError.setText("Contraseña incorrecta");
             }
-        });
-
-        // Configurar el clic en el texto de registro
-        registroTextView.setOnClickListener(v -> {
-            Intent intent = new Intent(this, RegistroActivity.class);
-            startActivity(intent);
         });
     }
 }
