@@ -211,7 +211,19 @@ public class CrearTareaFragment extends Fragment
         // Valida que la fecha de inicio sea anterior a la fecha de fin usando
         if (fechaHoraInicioCalendar.after(fechaFinCalendar))
         {
-            Toast.makeText(getContext(), "La fecha de inicio debe ser anterior a la fecha de fin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Error: La fecha de inicio no puede ser posterior a la fecha de fin", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Valida que las fechas no sean anteriores a la fecha actual
+        Calendar ahora = Calendar.getInstance();
+        if (fechaHoraInicioCalendar.before(ahora)) {
+            Toast.makeText(getContext(), "Error: La fecha de inicio no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (fechaFinCalendar.before(ahora)) {
+            Toast.makeText(getContext(), "Error: La fecha de fin no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
             return;
         }
 
