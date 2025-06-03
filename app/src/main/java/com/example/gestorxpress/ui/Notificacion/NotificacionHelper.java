@@ -30,6 +30,7 @@ public class NotificacionHelper
         Intent intent = new Intent(context, NotificacionReceiver.class);
         intent.putExtra("titulo", titulo); // Pasamos los datos extras (El primero como titulo)
         intent.putExtra("mensaje", "La tarea \"" + titulo + "\" finalizará en 1 hora"); // Luego pasamos un mensaje personalizado
+        // Los dos Itent que pasamos como extra, es lo que se vera en la notificación personalizada.
 
         // Se crea un PendingIntent con el intent anterior
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -38,17 +39,16 @@ public class NotificacionHelper
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-
         // Se obtenemos el servicio de alarmas del sistema
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         // Si obtenemos el servicio de la alarma, pasamos a generar la alarma
         if (alarmManager != null)
         {
-            Log.d("NotificacionHelper", "AlarmManager no es null, programando alarma");
+            Log.d("NotificacionHelper", "AlarmManager no es null, programando alarma"); // Logs para comprobar funcionamientos
             // Programamos la alarma para que se dispare exactamente a la hora deseada
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
-            Log.d("NotificacionHelper", "Alarma programada para: " + new java.util.Date(triggerAtMillis).toString());
+            Log.d("NotificacionHelper", "Alarma programada para: " + new java.util.Date(triggerAtMillis).toString()); // Logs para comprobar funcionamientos
         }
         else
         {
@@ -68,8 +68,8 @@ public class NotificacionHelper
      * @param dbHelper Objeto SQLiteOpenHelper para acceder a la base de datos.
      */
     public static void programarNotificacionDesdeBD(Context context, int idTarea, String titulo, Calendar fechaFinCalendar, SQLiteOpenHelper dbHelper) {
-        // Validamos que la exita, si no exite o no hemos
-        // obtenido el id, mostramos un mensaje informativo
+        // Validamos que el 'id' de tareas exita, si no exite
+        // o no hemos obtenido el id, mostramos un mensaje informativo
         if (idTarea == -1)
         {
             Log.e("NotificacionHelper", "ID de tarea inválido para notificación");

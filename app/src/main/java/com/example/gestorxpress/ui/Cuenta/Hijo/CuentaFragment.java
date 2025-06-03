@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Autor: Alfonso Chenche y Mario Herrero
+ * Autores: Alfonso Chenche y Mario Herrero
  * Versión: 1.0
  */
 public class CuentaFragment extends Fragment

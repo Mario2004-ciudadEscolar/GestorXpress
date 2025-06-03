@@ -313,8 +313,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
 
-    //----------------------- METODO SETTERS -----------------------//
-
+    //----------------------- METODOS DE COMPROBACIONES -----------------------//
     /**
      * Establece el estado de sesión activa (logged_in = 1) para el usuario especificado.
      *
@@ -338,8 +337,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
         return loggedActualizado > 0; // Si se actualizó al menos una fila
     }
-
-    //----------------------- METODO COMPROBACIÓN SI ES PADRE -----------------------//
 
     /**
      * Metodo que comprueba si el id del usuario es el padre (administrador)
@@ -365,8 +362,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         db.close();
         return esPadre;
     }
-
-    //----------------------- METODO CONTRASEÑA HASH -----------------------//
 
     /**
      * Este metodo es muy importante ya que con esto no estaremos poniendo la contraseña
@@ -401,6 +396,22 @@ public class DatabaseHelper extends SQLiteOpenHelper
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Verifica si el correo electrónico proporcionado tiene un formato válido.
+     * Este método comprueba que el correo cumpla con el siguiente patrón:
+     *.
+     * Contiene caracteres válidos antes del '@' (letras, números, puntos o guiones).
+     * Incluye un dominio específico: hotmail, gmail o yahoo.
+     * Termina en una extensión válida: .com o .es.
+     *
+     * @param correo El correo electrónico a validar.
+     * @return {@code true} si el correo cumple con el formato requerido, {@code false} en caso contrario.
+     */
+    public boolean esCorreoValido(String correo)
+    {
+        return correo != null && correo.matches("^[A-Za-z0-9._%+-]+@(gmail|hotmail|yahoo)\\.(com|es)$");
     }
 
     //----------------------- METODO LOGIN -----------------------//
@@ -451,8 +462,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return false; // No se encontró el usuario o la contraseña es incorrecta
     }
 
-    //----------------------- METODO REGISTRO -----------------------//
-
+    //----------------------- METODO DE REGISTRO Y CIERRE DE SESIÓN-----------------------//
     /**
      * Método para registrar un nuevo usuario en la base de datos
      *
@@ -521,23 +531,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
-     * Verifica si el correo electrónico proporcionado tiene un formato válido.
-     *.
-     * Este método comprueba que el correo cumpla con el siguiente patrón:
-     *.
-     * Contiene caracteres válidos antes del '@' (letras, números, puntos o guiones).
-     * Incluye un dominio específico: hotmail, gmail o yahoo.
-     * Termina en una extensión válida: .com o .es.
-     *
-     * @param correo El correo electrónico a validar.
-     * @return {@code true} si el correo cumple con el formato requerido, {@code false} en caso contrario.
-     */
-    public boolean esCorreoValido(String correo)
-    {
-        return correo != null && correo.matches("^[A-Za-z0-9._%+-]+@(gmail|hotmail|yahoo)\\.(com|es)$");
-    }
-
-    /**
      * Metodo donde obtengo la fecha actual en un formato adecuado a la base de datos,
      * estos nos sirve para que cuando creemos un nuevo usuario (que se da de alta a
      * nuestra aplicación, pues que salga en fechaRegistro la fecha actal cuando se
@@ -550,7 +543,30 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return sdf.format(new Date());
     }
 
-    //----------------------- METODO OBTENER ID -----------------------//
+    /**
+     * Cierra la sesión del usuario actualmente logueado.
+     * Cambia el valor de la columna `logged_in` a 0 para todos los usuarios.
+     *
+     * @return true si se cerró la sesión de al menos un usuario; false en caso contrario.
+     */
+    public boolean cerrarSesion()
+    {
+        // Realizamos la conexión a la bbdd
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Generamos el ContentValues (estructura clave-valor) que se usa principal mente para actualizar o insertar datos
+        // Que en este caso lo estamos usando para actualizar el logged_in
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("logged_in", 0); // Ponemos el valor de logged_in a 0 para todos los usuarios
+
+        // Al hacer una actualización, podemos obtener un valor numerico que lo podemos usar para comprobar si se ha actualizado o no
+        int rowsUpdated = db.update("Usuario", contentValues, "logged_in = 1", null);
+        db.close(); // Cerramos la conexión a la bbdd
+
+        return rowsUpdated > 0; // Si se actualizó al menos una fila
+    }
+
+    //----------------------- METODO PARA EL USUARIO -----------------------//
     /**
      * En este metodo obtiene el ID del usuario que actualmente tiene la sesión iniciada.
      *
@@ -591,30 +607,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         }
         return idUsuario;
     }
-
-    /**
-     * Cierra la sesión del usuario actualmente logueado.
-     * Cambia el valor de la columna `logged_in` a 0 para todos los usuarios.
-     *
-     * @return true si se cerró la sesión de al menos un usuario; false en caso contrario.
-     */
-    public boolean cerrarSesion()
-    {
-        // Realizamos la conexión a la bbdd
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        // Generamos el ContentValues (estructura clave-valor) que se usa principal mente para actualizar o insertar datos
-        // Que en este caso lo estamos usando para actualizar el logged_in
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("logged_in", 0); // Ponemos el valor de logged_in a 0 para todos los usuarios
-
-        // Al hacer una actualización, podemos obtener un valor numerico que lo podemos usar para comprobar si se ha actualizado o no
-        int rowsUpdated = db.update("Usuario", contentValues, "logged_in = 1", null);
-        db.close(); // Cerramos la conexión a la bbdd
-
-        return rowsUpdated > 0; // Si se actualizó al menos una fila
-    }
-
 
     /**
      * Actualiza los datos del usuario en la base de datos.
@@ -662,7 +654,8 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     /**
-     * Elimina un usuario de la base de datos según su ID.
+     * Elimina un usuario de la base de datos según su ID. Osea se elimina
+     * cuando el usuario da de baja en nuestra aplicación.
      *
      * @param id El ID del usuario que se desea eliminar.
      * @return true si se eliminó al menos una fila, false si no se encontró el usuario.
@@ -675,7 +668,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return filasEliminadas > 0;
     }
 
-    //----------------------- METODO INSERTAR TAREA -----------------------//
+    //----------------------- METODO PARA LA TAREA -----------------------//
 
     /**
      * Este metodo crea una nueva tarea en la base de datos asociada a un usuario.
@@ -788,7 +781,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return filasAfectadas > 0;
     }
 
-    //----------------------- METODOS PARA EL PADRE (ADMINISTRADOR) -----------------------//
+    //----------------------- METODOS PARA OBTENER CIERTA INFORMACIÓN -----------------------//
 
     /**
      * Este metodo lo usamos para obtener los nombres de los susario que no son padre (administrador) en este caso,
@@ -856,7 +849,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
         return nombre;
     }
 
-    //----------------------- METODOS A USAR A FUTURO -----------------------//
     /**
      * Obtiene una lista de tareas del usuario que tienen fecha de inicio o fecha límite
      * dentro de las próximas 24 horas desde el momento actual.
@@ -929,7 +921,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
     }
 
     //----------------------- METODO PARA LA CLASE NOTIFICACIÓN -----------------------//
-
     /**
      * Este metodo lo uso para obtener la tarea que se a creado recientemente (la última que se creo)
      * .

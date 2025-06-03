@@ -263,7 +263,7 @@ public class CuentaPadreActivity extends AppCompatActivity
         Intent intent = new Intent(this, MainActivity.class);
         // Inicia el MainActivity
         startActivity(intent);
-        finish(); // Opcional, para cerrar esta activity
+        finish(); // Para cerrar esta activity
         return true;
     }
 

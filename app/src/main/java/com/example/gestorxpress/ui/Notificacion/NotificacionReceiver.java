@@ -33,7 +33,7 @@ public class NotificacionReceiver extends BroadcastReceiver
         String titulo = intent.getStringExtra("titulo");
         String mensaje = intent.getStringExtra("mensaje");
 
-        Log.d("NotificacionReceiver", "Notificación recibida para: " + titulo + " con mensaje: " + mensaje);
+        Log.d("NotificacionReceiver", "Notificación recibida para: " + titulo + " con mensaje: " + mensaje); // Logs para comprobar el funcionamiento
 
         // Obtiene el servicio del sistema responsable de mostrar notificaciones
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -62,6 +62,6 @@ public class NotificacionReceiver extends BroadcastReceiver
         // Muestra la notificación al usuario con un ID único (usando el timestamp actual)
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
 
-        Log.d("NotificacionReceiver", "Notificación mostrada");
+        Log.d("NotificacionReceiver", "Notificación mostrada"); // Logs para comprobar que se ha mostrado la notificación
     }
 }

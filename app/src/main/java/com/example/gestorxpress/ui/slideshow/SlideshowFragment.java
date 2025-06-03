@@ -342,7 +342,6 @@ public class SlideshowFragment extends Fragment
         }
     }
 
-
     /**
      * Este método nos sirve para obtener la fecha del lunes
      * de la semana actual en formato "yyyy-MM-dd".
