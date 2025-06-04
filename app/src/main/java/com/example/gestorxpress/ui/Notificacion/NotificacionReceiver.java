@@ -53,7 +53,7 @@ public class NotificacionReceiver extends BroadcastReceiver
 
         // Creamos la notificación usando NotificationCompat (para compatibilidad con versiones antiguas)
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, canalId)
-                .setSmallIcon(R.drawable.baseline_alarm_on_24) // Icono a mostrado en la barra de estado
+                .setSmallIcon(R.drawable.gestorxpress) // Icono a mostrado en la barra de estado
                 .setContentTitle(titulo) // Título de la notificación
                 .setContentText(mensaje) // Cuerpo de la notificación
                 .setPriority(NotificationCompat.PRIORITY_HIGH) // Prioridad alta para que suene y aparezca
