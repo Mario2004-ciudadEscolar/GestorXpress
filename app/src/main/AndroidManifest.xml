@@ -45,9 +45,6 @@
             android:name=".ui.Cuenta.Hijo.CuentaFragment"
             android:exported="false" />
         <activity
-            android:name=".database.VerBBDDActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.GestionPerfiles.RegistroActivity"
             android:exported="false" />
         <activity

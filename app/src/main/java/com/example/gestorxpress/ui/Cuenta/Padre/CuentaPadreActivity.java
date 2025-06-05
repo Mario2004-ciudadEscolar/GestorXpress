@@ -22,8 +22,6 @@ import com.example.gestorxpress.ui.Cuenta.Suscripcion.VisualSuscripcion;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 import com.google.android.flexbox.FlexboxLayout;
 
-import java.util.HashMap;
-
 /**
  * Autores: Alfonso Chenche y Mario Herrero
  * Versión: 1.0

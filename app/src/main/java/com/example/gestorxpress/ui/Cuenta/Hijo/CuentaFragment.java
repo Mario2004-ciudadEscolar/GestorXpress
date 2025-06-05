@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +24,6 @@ import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorAvatarDialog;
-import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

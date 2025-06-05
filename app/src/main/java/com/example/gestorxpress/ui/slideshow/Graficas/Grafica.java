@@ -179,7 +179,7 @@ public class Grafica extends View
         // Dibuja las etiquetas del eje Y de 0 a 5
         // Osea que dibujamos a mano la parte izquiera del grafico, que eso
         // indicaria cuantas tareas tiene realiado en el dia
-        int maxEscala = 5;
+        int maxEscala = 10;
         for (int i = 0; i <= maxEscala; i++)
         {
             float y = height - paddingBottom - ((float) i / maxEscala) * chartHeight;
@@ -187,7 +187,7 @@ public class Grafica extends View
         }
 
         // Calcula el total pero fija el valor máximo en 5 porque es el límite del eje Y
-        int maxValue = 5;
+        int maxValue = 10;
 
         for (int valor : datos.values())
         {

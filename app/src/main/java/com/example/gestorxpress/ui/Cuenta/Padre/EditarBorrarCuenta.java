@@ -18,7 +18,6 @@ import androidx.appcompat.widget.Toolbar;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.database.DatabaseHelper;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorAvatarDialog;
-import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

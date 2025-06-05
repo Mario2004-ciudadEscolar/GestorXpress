@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.provider.CalendarContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,9 +82,11 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         
         // Establecer el color del título según la prioridad
         String prioridad = tarea.get("prioridad");
-        if (prioridad != null) {
+        if (prioridad != null)
+        {
             int colorResId;
-            switch (prioridad.toLowerCase()) {
+            switch (prioridad.toLowerCase())
+            {
                 case "baja":
                     colorResId = R.color.prioridad_baja;
                     break;
@@ -248,7 +249,6 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                     SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yy HH:mm", Locale.getDefault());
                     Calendar fechaInicioCalendar = Calendar.getInstance();
                     Calendar fechaFinCalendar = Calendar.getInstance();
-                    Calendar ahora = Calendar.getInstance();
 
                     fechaInicioCalendar.setTime(formato.parse(nuevaFechaInicio));
                     fechaFinCalendar.setTime(formato.parse(nuevaFechaLimite));
@@ -258,19 +258,10 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                         Toast.makeText(context, "Error: La fecha de inicio no puede ser posterior a la fecha de fin", Toast.LENGTH_LONG).show();
                         return;
                     }
-
-                    // Validar que las fechas no sean anteriores a la fecha actual
-                    if (fechaInicioCalendar.before(ahora)) {
-                        Toast.makeText(context, "Error: La fecha de inicio no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    if (fechaFinCalendar.before(ahora)) {
-                        Toast.makeText(context, "Error: La fecha de fin no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
-                        return;
-                    }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Toast.makeText(context, "Error al validar las fechas", Toast.LENGTH_SHORT).show();
                 return;
             }

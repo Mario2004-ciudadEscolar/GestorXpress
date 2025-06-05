@@ -215,18 +215,6 @@ public class CrearTareaFragment extends Fragment
             return;
         }
 
-        // Valida que las fechas no sean anteriores a la fecha actual
-        Calendar ahora = Calendar.getInstance();
-        if (fechaHoraInicioCalendar.before(ahora)) {
-            Toast.makeText(getContext(), "Error: La fecha de inicio no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (fechaFinCalendar.before(ahora)) {
-            Toast.makeText(getContext(), "Error: La fecha de fin no puede ser anterior a la fecha actual", Toast.LENGTH_LONG).show();
-            return;
-        }
-
         // Formatear las fechas y horas completas
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
         String fechaHoraInicio = sdf.format(fechaHoraInicioCalendar.getTime());

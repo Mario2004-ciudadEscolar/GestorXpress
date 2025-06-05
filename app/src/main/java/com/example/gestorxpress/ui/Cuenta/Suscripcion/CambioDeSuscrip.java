@@ -2,18 +2,12 @@ package com.example.gestorxpress.ui.Cuenta.Suscripcion;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.gestorxpress.R;
-import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 
 /**
  * Autor: Alfonso Chenche y Mario Herrero

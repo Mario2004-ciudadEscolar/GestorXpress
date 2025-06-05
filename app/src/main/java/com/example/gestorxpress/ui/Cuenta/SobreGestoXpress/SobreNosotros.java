@@ -3,14 +3,9 @@ package com.example.gestorxpress.ui.Cuenta.SobreGestoXpress;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.gestorxpress.MainActivity;
 import com.example.gestorxpress.R;
 import com.example.gestorxpress.ui.Cuenta.Padre.CuentaPadreActivity;
 

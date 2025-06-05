@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.example.gestorxpress.database.DatabaseHelper;
-import com.example.gestorxpress.database.VerBBDDActivity;
 import com.example.gestorxpress.ui.home.HomeFragment;
 import com.google.android.material.navigation.NavigationView;
 
@@ -21,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.gestorxpress.ui.GestionPerfiles.SelectorPerfilActivity;
 import android.util.Log;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.example.gestorxpress.databinding.ActivityMainBinding;
 

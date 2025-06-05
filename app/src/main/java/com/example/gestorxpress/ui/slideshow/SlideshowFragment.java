@@ -304,10 +304,6 @@ public class SlideshowFragment extends Fragment
             String nombre = etiquetas.get(i);
             int color = colores.get(i);
 
-            //int tareasHijo = datosPorHijo.get(nombre);
-            // Calcula porcentaje redondeado a entero
-            //int porcentajeHijo = totalTareas > 0 ? (int) ((tareasHijo * 100) / totalTareas) : 0;
-
             // Contenedor horizontal por elemento
             LinearLayout item = new LinearLayout(requireContext());
             item.setOrientation(LinearLayout.HORIZONTAL);
@@ -327,16 +323,9 @@ public class SlideshowFragment extends Fragment
             label.setTextSize(16f);
             label.setPadding(8, 0, 0, 0);
 
-            // Texto con porcentaje
-           /* TextView porcentajeView = new TextView(requireContext());
-            porcentajeView.setText(porcentajeHijo + "%");
-            porcentajeView.setTextSize(16f);
-            porcentajeView.setPadding(8, 0, 0, 0);*/
-
             // Agrega a la fila y luego al contenedor principal
             item.addView(colorBox);
             item.addView(label);
-            //item.addView(porcentajeView);
 
             legendContainer.addView(item);
         }
@@ -350,12 +339,6 @@ public class SlideshowFragment extends Fragment
     {
         Calendar cal = Calendar.getInstance();
         cal.setFirstDayOfWeek(Calendar.MONDAY); // Establece lunes como primer día de la semana
-
-        /*int diaSemana = cal.get(Calendar.DAY_OF_WEEK);
-        if (diaSemana == Calendar.SUNDAY) {
-            cal.add(Calendar.DAY_OF_MONTH, -1);  // Mueve un día atrás para ajustar al sábado
-        }*/
-
         cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); // Se posiciona en el lunes actual
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         return sdf.format(cal.getTime());
@@ -369,12 +352,6 @@ public class SlideshowFragment extends Fragment
     {
         Calendar cal = Calendar.getInstance();
         cal.setFirstDayOfWeek(Calendar.MONDAY); // Establece lunes como primer día de la semana
-
-        /*int diaSemana = cal.get(Calendar.DAY_OF_WEEK);
-        if (diaSemana == Calendar.SUNDAY) {
-            cal.add(Calendar.DAY_OF_MONTH, -1);
-        }*/
-
         cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); // Se posiciona en el domingo actual
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         return sdf.format(cal.getTime());
